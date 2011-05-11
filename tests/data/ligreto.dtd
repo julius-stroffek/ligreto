@@ -1,0 +1,26 @@
+<!ELEMENT ligreto (report|xi:include)+>
+<!ATTLIST ligreto xmlns:xi CDATA "http://www.w3.org/2001/XInclude">
+
+<!ELEMENT report (template,data)>
+<!ATTLIST report name CDATA #REQUIRED>
+<!ATTLIST report type CDATA "excel">
+
+<!ELEMENT template EMPTY>
+<!ATTLIST template file CDATA #REQUIRED>
+
+<!ELEMENT data (sql|join)+>
+
+<!ELEMENT sql (#PCDATA)>
+<!ATTLIST sql name CDATA #IMPLIED>
+<!ATTLIST sql on CDATA #IMPLIED>
+<!ATTLIST sql db CDATA #IMPLIED>
+<!ATTLIST sql target CDATA #IMPLIED>
+
+<!ELEMENT join (sql,sql+)>
+<!ATTLIST join target CDATA #IMPLIED>
+<!ATTLIST join type (full|left|right|inner) "inner">
+<!ATTLIST join diffs (true|false) "false">
+<!ATTLIST join interlaced (true|false) "false">
+<!ATTLIST join hl (true|false) "false">
+<!ATTLIST join hlText CDATA #IMPLIED>
+

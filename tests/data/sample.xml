@@ -1,0 +1,20 @@
+<!DOCTYPE ligreto SYSTEM "ligreto.dtd">
+<ligreto xmlns:xi="http://www.w3.org/2001/XInclude">
+	<!--  <xi:include href="test.xml"/> -->
+	<report name="Report Config" type="excel">
+		<template file="Blank.xls"/>
+		<data>
+			<sql target="Sheet1!C1">select * from test</sql>
+			<sql name="Query1" target="Sheet1!C1"/>
+			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" hl="true" hlText="#040506" >
+				<sql db="Test" on="1,2,3"></sql>
+				<sql db="Test2" on="1,2,3"></sql>
+			</join>
+			<join target="Sheet2!C3" type="full" interlaced="true" hl="true" hlText="#040506" >
+				<sql db="Test" on="1,2,3"></sql>
+				<sql db="Test2" on="1,2,3"></sql>
+			</join>
+			<sql name="Query1" target="Sheet1!C10"/>
+		</data>
+	</report>
+</ligreto>
