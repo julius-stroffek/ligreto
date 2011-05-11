@@ -36,9 +36,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	}
 
 	@Override
-	public void endElement(String arg0, String arg1, String arg2)
+	public void endElement(String namespaceURI, String localName, String qName)
 			throws SAXException {
 		// TODO Auto-generated method stub
+		System.out.println("</" + localName + ">");
 	}
 
 	@Override
@@ -74,9 +75,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	}
 
 	@Override
-	public void startElement(String arg0, String arg1, String arg2,
-			Attributes arg3) throws SAXException {
+	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 		// TODO Auto-generated method stub
+		System.out.println("<" + localName + ">");
 	}
 
 	@Override
