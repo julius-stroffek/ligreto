@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import net.ligreto.config.ReportConfig;
+import net.ligreto.config.FileConfig;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -18,13 +18,13 @@ import org.xml.sax.SAXException;
 public class ReportConfigTest {
 
 	/**
-	 * Test method for {@link net.ligreto.config.ReportConfig#parse(java.io.File)}.
+	 * Test method for {@link net.ligreto.config.FileConfig#parse(java.io.File)}.
 	 * @throws IOException 
 	 * @throws SAXException 
 	 */
 	@Test
 	public void testParse() throws SAXException, IOException {
-		ReportConfig.parse(ClassLoader.getSystemResource("data/sample.xml").toString());
+		FileConfig.parse(ClassLoader.getSystemResource("data/sample.xml").toString());
 	}
 
 }

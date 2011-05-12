@@ -1,4 +1,4 @@
-<!ELEMENT ligreto ((xi:include|queries|data-sources)*,(report|xi:include)+)>
+<!ELEMENT ligreto ((xi:include|param|queries|data-sources)*,(report|xi:include)+)>
 <!ATTLIST ligreto xmlns:xi CDATA #FIXED "http://www.w3.org/2001/XInclude">
 
 <!ELEMENT xi:include EMPTY>

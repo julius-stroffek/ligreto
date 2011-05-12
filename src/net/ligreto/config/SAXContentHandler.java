@@ -3,6 +3,11 @@
  */
 package net.ligreto.config;
 
+import java.util.Stack;
+
+import net.ligreto.config.data.DataSourceConfig;
+import net.ligreto.util.Pair;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -11,6 +16,9 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+/** Object types being parsed by the parser. */
+enum ObjectType {NONE, LIGRETO, DATA_SOURCE, QUERY, REPORT, TEMPLATE, SQL, JOIN};
+
 /**
  * @author Julius Stroffek
  *
@@ -18,16 +26,29 @@ import org.xml.sax.SAXParseException;
 public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandler {
 
 	/** The configuration where the results are stored. */
-	ReportConfig reportConfig;
+	FileConfig fileConfig;
+	
+	/** The parsed data source object. */
+	DataSourceConfig dataSource;
+	
+	/** The stack of object types being parsed. */
+	Stack<ObjectType> objectStack = new Stack<ObjectType>();
+	
+	/** The name, query pair. */
+	Pair<String, StringBuilder> query;
 	
 	/** Constructs the report configuration content handler. */
-	public SAXContentHandler(ReportConfig reportConfig) {
-		this.reportConfig = reportConfig;
+	public SAXContentHandler(FileConfig fileConfig) {
+		this.fileConfig = fileConfig;
 	}
 	
 	@Override
-	public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
-		// TODO Auto-generated method stub
+	public void characters(char[] chars, int start, int length) throws SAXException {
+		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
+		case QUERY:
+			query.getSecond().append(chars, start, start + length);
+			break;
+		}
 	}
 
 	@Override
@@ -38,8 +59,14 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName)
 			throws SAXException {
-		// TODO Auto-generated method stub
-		System.out.println("</" + localName + ">");
+		switch (objectStack.pop()) {
+		case DATA_SOURCE:
+				fileConfig.addDataSource(dataSource);
+				break;
+		case QUERY:
+			fileConfig.addQuery(query.getFirst(), query.getSecond().toString());
+			break;
+		}
 	}
 
 	@Override
@@ -76,8 +103,40 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
-		// TODO Auto-generated method stub
-		System.out.println("<" + localName + ">");
+		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
+		case LIGRETO:
+			if ("param".equals(localName))
+				fileConfig.addParam(atts.getValue("name"), atts.getValue("value"));
+			objectStack.push(ObjectType.NONE);
+			break;
+		case DATA_SOURCE:
+			if ("driver".equals(localName)) {
+				dataSource.setDriverClass(atts.getValue("value"));
+			} else if ("uri".equals(localName)) {
+				dataSource.setUri(atts.getValue("value"));
+			} else if ("param".equals(localName)) {
+				dataSource.setParameter(atts.getValue("name"), atts.getValue("value"));
+			}
+			objectStack.push(ObjectType.NONE);
+			break;
+		case REPORT:
+			objectStack.push(ObjectType.NONE);
+			break;
+		default:
+			if ("query".equals(localName)) {
+				query = new Pair<String, StringBuilder>(atts.getValue("name"), new StringBuilder());
+				objectStack.push(ObjectType.QUERY);
+			} else if ("data-source".equals(localName)) {
+				objectStack.push(ObjectType.DATA_SOURCE);
+				dataSource = new DataSourceConfig(atts.getValue("name"));
+			} else if ("ligreto".equals(localName)) {
+				objectStack.push(ObjectType.LIGRETO);
+				dataSource = new DataSourceConfig(atts.getValue("name"));
+			} else {
+				objectStack.push(ObjectType.NONE);
+			}
+			break;
+		}
 	}
 
 	@Override

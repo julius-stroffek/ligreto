@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto SYSTEM "ligreto.dtd">
 <ligreto>
+	<param name="sys_dt" value="2010-10-10"/>
 	<queries>
 		<query name="query1">select * from test</query>
 		<query name="query2">select * from test2</query>
@@ -8,7 +9,7 @@
 	<xi:include href="queries.xml"/>
 	<xi:include href="databases.xml"/>
 	<queries>
-		<query name="query1">select * from test</query>
+		<query name="query1">select * from test where sys_dt = %%sys_dt</query>
 		<query name="query2">select * from test2</query>
 	</queries>
 	<report name="Report Config" type="excel">
