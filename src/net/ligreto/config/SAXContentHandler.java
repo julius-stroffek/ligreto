@@ -6,6 +6,11 @@ package net.ligreto.config;
 import java.util.Stack;
 
 import net.ligreto.config.data.DataSourceConfig;
+import net.ligreto.config.data.JoinNode;
+import net.ligreto.config.data.ReportConfig;
+import net.ligreto.config.data.SqlNode;
+import net.ligreto.exceptions.AssertionException;
+
 import net.ligreto.util.Pair;
 
 import org.xml.sax.Attributes;
@@ -17,7 +22,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /** Object types being parsed by the parser. */
-enum ObjectType {NONE, LIGRETO, DATA_SOURCE, QUERY, REPORT, TEMPLATE, SQL, JOIN};
+enum ObjectType {NONE, LIGRETO, DATA_SOURCE, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, JOIN_SQL};
 
 /**
  * @author Julius Stroffek
@@ -28,6 +33,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	/** The configuration where the results are stored. */
 	FileConfig fileConfig;
 	
+	/** The report configuration where the actual report configuration data are stored to. */
+	ReportConfig reportConfig;
+	
 	/** The parsed data source object. */
 	DataSourceConfig dataSource;
 	
@@ -36,6 +44,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	
 	/** The name, query pair. */
 	Pair<String, StringBuilder> query;
+	
+	/** The SQL query. */
+	SqlNode sql;
+	
+	/** The join node. */
+	JoinNode join;
 	
 	/** Constructs the report configuration content handler. */
 	public SAXContentHandler(FileConfig fileConfig) {
@@ -47,6 +61,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
 		case QUERY:
 			query.getSecond().append(chars, start, start + length);
+			break;
+		case SQL:
+		case JOIN_SQL:
+			sql.getQuery().append(chars, start, start + length);
 			break;
 		}
 	}
@@ -65,6 +83,23 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 		case QUERY:
 			fileConfig.addQuery(query.getFirst(), query.getSecond().toString());
+			query = null;
+			break;
+		case REPORT:
+			fileConfig.addReport(reportConfig);
+			reportConfig = null;
+			break;
+		case SQL:
+			reportConfig.addSql(sql);
+			sql = null;
+			break;
+		case JOIN_SQL:
+			join.addSql(sql);
+			sql = null;
+			break;
+		case JOIN:
+			reportConfig.addJoin(join);
+			join = null;
 			break;
 		}
 	}
@@ -103,11 +138,18 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+		int entryStackDepth = objectStack.size();
 		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
 		case LIGRETO:
-			if ("param".equals(localName))
+			if ("param".equals(localName)) {
+				objectStack.push(ObjectType.NONE);
 				fileConfig.addParam(atts.getValue("name"), atts.getValue("value"));
-			objectStack.push(ObjectType.NONE);
+			} else if ("report".equals(localName)) {
+				objectStack.push(ObjectType.REPORT);
+				reportConfig = new ReportConfig();
+			} else {
+				objectStack.push(ObjectType.NONE);
+			}
 			break;
 		case DATA_SOURCE:
 			if ("driver".equals(localName)) {
@@ -120,7 +162,47 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			objectStack.push(ObjectType.NONE);
 			break;
 		case REPORT:
-			objectStack.push(ObjectType.NONE);
+			if ("template".equals(localName)) {
+				objectStack.push(ObjectType.NONE);
+				reportConfig.setTemplate(atts.getValue("file"));
+			} else	if ("data".equals(localName)) {
+				objectStack.push(ObjectType.DATA);
+			} else {
+				objectStack.push(ObjectType.NONE);
+			}
+			break;
+		case DATA:
+			if ("sql".equals(localName)) {
+				objectStack.push(ObjectType.SQL);
+				sql = new SqlNode();
+				if (atts.getValue("data-source") != null) {
+					sql.setDataSource(atts.getValue("data-source"));
+				}
+				if (atts.getValue("name") != null) {
+					sql.setQueryName(atts.getValue("name"));
+				}
+				if (atts.getValue("target") != null) {
+					sql.setTarget(atts.getValue("target"));
+				}
+			} else if ("join".equals(localName)) {
+				objectStack.push(ObjectType.JOIN);
+				join = new JoinNode();
+			}
+			break;
+		case JOIN:
+			if ("sql".equals(localName)) {
+				objectStack.push(ObjectType.JOIN_SQL);
+				sql = new SqlNode();
+				if (atts.getValue("data-source") != null) {
+					sql.setDataSource(atts.getValue("data-source"));
+				}
+				if (atts.getValue("name") != null) {
+					sql.setQueryName(atts.getValue("name"));
+				}
+				if (atts.getValue("on") != null) {
+					sql.setOn(atts.getValue("on"));
+				}
+			}
 			break;
 		default:
 			if ("query".equals(localName)) {
@@ -136,6 +218,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				objectStack.push(ObjectType.NONE);
 			}
 			break;
+		}
+		if (objectStack.size() != entryStackDepth + 1) {
+			throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack.");
 		}
 	}
 

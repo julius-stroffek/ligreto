@@ -16,7 +16,7 @@
 		<template file="Blank.xls"/>
 		<data>
 			<sql target="Sheet1!C1">select * from test</sql>
-			<sql name="Query1" target="Sheet1!C1"/>
+			<sql query="Query1" target="Sheet1!C1"/>
 			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" hl="true" hlText="#040506" >
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
@@ -25,7 +25,7 @@
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>
-			<sql name="Query1" target="Sheet1!C10"/>
+			<sql query="Query1" target="Sheet1!C10"/>
 		</data>
 	</report>
 </ligreto>

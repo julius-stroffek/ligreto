@@ -18,7 +18,7 @@
 <!ELEMENT data (sql|join)+>
 
 <!ELEMENT sql (#PCDATA)>
-<!ATTLIST sql name CDATA #IMPLIED>
+<!ATTLIST sql query CDATA #IMPLIED>
 <!ATTLIST sql on CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>

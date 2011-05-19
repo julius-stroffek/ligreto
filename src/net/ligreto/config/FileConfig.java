@@ -32,7 +32,7 @@ public class FileConfig {
 	protected HashMap<String, DataSourceConfig> dataSourceMap = new HashMap<String, DataSourceConfig>();
 	protected HashMap<String, String> queryMap = new HashMap<String, String>();
 	protected HashMap<String, String> paramMap = new HashMap<String, String>();
-	protected HashMap<String, ReportConfig> reportMap = new HashMap<String, ReportConfig>();
+	protected HashMap<Integer, ReportConfig> reportMap = new HashMap<Integer, ReportConfig>();
 
 	protected FileConfig() {
 	}
@@ -64,6 +64,10 @@ public class FileConfig {
 
 	public void addParam(String name, String query) {
 		paramMap.put(name, query);
+	}
+	
+	public void addReport(ReportConfig reportConfig) {
+		reportMap.put(reportMap.size(), reportConfig);
 	}
 	
 	public String paramsSubstitue(String string) {
