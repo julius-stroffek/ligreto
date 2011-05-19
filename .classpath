@@ -9,5 +9,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/poi-3.8-beta2-20110408.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
