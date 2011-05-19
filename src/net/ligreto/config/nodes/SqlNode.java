@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.ligreto.config.data;
+package net.ligreto.config.nodes;
 
 /**
  * @author Julius Stroffek

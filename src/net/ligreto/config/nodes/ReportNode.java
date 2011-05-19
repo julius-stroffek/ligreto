@@ -1,4 +1,4 @@
-package net.ligreto.config.data;
+package net.ligreto.config.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * @author Julius Stroffek
  *
  */
-public class ReportConfig {
+public class ReportNode {
 	enum ReportType {EXCEL, TEX, XML};
 	
 	protected String name;

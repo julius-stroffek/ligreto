@@ -17,11 +17,11 @@
 		<data>
 			<sql target="Sheet1!C1">select * from test</sql>
 			<sql query="Query1" target="Sheet1!C1"/>
-			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" hl="true" hlText="#040506" >
+			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" highlight="true" hlColor="#040506" >
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>
-			<join target="Sheet2!C3" type="full" interlaced="true" hl="true" hlText="#040506" >
+			<join target="Sheet2!C3" type="full" interlaced="true" highlight="true" hlColor="#040506" >
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>

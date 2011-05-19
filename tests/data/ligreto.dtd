@@ -28,8 +28,8 @@
 <!ATTLIST join type (full|left|right|inner) "inner">
 <!ATTLIST join diffs (true|false) "false">
 <!ATTLIST join interlaced (true|false) "false">
-<!ATTLIST join hl (true|false) "false">
-<!ATTLIST join hlText CDATA #IMPLIED>
+<!ATTLIST join highlight (true|false) "false">
+<!ATTLIST join hlColor CDATA #IMPLIED>
 
 <!ELEMENT queries (query*)>
 <!ELEMENT query (#PCDATA)>

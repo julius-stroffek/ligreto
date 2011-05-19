@@ -1,4 +1,4 @@
-package net.ligreto.config.data;
+package net.ligreto.config.nodes;
 
 import java.util.HashMap;
 
@@ -8,7 +8,7 @@ import java.util.HashMap;
  * @author Julius Stroffek
  *
  */
-public class DataSourceConfig {
+public class DataSourceNode {
 	
 	private String name;
 	private String driverClass;
@@ -16,9 +16,9 @@ public class DataSourceConfig {
 	private HashMap<String,String> parameters;
 	
 	/**
-	 * Creates the instance of DataSourceConfig class.
+	 * Creates the instance of DataSourceNode class.
 	 */
-	public DataSourceConfig(String name) {
+	public DataSourceNode(String name) {
 		this.name = name;
 		parameters = new HashMap<String,String>();
 	}
