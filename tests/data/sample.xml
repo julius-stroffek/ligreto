@@ -14,6 +14,7 @@
 	</queries>
 	<report name="Report Config" type="excel">
 		<template file="Blank.xls"/>
+		<output file="Report.xls"/>
 		<data>
 			<sql target="Sheet1!C1">select * from test</sql>
 			<sql query="Query1" target="Sheet1!C1"/>

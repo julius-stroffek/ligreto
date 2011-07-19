@@ -7,14 +7,19 @@ import java.util.List;
  * @author Julius Stroffek
  *
  */
-public class ReportNode {
-	enum ReportType {EXCEL, TEX, XML};
+public class ReportNode extends Node {
+	public enum ReportType {EXCEL, TEX, XML};
 	
 	protected String name;
 	protected String template;
+	protected String output;
 	protected ReportType reportType;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<JoinNode> joins = new ArrayList<JoinNode>();
+	
+	public ReportNode(LigretoNode ligretoNode) {
+		super(ligretoNode);
+	}
 	
 	public void addSql(SqlNode sql) {
 		sqlQueries.add(sql);
@@ -66,4 +71,25 @@ public class ReportNode {
 		this.reportType = reportType;
 	}
 
+	public Iterable<SqlNode> sqlQueries() {
+		return sqlQueries;
+	}
+
+	public Iterable<JoinNode> joins() {
+		return joins;
+	}
+
+	/**
+	 * @return the output
+	 */
+	public String getOutput() {
+		return output;
+	}
+
+	/**
+	 * @param output the output to set
+	 */
+	public void setOutput(String output) {
+		this.output = output;
+	}
 }

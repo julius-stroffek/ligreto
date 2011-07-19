@@ -1,6 +1,6 @@
 package net.ligreto.config.nodes;
 
-import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * This class holds the configuration related to data source.
@@ -8,19 +8,20 @@ import java.util.HashMap;
  * @author Julius Stroffek
  *
  */
-public class DataSourceNode {
+public class DataSourceNode extends Node {
 	
 	private String name;
 	private String driverClass;
 	private String uri;
-	private HashMap<String,String> parameters;
+	private Properties parameters;
 	
 	/**
 	 * Creates the instance of DataSourceNode class.
 	 */
-	public DataSourceNode(String name) {
+	public DataSourceNode(LigretoNode ligretoNode, String name) {
+		super(ligretoNode);
 		this.name = name;
-		parameters = new HashMap<String,String>();
+		parameters = new Properties();
 	}
 
 	/**
@@ -56,7 +57,15 @@ public class DataSourceNode {
 	 * @return The value of the specified parameter
 	 */
 	public String getParameter(String name) {
-		return parameters.get(name);
+		return parameters.getProperty(name);
+	}
+	
+	/**
+	 * @param name The parameter name
+	 * @return The value of the specified parameter
+	 */
+	public Properties getParameters() {
+		return parameters;
 	}
 	
 	/**
@@ -66,7 +75,7 @@ public class DataSourceNode {
 	 * @param value The parameter value
 	 */
 	public void setParameter(String name, String value) {
-		parameters.put(name, value);
+		parameters.setProperty(name, value);
 	}
 
 	/**

@@ -4,9 +4,11 @@
 package net.ligreto;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import net.ligreto.config.Parser;
 import net.ligreto.config.nodes.LigretoNode;
+import net.ligreto.exceptions.DataSourceNotDefinedException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -50,11 +52,18 @@ public class Ligreto {
 		try {
 			for (int i=0; i < files.length; i++) {
 				LigretoNode ligreto = Parser.parse(files[i]);
-				ReportBuilder.buildReport(ligreto);
+				LigretoExecutor executor = new LigretoExecutor(ligreto);
+				executor.executeReports();
 			}
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (DataSourceNotDefinedException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}

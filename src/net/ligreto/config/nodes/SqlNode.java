@@ -7,7 +7,7 @@ package net.ligreto.config.nodes;
  * @author Julius Stroffek
  *
  */
-public class SqlNode {
+public class SqlNode extends Node {
 	protected StringBuilder query = new StringBuilder();
 	protected String queryName;
 	protected String dataSource;
@@ -15,7 +15,8 @@ public class SqlNode {
 	protected int[] on;
 	
 	/** Constructs SQL node. */
-	public SqlNode() {
+	public SqlNode(LigretoNode ligretoNode) {
+		super(ligretoNode);
 	}
 	
 	/**
@@ -35,8 +36,22 @@ public class SqlNode {
 	/**
 	 * @return the content
 	 */
-	public StringBuilder getQuery() {
+	public StringBuilder getQueryBuilder() {
 		return query;
+	}
+	
+	/**
+	 * @return The query with all the substitutions already done.
+	 */
+	public String getQuery() {
+		String result = queryName != null ? ligretoNode.getQuery(queryName) : query.toString();
+		String oResult;
+		do {
+			oResult = result;			
+			result = ligretoNode.substituteParams(oResult);
+		} while (!result.equals(oResult)); 
+		
+		return result;
 	}
 	
 	/**

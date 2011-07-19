@@ -65,7 +65,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case SQL:
 		case JOIN_SQL:
-			sql.getQuery().append(chars, start, start + length);
+			sql.getQueryBuilder().append(chars, start, start + length);
 			break;
 		}
 	}
@@ -147,7 +147,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				ligretoNode.addParam(atts.getValue("name"), atts.getValue("value"));
 			} else if ("report".equals(localName)) {
 				objectStack.push(ObjectType.REPORT);
-				reportNode = new ReportNode();
+				reportNode = new ReportNode(ligretoNode);
 			} else {
 				objectStack.push(ObjectType.NONE);
 			}
@@ -166,6 +166,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			if ("template".equals(localName)) {
 				objectStack.push(ObjectType.NONE);
 				reportNode.setTemplate(atts.getValue("file"));
+			} else if ("output".equals(localName)) {
+				objectStack.push(ObjectType.NONE);
+				reportNode.setOutput(atts.getValue("file"));
 			} else	if ("data".equals(localName)) {
 				objectStack.push(ObjectType.DATA);
 			} else {
@@ -175,7 +178,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case DATA:
 			if ("sql".equals(localName)) {
 				objectStack.push(ObjectType.SQL);
-				sql = new SqlNode();
+				sql = new SqlNode(ligretoNode);
 				if (atts.getValue("data-source") != null) {
 					sql.setDataSource(atts.getValue("data-source"));
 				}
@@ -190,7 +193,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				}
 			} else if ("join".equals(localName)) {
 				objectStack.push(ObjectType.JOIN);
-				join = new JoinNode();
+				join = new JoinNode(ligretoNode);
 				if (atts.getValue("target") != null) {
 					join.setTarget(atts.getValue("target"));
 				}
@@ -214,7 +217,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case JOIN:
 			if ("sql".equals(localName)) {
 				objectStack.push(ObjectType.JOIN_SQL);
-				sql = new SqlNode();
+				sql = new SqlNode(ligretoNode);
 				if (atts.getValue("data-source") != null) {
 					sql.setDataSource(atts.getValue("data-source"));
 				}
@@ -235,10 +238,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				objectStack.push(ObjectType.QUERY);
 			} else if ("data-source".equals(localName)) {
 				objectStack.push(ObjectType.DATA_SOURCE);
-				dataSource = new DataSourceNode(atts.getValue("name"));
+				dataSource = new DataSourceNode(ligretoNode, atts.getValue("name"));
 			} else if ("ligreto".equals(localName)) {
 				objectStack.push(ObjectType.LIGRETO);
-				dataSource = new DataSourceNode(atts.getValue("name"));
 			} else {
 				objectStack.push(ObjectType.NONE);
 			}

@@ -10,7 +10,7 @@ import java.util.List;
  * @author Julius Stroffek
  *
  */
-public class JoinNode {
+public class JoinNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER};
 	protected JoinType joinType = JoinType.FULL;
 	protected String target;
@@ -20,6 +20,10 @@ public class JoinNode {
 	protected boolean highlight = false;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	
+	public JoinNode(LigretoNode ligretoNode) {
+		super(ligretoNode);
+
+	}
 	public void addSql(SqlNode sql) {
 		sqlQueries.add(sql);
 	}

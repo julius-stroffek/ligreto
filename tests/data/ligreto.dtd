@@ -8,9 +8,12 @@
   encoding  CDATA       #IMPLIED
 >
 
-<!ELEMENT report (template,data)>
+<!ELEMENT report (template,output,data)>
 <!ATTLIST report name CDATA #REQUIRED>
 <!ATTLIST report type CDATA "excel">
+
+<!ELEMENT output EMPTY>
+<!ATTLIST output file CDATA #REQUIRED>
 
 <!ELEMENT template EMPTY>
 <!ATTLIST template file CDATA #REQUIRED>
