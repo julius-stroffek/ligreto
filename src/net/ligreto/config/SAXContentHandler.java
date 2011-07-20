@@ -11,6 +11,7 @@ import net.ligreto.config.nodes.LigretoNode;
 import net.ligreto.config.nodes.ReportNode;
 import net.ligreto.config.nodes.SqlNode;
 import net.ligreto.exceptions.AssertionException;
+import net.ligreto.exceptions.ReportException;
 
 import net.ligreto.util.Pair;
 
@@ -61,18 +62,18 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	public void characters(char[] chars, int start, int length) throws SAXException {
 		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
 		case QUERY:
-			query.getSecond().append(chars, start, start + length);
+			query.getSecond().append(chars, start, length);
 			break;
 		case SQL:
 		case JOIN_SQL:
-			sql.getQueryBuilder().append(chars, start, start + length);
+			sql.getQueryBuilder().append(chars, start, length);
 			break;
 		}
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
@@ -107,34 +108,34 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	@Override
 	public void endPrefixMapping(String arg0) throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
 	public void ignorableWhitespace(char[] arg0, int arg1, int arg2)
 			throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
 	public void processingInstruction(String arg0, String arg1)
 			throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
 	public void setDocumentLocator(Locator arg0) {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
 	public void skippedEntity(String arg0) throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
 	public void startDocument() throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
@@ -147,7 +148,11 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				ligretoNode.addParam(atts.getValue("name"), atts.getValue("value"));
 			} else if ("report".equals(localName)) {
 				objectStack.push(ObjectType.REPORT);
-				reportNode = new ReportNode(ligretoNode);
+				try {
+					reportNode = new ReportNode(ligretoNode, atts.getValue("name"), atts.getValue("type"));
+				} catch (ReportException e) {
+					throw new SAXException(e);
+				}
 			} else {
 				objectStack.push(ObjectType.NONE);
 			}
@@ -191,6 +196,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if (atts.getValue("query") != null) {
 					sql.setQueryName(atts.getValue("query"));
 				}
+				if (atts.getValue("header") != null) {
+					sql.setHeader(atts.getValue("header"));
+				} 
 			} else if ("join".equals(localName)) {
 				objectStack.push(ObjectType.JOIN);
 				join = new JoinNode(ligretoNode);
@@ -212,6 +220,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if (atts.getValue("hlColor") != null) {
 					join.setHlColor(atts.getValue("hlColor"));
 				}
+				if (atts.getValue("header") != null) {
+					sql.setHeader(atts.getValue("header"));
+				} 
 			}
 			break;
 		case JOIN:
@@ -254,7 +265,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	@Override
 	public void startPrefixMapping(String arg0, String arg1)
 			throws SAXException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 	}
 
 	@Override
@@ -275,13 +286,13 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	@Override
 	public void notationDecl(String arg0, String arg1, String arg2)
 			throws SAXException {
-		// TODO Auto-generated method stub		
+		// Auto-generated method stub		
 	}
 
 	@Override
 	public void unparsedEntityDecl(String arg0, String arg1, String arg2,
 			String arg3) throws SAXException {
-		// TODO Auto-generated method stub		
+		// Auto-generated method stub		
 	}
 
 }

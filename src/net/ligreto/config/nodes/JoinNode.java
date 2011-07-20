@@ -18,6 +18,7 @@ public class JoinNode extends Node {
 	protected boolean diffs = false;
 	protected boolean interlaced = false;
 	protected boolean highlight = false;
+	protected boolean header = false;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	
 	public JoinNode(LigretoNode ligretoNode) {
@@ -154,5 +155,26 @@ public class JoinNode extends Node {
 	 */
 	public List<SqlNode> getSqlQueries() {
 		return sqlQueries;
+	}
+	
+	/**
+	 * @return the header
+	 */
+	public boolean getHeader() {
+		return header;
+	}
+	
+	/**
+	 * @param header the header to set
+	 */
+	public void setHeader(boolean header) {
+		this.header = header;
+	}
+
+	/**
+	 * @param header the header to set
+	 */
+	public void setHeader(String header) {
+		this.header = Boolean.parseBoolean(header);
 	}
 }

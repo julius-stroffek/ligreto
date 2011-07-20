@@ -41,6 +41,6 @@ public class Database {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
 		}
 		Class.forName(node.getDriverClass());
-		return DriverManager.getConnection(node.getUri(), node.getParameters());
+		return DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
 	}
 }

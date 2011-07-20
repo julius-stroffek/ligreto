@@ -12,6 +12,7 @@ public class SqlNode extends Node {
 	protected String queryName;
 	protected String dataSource;
 	protected String target;
+	protected boolean header;
 	protected int[] on;
 	
 	/** Constructs SQL node. */
@@ -82,6 +83,27 @@ public class SqlNode extends Node {
 		this.target = target;
 	}
 	
+	/**
+	 * @return the header
+	 */
+	public boolean getHeader() {
+		return header;
+	}
+	
+	/**
+	 * @param header the header to set
+	 */
+	public void setHeader(boolean header) {
+		this.header = header;
+	}
+
+	/**
+	 * @param header the header to set
+	 */
+	public void setHeader(String header) {
+		this.header = Boolean.parseBoolean(header);
+	}
+
 	/**
 	 * 
 	 * @param on the comma separated list of column indices to be used for join condition

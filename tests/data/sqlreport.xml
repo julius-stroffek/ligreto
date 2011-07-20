@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto SYSTEM "ligreto.dtd">
+<ligreto>
+	<param name="TestBase" value="TestRun/"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:${TestBase}/sqltest"/>
+		</data-source>
+	</data-sources>
+	<report name="Simple Report">
+		<template file="${TestBase}/blank.xls"/>
+		<output file="${TestBase}/sqlreport.xls"/>
+		<data>
+			<sql target="A2" data-source="Source1" header="true">select * from test_table</sql>
+			<sql target="Sheet2!D5" data-source="Source1" header="true">select * from test_table</sql>
+		</data>
+	</report>
+</ligreto>

@@ -25,6 +25,7 @@
 <!ATTLIST sql on CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
+<!ATTLIST sql header (true|false) "false">
 
 <!ELEMENT join (sql,sql+)>
 <!ATTLIST join target CDATA #IMPLIED>
@@ -32,6 +33,7 @@
 <!ATTLIST join diffs (true|false) "false">
 <!ATTLIST join interlaced (true|false) "false">
 <!ATTLIST join highlight (true|false) "false">
+<!ATTLIST join header (true|false) "false">
 <!ATTLIST join hlColor CDATA #IMPLIED>
 
 <!ELEMENT queries (query*)>

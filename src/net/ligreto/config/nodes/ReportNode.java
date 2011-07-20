@@ -3,6 +3,8 @@ package net.ligreto.config.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.ligreto.exceptions.ReportException;
+
 /**
  * @author Julius Stroffek
  *
@@ -17,8 +19,18 @@ public class ReportNode extends Node {
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<JoinNode> joins = new ArrayList<JoinNode>();
 	
-	public ReportNode(LigretoNode ligretoNode) {
+	public ReportNode(LigretoNode ligretoNode, String reportName, String reportType) throws ReportException {
 		super(ligretoNode);
+		name = reportName;
+		if ("excel".equalsIgnoreCase(reportType)) {
+			this.reportType = ReportType.EXCEL;
+		} else if ("tex".equalsIgnoreCase(reportType)) {
+				this.reportType = ReportType.TEX;
+		} else if ("xml".equalsIgnoreCase(reportType)) {
+			this.reportType = ReportType.XML;
+		} else {
+			throw new ReportException("Unknown report type: \"" + reportType + "\".");
+		}
 	}
 	
 	public void addSql(SqlNode sql) {
