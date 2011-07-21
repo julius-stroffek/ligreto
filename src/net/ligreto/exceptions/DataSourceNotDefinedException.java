@@ -1,6 +1,6 @@
 package net.ligreto.exceptions;
 
-public class DataSourceNotDefinedException extends Exception {
+public class DataSourceNotDefinedException extends LigretoException {
 	/**
 	 * Auto-generated stuff.
 	 */
@@ -10,5 +10,14 @@ public class DataSourceNotDefinedException extends Exception {
 	}
 
 	public DataSourceNotDefinedException(String message) {
+		super(message);
+	}
+
+	public DataSourceNotDefinedException(Throwable cause) {
+		super(cause);
+	}
+
+	public DataSourceNotDefinedException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

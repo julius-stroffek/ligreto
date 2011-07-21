@@ -2,7 +2,9 @@ package net.ligreto;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import net.ligreto.config.nodes.DataSourceNode;
 import net.ligreto.config.nodes.LigretoNode;
@@ -42,5 +44,14 @@ public class Database {
 		}
 		Class.forName(node.getDriverClass());
 		return DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
+	}
+
+	public static void close(Connection cnn, Statement stm, ResultSet rs) throws SQLException {
+		if (rs != null)
+			rs.close();
+		if (stm != null)
+			stm.close();
+		if (cnn != null)
+			cnn.close();
 	}
 }

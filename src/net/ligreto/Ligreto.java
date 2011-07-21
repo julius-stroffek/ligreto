@@ -8,8 +8,7 @@ import java.sql.SQLException;
 
 import net.ligreto.config.Parser;
 import net.ligreto.config.nodes.LigretoNode;
-import net.ligreto.exceptions.DataSourceNotDefinedException;
-import net.ligreto.exceptions.InvalidTargetExpection;
+import net.ligreto.exceptions.LigretoException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -60,13 +59,11 @@ public class Ligreto {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (DataSourceNotDefinedException e) {
+		} catch (LigretoException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (InvalidTargetExpection e) {
 			e.printStackTrace();
 		}
 	}

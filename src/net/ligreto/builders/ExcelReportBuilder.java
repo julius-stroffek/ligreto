@@ -18,10 +18,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 	Workbook wb;
 	Sheet sheet;
 	Row row;
-	int baseRow = 0;
-	int baseCol = 0;
-	int actRow = baseRow-1;
-	int actCol = baseCol;
 	
 	public void setTarget(String target) throws InvalidTargetExpection {
 		CellReference ref = new CellReference(target);
@@ -46,8 +42,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	public void nextRow() {
-		actRow++;
-		actCol = baseCol;
+		super.nextRow();
 		row = sheet.getRow(actRow);
 		if (row == null)
 			row = sheet.createRow(actRow);
@@ -58,13 +53,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 		if (cell == null)
 			cell = row.createCell(actCol + col);
 		return cell;
-	}
-
-	public void setColumnPosition(int column) {
-		actCol = baseCol + column;
-	}
-
-	public void setColumnPosition(int column, int step) {
 	}
 
 	public void setColumn(int i, Object o) {

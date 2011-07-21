@@ -11,6 +11,7 @@ import net.ligreto.config.nodes.LigretoNode;
 import net.ligreto.config.nodes.ReportNode;
 import net.ligreto.config.nodes.SqlNode;
 import net.ligreto.exceptions.AssertionException;
+import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
 
 import net.ligreto.util.Pair;
@@ -227,6 +228,13 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case JOIN:
 			if ("sql".equals(localName)) {
+				if (join.getSqlQueries().size() > 1 
+					&& (join.getJoinType() == JoinNode.JoinType.LEFT
+						|| join.getJoinType() == JoinNode.JoinType.RIGHT) ) {
+					throw new SAXException(
+						new LigretoException("Left or right join could have only two sql queries specified.")
+					);
+				}
 				objectStack.push(ObjectType.JOIN_SQL);
 				sql = new SqlNode(ligretoNode);
 				if (atts.getValue("data-source") != null) {

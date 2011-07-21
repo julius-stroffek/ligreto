@@ -1,4 +1,8 @@
+/**
+ * 
+ */
 package net.ligreto.junit.tests;
+
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -17,8 +21,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+/**
+ * @author Julius Stroffek
+ *
+ */
+public class JoinReportTest {
 
-public class SQLReportTest {
+	/**
+	 * @throws java.lang.Exception
+	 */
 	@Before
 	public void setUp() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -38,15 +49,17 @@ public class SQLReportTest {
 		cnn.close();
 	}
 
+	/**
+	 * @throws java.lang.Exception
+	 */
 	@After
 	public void tearDown() throws Exception {
 	}
 
 	@Test
-	public void testSqlReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse(ClassLoader.getSystemResource("data/sqlreport.xml").toString());
+	public void testJoinReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse(ClassLoader.getSystemResource("data/joinreport.xml").toString());
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		executor.executeReports();
 	}
-
 }
