@@ -1,0 +1,43 @@
+<project default="package" basedir=".">
+	<property name="lib" location="${basedir}/lib"/>
+	<property name="src" location="${basedir}/src"/>
+	<property name="tests" location="${basedir}/tests"/>
+	<property name="build" location="${basedir}/build"/>
+	<property name="dist" location="${basedir}/dist" /> 
+	<target name="clean">
+		<delete dir="${dist}"/>
+		<delete dir="${build}"/>
+	</target>
+	<target name="compile">
+		<mkdir dir="${build}"/>
+		<javac srcdir="${src}" destdir="${build}" includeAntRuntime="">
+			<classpath>
+					<fileset dir="${lib}">
+						<include name="**/*.jar"/>
+					</fileset> 
+			</classpath>
+		</javac>
+		<javac srcdir="${tests}" destdir="${build}" includeAntRuntime="">
+			<classpath>
+					<fileset dir="${lib}">
+						<include name="**/*.jar"/>
+					</fileset> 
+			</classpath>
+		</javac>
+	</target>
+	<target name="build" depends="clean,compile">
+	</target>
+	<target name="test" depends="build">
+	</target>
+	<target name="package" depends="test">
+		<mkdir dir="${dist}"/>
+		<jar destfile="${dist}/ligreto.jar">
+			<fileset dir="${build}">
+				<include name="**/*.class"/>
+				<include name="**/*.dtd"/>
+				<include name="**/*.xml"/>
+				<include name="**/*.properties"/>
+			</fileset> 
+		</jar>
+	</target>
+</project>
