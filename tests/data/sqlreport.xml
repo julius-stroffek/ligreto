@@ -5,7 +5,7 @@
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
-			<uri value="jdbc:derby:${TestBase}/sqltest"/>
+			<uri value="jdbc:derby:${TestBase}/test"/>
 		</data-source>
 	</data-sources>
 	<report name="Simple Report">

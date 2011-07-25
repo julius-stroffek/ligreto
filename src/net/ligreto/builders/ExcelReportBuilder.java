@@ -49,9 +49,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 	
 	protected Cell createCell(Row row, int col) {
-		Cell cell = row.getCell(actCol + col);
+		Cell cell = row.getCell(col);
 		if (cell == null)
-			cell = row.createCell(actCol + col);
+			cell = row.createCell(col);
 		return cell;
 	}
 

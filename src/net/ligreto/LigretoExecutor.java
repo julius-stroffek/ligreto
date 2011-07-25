@@ -86,7 +86,7 @@ public class LigretoExecutor {
 				cnn2 = Database.getInstance().getConnection(sqlQueries.get(1).getDataSource());
 			
 				String qry1 = sqlQueries.get(0).getQuery().toString();
-				String qry2 = sqlQueries.get(0).getQuery().toString();			
+				String qry2 = sqlQueries.get(1).getQuery().toString();			
 				stm1 = cnn1.createStatement();
 				stm2 = cnn2.createStatement();
 				rs1 = stm1.executeQuery(qry1);
@@ -134,9 +134,9 @@ public class LigretoExecutor {
 					reportBuilder.dumpOtherHeader(rs2, on2);
 				}
 				
-				rs1.next();
-				rs2.next();
-				while (rs1.isAfterLast() && rs2.isAfterLast()) {
+				boolean hasNext1 = rs1.next();
+				boolean hasNext2 = rs2.next();
+				while (hasNext1 && hasNext2) {
 					int cResult = Comparator.compare(rs1, on1, rs2, on2); 
 					switch (cResult) {
 					case -1:
@@ -150,7 +150,7 @@ public class LigretoExecutor {
 							}
 							reportBuilder.setOtherColumns(rs1, on1);
 						}
-						rs1.next();
+						hasNext1 = rs1.next();
 						break;
 					case 0:
 						reportBuilder.nextRow();
@@ -167,8 +167,8 @@ public class LigretoExecutor {
 							reportBuilder.setColumnPosition(rs1Length, 1);
 						}
 						reportBuilder.setOtherColumns(rs2, on2);
-						rs1.next();
-						rs2.next();
+						hasNext1 = rs1.next();
+						hasNext2 = rs2.next();
 						break;
 					case 1:
 						if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
@@ -181,12 +181,12 @@ public class LigretoExecutor {
 							}
 							reportBuilder.setOtherColumns(rs2, on2);
 						}
-						rs2.next();
+						hasNext2 = rs2.next();
 						break;
 					}				
 				}
 				if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
-					while (!rs1.isAfterLast()) {
+					while (hasNext1) {
 						reportBuilder.nextRow();
 						reportBuilder.setJoinOnColumns(rs1, on1);
 						if (join.getInterlaced()) {
@@ -195,11 +195,11 @@ public class LigretoExecutor {
 							reportBuilder.setColumnPosition(onLength, 1);							
 						}
 						reportBuilder.setOtherColumns(rs1, on1);
-						rs1.next();
+						hasNext1 = rs1.next();
 					}
 				}
 				if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
-					while (!rs2.isAfterLast()) {
+					while (hasNext2) {
 						reportBuilder.nextRow();
 						reportBuilder.setJoinOnColumns(rs2, on2);
 						if (join.getInterlaced()) {
@@ -208,7 +208,7 @@ public class LigretoExecutor {
 							reportBuilder.setColumnPosition(rs1Length, 1);							
 						}
 						reportBuilder.setOtherColumns(rs2, on2);
-						rs2.next();
+						hasNext2 = rs2.next();
 					}
 				}
 			} finally {

@@ -222,7 +222,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					join.setHlColor(atts.getValue("hlColor"));
 				}
 				if (atts.getValue("header") != null) {
-					sql.setHeader(atts.getValue("header"));
+					join.setHeader(atts.getValue("header"));
 				} 
 			}
 			break;

@@ -105,13 +105,13 @@ public abstract class ReportBuilder {
 		for (int i=0; i < rsLength; i++) {
 			boolean onPresent = false;
 			for (int j=0; j < on.length; j++) {
-				if (i == on[j]) {
+				if (i+1 == on[j]) {
 					onPresent = true;
 					break;
 				}
 			}
 			if (!onPresent) {
-				setColumn(columnStep*idx, rsmd.getColumnLabel(i));
+				setColumn(columnStep*idx, rsmd.getColumnLabel(i+1));
 				idx++;
 			}
 		}
@@ -129,13 +129,13 @@ public abstract class ReportBuilder {
 		for (int i=0; i < rsLength; i++) {
 			boolean onPresent = false;
 			for (int j=0; j < on.length; j++) {
-				if (i == on[j]) {
+				if (i+1 == on[j]) {
 					onPresent = true;
 					break;
 				}
 			}
 			if (!onPresent) {
-				setColumn(idx, rs, i);
+				setColumn(idx, rs, i+1);
 				idx++;
 			}
 		}
