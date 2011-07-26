@@ -1,35 +1,44 @@
-<project default="package" basedir=".">
+<project default="run" basedir=".">
 	<property name="lib" location="${basedir}/lib"/>
 	<property name="src" location="${basedir}/src"/>
 	<property name="tests" location="${basedir}/tests"/>
+	<property name="tests.data" location="${basedir}/tests/data"/>
 	<property name="build" location="${basedir}/build"/>
-	<property name="dist" location="${basedir}/dist" /> 
+	<property name="dist" location="${basedir}/dist" />
+	<property name="testing" location="${basedir}/testing" />
+	<path id="build.classpath">
+		<fileset dir="${lib}">
+			<include name="**/*.jar"/>
+		</fileset> 
+	</path>
+	<path id="run.classpath">
+		<path refid="build.classpath"/>
+		<fileset dir="${dist}">
+			<include name="ligreto.jar"/>
+		</fileset> 
+	</path>
+	<path id="test.classpath">
+		<path refid="run.classpath"/>
+		<fileset dir="${dist}">
+			<include name="tests.jar"/>
+		</fileset> 
+	</path>
 	<target name="clean">
 		<delete dir="${dist}"/>
 		<delete dir="${build}"/>
 	</target>
 	<target name="compile">
 		<mkdir dir="${build}"/>
-		<javac srcdir="${src}" destdir="${build}" includeAntRuntime="">
-			<classpath>
-					<fileset dir="${lib}">
-						<include name="**/*.jar"/>
-					</fileset> 
-			</classpath>
+		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" debug="yes">
+			<classpath refid="build.classpath"/>
 		</javac>
-		<javac srcdir="${tests}" destdir="${build}" includeAntRuntime="">
-			<classpath>
-					<fileset dir="${lib}">
-						<include name="**/*.jar"/>
-					</fileset> 
-			</classpath>
+		<javac srcdir="${tests}" destdir="${build}" includeantruntime="false" debug="yes">
+			<classpath refid="build.classpath"/>
 		</javac>
 	</target>
 	<target name="build" depends="clean,compile">
 	</target>
-	<target name="test" depends="build">
-	</target>
-	<target name="package" depends="test">
+	<target name="package" depends="compile">
 		<mkdir dir="${dist}"/>
 		<jar destfile="${dist}/ligreto.jar">
 			<fileset dir="${build}">
@@ -37,7 +46,35 @@
 				<include name="**/*.dtd"/>
 				<include name="**/*.xml"/>
 				<include name="**/*.properties"/>
+				<exclude name="net/ligreto/junit/**"/>
 			</fileset> 
 		</jar>
+		<jar destfile="${dist}/tests.jar">
+			<fileset dir="${build}">
+				<include name="net/ligreto/junit/**/*.class"/>
+				<include name="net/ligreto/junit/**/*.dtd"/>
+				<include name="net/ligreto/junit/**/*.xml"/>
+				<include name="net/ligreto/junit/**/*.properties"/>
+			</fileset> 
+		</jar>
+	</target>
+	<target name="run">
+		<java classname="net.ligreto.Ligreto" fork="true" failonerror="true">
+			<classpath refid="run.classpath"/>
+		</java>
+	</target>
+	<target name="test.prepare">
+		<delete dir="${testing}"/>
+		<mkdir dir="${testing}"/>
+		<copy todir="${testing}" includeEmptyDirs="true">
+			<fileset dir="${tests.data}"/>
+		</copy>
+	</target>
+	<target name="test" depends="package,test.prepare">
+		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+			<test name="net.ligreto.junit.tests.AllTests"/>
+			<classpath refid="test.classpath"/>
+			<formatter type="plain" usefile="false"/>
+		</junit>
 	</target>
 </project>

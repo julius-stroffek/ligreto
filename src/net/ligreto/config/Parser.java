@@ -33,6 +33,7 @@ public class Parser {
 		SAXContentHandler handler = new SAXContentHandler(ligretoNode);
 		
 		XMLReader parser = XMLReaderFactory.createXMLReader(PARSER_NAME);
+		parser.setEntityResolver(new EntityResolverImpl());
 		parser.setFeature(NAMESPACES_FEATURE_ID, true);
 		parser.setFeature(NAMESPACE_PREFIXES_FEATURE_ID, true);
 		parser.setFeature(VALIDATION_FEATURE_ID, true);

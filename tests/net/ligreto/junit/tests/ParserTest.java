@@ -25,7 +25,7 @@ public class ParserTest {
 	 */
 	@Test
 	public void testParse() throws SAXException, IOException {
-		Parser.parse(ClassLoader.getSystemResource("data/sample.xml").toString());
+		Parser.parse("sample.xml");
 	}
 
 }

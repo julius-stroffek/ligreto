@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto SYSTEM "ligreto.dtd">
 <ligreto>
-	<param name="TestBase" value="TestRun/"/>
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
-			<uri value="jdbc:derby:${TestBase}/test"/>
+			<uri value="jdbc:derby:test"/>
 		</data-source>
 	</data-sources>
 	<report name="Simple Report">
-		<template file="${TestBase}/join_template.xls"/>
-		<output file="${TestBase}/join_report.xls"/>
+		<template file="join_template.xls"/>
+		<output file="join_report.xls"/>
 		<data>
 			<join target="full!B2" type="full" header="true">
 				<sql data-source="Source1" on="1">select * from join_table1 order by 1</sql>

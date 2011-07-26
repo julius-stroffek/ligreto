@@ -1,0 +1,13 @@
+
+syntax: regexp
+^TestRun/sqlreport\.xls$
+syntax: regexp
+^TestRun/join_report\.xls$
+syntax: regexp
+^TestRun/test$
+syntax: regexp
+^testing$
+syntax: regexp
+^build$
+syntax: regexp
+^dist$

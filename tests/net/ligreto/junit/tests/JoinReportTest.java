@@ -35,7 +35,7 @@ public class JoinReportTest {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		Properties properties = new Properties();
 		properties.setProperty("create", "true");
-		Connection cnn = DriverManager.getConnection("jdbc:derby:TestRun/test", properties);
+		Connection cnn = DriverManager.getConnection("jdbc:derby:test", properties);
 		cnn.setAutoCommit(true);
 		Statement stm = cnn.createStatement();
 		try {
@@ -70,7 +70,7 @@ public class JoinReportTest {
 
 	@Test
 	public void testJoinReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse(ClassLoader.getSystemResource("data/joinreport.xml").toString());
+		LigretoNode ligreto = Parser.parse("joinreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		executor.executeReports();
 	}
