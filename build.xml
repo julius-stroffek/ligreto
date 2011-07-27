@@ -4,7 +4,7 @@
 	<property name="resources" location="${basedir}/src/resources"/>
 	<property name="tests" location="${basedir}/tests"/>
 	<property name="tests.data" location="${basedir}/tests/data"/>
-	<property name="build" location="${basedir}/build"/>
+	<property name="build" location="${basedir}/build/classes"/>
 	<property name="dist" location="${basedir}/dist" />
 	<property name="testing" location="${basedir}/testing" />
 	<path id="build.classpath">

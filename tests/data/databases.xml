@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE data-sources PUBLIC "-//ligreto.dtd" "http://ligreto.net/ligreto.dtd">
+<!DOCTYPE data-sources PUBLIC "ligreto.dtd" "ligreto.dtd">
 <data-sources>
 	<data-source name="Source1">
 		<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
