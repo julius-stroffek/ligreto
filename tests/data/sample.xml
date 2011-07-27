@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE ligreto SYSTEM "ligreto.dtd">
+<!DOCTYPE ligreto PUBLIC "-//ligreto.dtd" "http://ligreto.net/ligreto.dtd">
 <ligreto>
 	<param name="sys_dt" value="2010-10-10"/>
 	<queries>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE queries SYSTEM "ligreto.dtd">
+<!DOCTYPE queries PUBLIC "-//ligreto.dtd" "http://ligreto.net/ligreto.dtd">
 <queries>
 	<query name="query1">select * from test</query>
 	<query name="query2">select * from test2</query>

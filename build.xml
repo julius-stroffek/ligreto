@@ -1,6 +1,7 @@
 <project default="run" basedir=".">
 	<property name="lib" location="${basedir}/lib"/>
 	<property name="src" location="${basedir}/src"/>
+	<property name="resources" location="${basedir}/src/resources"/>
 	<property name="tests" location="${basedir}/tests"/>
 	<property name="tests.data" location="${basedir}/tests/data"/>
 	<property name="build" location="${basedir}/build"/>
@@ -26,6 +27,7 @@
 	<target name="clean">
 		<delete dir="${dist}"/>
 		<delete dir="${build}"/>
+		<delete dir="${testing}"/>
 	</target>
 	<target name="compile">
 		<mkdir dir="${build}"/>
@@ -35,6 +37,9 @@
 		<javac srcdir="${tests}" destdir="${build}" includeantruntime="false" debug="yes">
 			<classpath refid="build.classpath"/>
 		</javac>
+		<copy todir="${build}/resources" includeEmptyDirs="true">
+			<fileset dir="${resources}"/>
+		</copy>
 	</target>
 	<target name="build" depends="clean,compile">
 	</target>
