@@ -18,7 +18,7 @@ import net.ligreto.config.nodes.ReportNode;
 import net.ligreto.config.nodes.SqlNode;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
-import net.ligreto.util.Comparator;
+import net.ligreto.util.ResultSetComparator;
 
 /**
  * @author Julius Stroffek
@@ -145,7 +145,7 @@ public class LigretoExecutor {
 				boolean hasNext1 = rs1.next();
 				boolean hasNext2 = rs2.next();
 				while (hasNext1 && hasNext2) {
-					int cResult = Comparator.compare(rs1, on1, rs2, on2); 
+					int cResult = ResultSetComparator.compare(rs1, on1, rs2, on2); 
 					switch (cResult) {
 					case -1:
 						if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
@@ -163,7 +163,7 @@ public class LigretoExecutor {
 					case 0:
 						// We will break if we are supposed to produce only differences
 						// and there are no differences present.
-						if (!join.getDiffs() || Comparator.compareOthers(rs1, on1, rs2, on2) != 0) {
+						if (!join.getDiffs() || ResultSetComparator.compareOthers(rs1, on1, rs2, on2) != 0) {
 							reportBuilder.nextRow();
 							reportBuilder.setJoinOnColumns(rs1, on1);
 							if (join.getInterlaced()) {

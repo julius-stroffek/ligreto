@@ -8,7 +8,7 @@ import java.sql.Types;
 
 import net.ligreto.exceptions.LigretoException;
 
-public class Comparator {
+public class ResultSetComparator {
 	public static int compare(ResultSet rs1, int on1, ResultSet rs2, int on2) throws SQLException {
 		int result = 0;
 		// Deal with the case when at least one of the values is null.
