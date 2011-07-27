@@ -35,6 +35,8 @@
 <!ATTLIST join highlight (true|false) "false">
 <!ATTLIST join header (true|false) "false">
 <!ATTLIST join hlColor CDATA #IMPLIED>
+<!ATTLIST join on CDATA #IMPLIED>
+
 
 <!ELEMENT queries (query*)>
 <!ELEMENT query (#PCDATA)>

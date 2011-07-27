@@ -96,6 +96,14 @@ public class LigretoExecutor {
 				int on1[] = sqlQueries.get(0).getOn();
 				int on2[] = sqlQueries.get(1).getOn();
 				
+				if (on1 == null)
+					on1 = join.getOn();
+				if (on2 == null)
+					on2 = join.getOn();
+				
+				if (on1 == null || on2 == null)
+					throw new LigretoException("The \"on\" attribute have to be present in <join> node or all <sql> children.");
+				
 				// Do certain sanity checks here
 				if (on1.length != on2.length)
 					throw new LigretoException("All queries in the join have to have the same number of \"on\" columns.");
@@ -153,20 +161,24 @@ public class LigretoExecutor {
 						hasNext1 = rs1.next();
 						break;
 					case 0:
-						reportBuilder.nextRow();
-						reportBuilder.setJoinOnColumns(rs1, on1);
-						if (join.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength, 2);
-						} else  {
-							reportBuilder.setColumnPosition(onLength, 1);							
+						// We will break if we are supposed to produce only differences
+						// and there are no differences present.
+						if (!join.getDiffs() || Comparator.compareOthers(rs1, on1, rs2, on2) != 0) {
+							reportBuilder.nextRow();
+							reportBuilder.setJoinOnColumns(rs1, on1);
+							if (join.getInterlaced()) {
+								reportBuilder.setColumnPosition(onLength, 2);
+							} else  {
+								reportBuilder.setColumnPosition(onLength, 1);							
+							}
+							reportBuilder.setOtherColumns(rs1, on1);
+							if (join.getInterlaced()) {
+								reportBuilder.setColumnPosition(onLength+1, 2);
+							} else {
+								reportBuilder.setColumnPosition(rs1Length, 1);
+							}
+							reportBuilder.setOtherColumns(rs2, on2);
 						}
-						reportBuilder.setOtherColumns(rs1, on1);
-						if (join.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength+1, 2);
-						} else {
-							reportBuilder.setColumnPosition(rs1Length, 1);
-						}
-						reportBuilder.setOtherColumns(rs2, on2);
 						hasNext1 = rs1.next();
 						hasNext2 = rs2.next();
 						break;

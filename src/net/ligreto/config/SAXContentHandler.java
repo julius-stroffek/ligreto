@@ -221,6 +221,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if (atts.getValue("hlColor") != null) {
 					join.setHlColor(atts.getValue("hlColor"));
 				}
+				if (atts.getValue("on") != null) {
+					join.setOn(atts.getValue("on"));
+				}
 				if (atts.getValue("header") != null) {
 					join.setHeader(atts.getValue("header"));
 				} 

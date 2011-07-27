@@ -58,6 +58,10 @@ public class JoinReportTest {
 		stm.execute("insert into join_table2 values (4, '2Bruce4', '2Abone4', 24)");
 		stm.execute("insert into join_table1 values (5, '1Martin5', '1Velky5', 15)");
 		stm.execute("insert into join_table2 values (6, '2Bruce6', '2Abone6', 26)");
+		stm.execute("insert into join_table1 values (7, 'Martin7', 'Velky7', 77)");
+		stm.execute("insert into join_table2 values (7, 'Martin7', 'Velky7', 77)");
+		stm.execute("insert into join_table1 values (8, 'Bruce8', 'Abone8', 15)");
+		stm.execute("insert into join_table2 values (8, 'Bruce8', 'Abone8', 88)");
 		cnn.close();
 	}
 

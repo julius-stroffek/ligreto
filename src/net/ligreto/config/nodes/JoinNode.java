@@ -20,6 +20,7 @@ public class JoinNode extends Node {
 	protected boolean highlight = false;
 	protected boolean header = false;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
+	protected int[] on;
 	
 	public JoinNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
@@ -176,5 +177,24 @@ public class JoinNode extends Node {
 	 */
 	public void setHeader(String header) {
 		this.header = Boolean.parseBoolean(header);
+	}
+
+	/**
+	 * 
+	 * @param on the comma separated list of column indices to be used for join condition
+	 */
+	public void setOn(String on) {
+		String[] ons = on.split(",");
+		this.on = new int[ons.length];
+		for (int i=0; i < ons.length; i++) {
+			this.on[i] = Integer.parseInt(ons[i]);
+		}
+	}
+
+	/**
+	 * @return the array of column indices to be used for join condition
+	 */
+	public int[] getOn() {
+		return on;
 	}
 }
