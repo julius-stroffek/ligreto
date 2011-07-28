@@ -7,7 +7,10 @@ import java.io.IOException;
 import net.ligreto.exceptions.InvalidTargetExpection;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -38,7 +41,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 		} else {
 			throw new InvalidTargetExpection("The target reference is invalid: \"" + target + "\"");
 		}
-		
 	}
 
 	public void nextRow() {
@@ -55,9 +57,41 @@ public class ExcelReportBuilder extends ReportBuilder {
 		return cell;
 	}
 
-	public void setColumn(int i, Object o) {
+	public void setColumn(int i, Object o, String color) {
 		Cell cell = createCell(row, actCol + i);
 		cell.setCellValue(o.toString());
+		if (color != null)
+			setCellColor(cell, color);
+	}
+	
+	protected void setCellColor(Cell cell, String newColor) {
+		CellStyle style = cell.getCellStyle();
+		CellStyle newStyle = wb.createCellStyle();
+		Font font = wb.getFontAt(style.getFontIndex());
+		HSSFColor color = new HSSFColor.RED();
+		Font newFont = wb.findFont(
+				font.getBoldweight(),
+				color.getIndex(),
+				font.getFontHeight(),
+				font.getFontName(),
+				font.getItalic(),
+				font.getStrikeout(),
+				font.getTypeOffset(),
+				font.getUnderline()
+			);
+		if (newFont == null) {
+			newFont = wb.createFont();
+			newFont.setBoldweight(font.getBoldweight());
+			newFont.setColor(color.getIndex());
+			newFont.setFontHeight(font.getFontHeight());
+			newFont.setFontName(font.getFontName());
+			newFont.setItalic(font.getItalic());
+			newFont.setStrikeout(font.getStrikeout());
+			newFont.setTypeOffset(font.getTypeOffset());
+			newFont.setUnderline(font.getUnderline());
+		}
+		newStyle.setFont(newFont);
+		cell.setCellStyle(newStyle);
 	}
 
 	public void writeOutput() throws IOException {

@@ -15,4 +15,17 @@ public class MiscUtils {
 		}
 		return false;
 	}
+
+	/**
+	 * 
+	 * @param diffs The array of integer numbers (result from comparison)
+	 * @return true if all the elements of the array are 0.
+	 */
+	public static boolean allZeros(int[] diffs) {
+		for (int i=0; i < diffs.length; i++) {
+			if (diffs[i] != 0)
+				return false;
+		}
+		return true;
+	}
 }

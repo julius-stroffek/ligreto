@@ -18,6 +18,7 @@ import net.ligreto.config.nodes.ReportNode;
 import net.ligreto.config.nodes.SqlNode;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
+import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetComparator;
 
 /**
@@ -123,21 +124,33 @@ public class LigretoExecutor {
 				// Things are all right, so we will continue...
 				int onLength = on1.length;
 				int rs1Length = rs1.getMetaData().getColumnCount();
+				int rs2Length = rs1.getMetaData().getColumnCount();
+				
+				// Create the arrays to be used to highlight
+				// differences for left, right, outer joins
+				int[] lowerArray = new int[rs1Length > rs2Length ? rs1Length : rs2Length];
+				int[] higherArray = new int[lowerArray.length];
+				for (int i=0; i < lowerArray.length; i++) {
+					lowerArray[i] = -1;
+					higherArray[i] = 1;
+				}
+				reportBuilder.setHighlight(join.getHighlight());
+				reportBuilder.setHlColor(join.getHlColor());
 				
 				// Dump the header row if requested
 				if (join.getHeader()) {
 					reportBuilder.nextRow();
 					reportBuilder.dumpJoinOnHeader(rs1, on1);
 					if (join.getInterlaced()) {
-						reportBuilder.setColumnPosition(onLength, 2);
+						reportBuilder.setColumnPosition(onLength, 2, null);
 					} else  {
-						reportBuilder.setColumnPosition(onLength, 1);							
+						reportBuilder.setColumnPosition(onLength, 1, null);							
 					}
 					reportBuilder.dumpOtherHeader(rs1, on1);
 					if (join.getInterlaced()) {
-						reportBuilder.setColumnPosition(onLength+1, 2);
+						reportBuilder.setColumnPosition(onLength+1, 2, null);
 					} else {
-						reportBuilder.setColumnPosition(rs1Length, 1);
+						reportBuilder.setColumnPosition(rs1Length, 1, null);
 					}
 					reportBuilder.dumpOtherHeader(rs2, on2);
 				}
@@ -150,11 +163,12 @@ public class LigretoExecutor {
 					case -1:
 						if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 							reportBuilder.nextRow();
+							reportBuilder.setCmpArray(higherArray);
 							reportBuilder.setJoinOnColumns(rs1, on1);
 							if (join.getInterlaced()) {
-								reportBuilder.setColumnPosition(onLength, 2);
+								reportBuilder.setColumnPosition(onLength, 2, lowerArray);
 							} else  {
-								reportBuilder.setColumnPosition(onLength, 1);							
+								reportBuilder.setColumnPosition(onLength, 1, lowerArray);							
 							}
 							reportBuilder.setOtherColumns(rs1, on1);
 						}
@@ -163,19 +177,23 @@ public class LigretoExecutor {
 					case 0:
 						// We will break if we are supposed to produce only differences
 						// and there are no differences present.
-						if (!join.getDiffs() || ResultSetComparator.compareOthers(rs1, on1, rs2, on2) != 0) {
+						int[] cmpArray = ResultSetComparator.compareOthers(rs1, on1, rs2, on2);
+						
+						if (!join.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
 							reportBuilder.nextRow();
 							reportBuilder.setJoinOnColumns(rs1, on1);
 							if (join.getInterlaced()) {
-								reportBuilder.setColumnPosition(onLength, 2);
+								reportBuilder.setColumnPosition(onLength, 2, cmpArray);
 							} else  {
-								reportBuilder.setColumnPosition(onLength, 1);							
+								reportBuilder.setColumnPosition(onLength, 1, cmpArray);							
 							}
+							
 							reportBuilder.setOtherColumns(rs1, on1);
+							
 							if (join.getInterlaced()) {
-								reportBuilder.setColumnPosition(onLength+1, 2);
+								reportBuilder.setColumnPosition(onLength+1, 2, cmpArray);
 							} else {
-								reportBuilder.setColumnPosition(rs1Length, 1);
+								reportBuilder.setColumnPosition(rs1Length, 1, cmpArray);
 							}
 							reportBuilder.setOtherColumns(rs2, on2);
 						}
@@ -185,11 +203,12 @@ public class LigretoExecutor {
 					case 1:
 						if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 							reportBuilder.nextRow();							
+							reportBuilder.setCmpArray(lowerArray);
 							reportBuilder.setJoinOnColumns(rs2, on2);
 							if (join.getInterlaced()) {
-								reportBuilder.setColumnPosition(onLength+1, 2);
+								reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
 							} else  {
-								reportBuilder.setColumnPosition(rs1Length, 1);							
+								reportBuilder.setColumnPosition(rs1Length, 1, higherArray);							
 							}
 							reportBuilder.setOtherColumns(rs2, on2);
 						}
@@ -200,11 +219,12 @@ public class LigretoExecutor {
 				if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 					while (hasNext1) {
 						reportBuilder.nextRow();
+						reportBuilder.setCmpArray(higherArray);
 						reportBuilder.setJoinOnColumns(rs1, on1);
 						if (join.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength, 2);
+							reportBuilder.setColumnPosition(onLength, 2, lowerArray);
 						} else  {
-							reportBuilder.setColumnPosition(onLength, 1);							
+							reportBuilder.setColumnPosition(onLength, 1, lowerArray);							
 						}
 						reportBuilder.setOtherColumns(rs1, on1);
 						hasNext1 = rs1.next();
@@ -213,11 +233,12 @@ public class LigretoExecutor {
 				if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 					while (hasNext2) {
 						reportBuilder.nextRow();
+						reportBuilder.setCmpArray(lowerArray);
 						reportBuilder.setJoinOnColumns(rs2, on2);
 						if (join.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength+1, 2);
+							reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
 						} else  {
-							reportBuilder.setColumnPosition(rs1Length, 1);							
+							reportBuilder.setColumnPosition(rs1Length, 1, higherArray);							
 						}
 						reportBuilder.setOtherColumns(rs2, on2);
 						hasNext2 = rs2.next();

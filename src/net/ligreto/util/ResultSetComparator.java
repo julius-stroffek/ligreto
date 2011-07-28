@@ -88,7 +88,7 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	public static int compareOthers(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException, LigretoException {
+	public static int[] compareOthers(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException, LigretoException {
 		Assert.assertTrue(on1.length == on2.length);
 		
 		int colCount1 = rs1.getMetaData().getColumnCount();
@@ -102,18 +102,19 @@ public class ResultSetComparator {
 			if (on2[i] > colCount2)
 				throw new LigretoException("The index in \"on\" attribute (" + on2[i] + ") is larger than the number of columns (" + colCount2 + ").");
 		}
-		
-		int cResult;
-		for (int i1=1, i2=1; i1 <= on1.length && i2 <= on2.length; i1++, i2++) {
+		int cmpCount = colCount1 > colCount2 ? colCount1 : colCount2;
+		int[] result = new int[cmpCount];
+		int i=0;
+		for (int i1=1, i2=1; i1 <= colCount1 && i2 <= colCount2; i1++, i2++, i++) {
 			while (MiscUtils.arrayContains(on1, i1))
 				i1++;
 			while (MiscUtils.arrayContains(on2, i2))
 				i2++;
-			cResult = compare(rs1, i1, rs2, i2);
-			if (cResult != 0)
-				return cResult;
+			result[i] = compare(rs1, i1, rs2, i2);
 		}
-		return 0;
+		for (int j=i; j < cmpCount; j++)
+			result[j] = colCount1 > colCount2 ? 1 : -1;
+		return result;
 	}
 
 	private static int compare(boolean b1, boolean b2) {

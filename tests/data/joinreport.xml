@@ -11,7 +11,7 @@
 		<template file="join_template.xls"/>
 		<output file="join_report.xls"/>
 		<data>
-			<join on="1" target="full!B2" type="full" header="true">
+			<join on="1" target="full!B2" type="full" header="true" highlight="true">
 				<sql data-source="Source1">select * from join_table1 order by 1</sql>
 				<sql data-source="Source1">select * from join_table2 order by 1</sql>
 			</join>		

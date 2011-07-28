@@ -34,7 +34,7 @@
 <!ATTLIST join interlaced (true|false) "false">
 <!ATTLIST join highlight (true|false) "false">
 <!ATTLIST join header (true|false) "false">
-<!ATTLIST join hlColor CDATA #IMPLIED>
+<!ATTLIST join hlColor CDATA "d02020">
 <!ATTLIST join on CDATA #IMPLIED>
 
 

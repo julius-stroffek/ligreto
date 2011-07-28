@@ -20,6 +20,9 @@ public abstract class ReportBuilder {
 	protected int baseCol = 0;
 	protected int actRow = baseRow-1;
 	protected int actCol = baseCol;
+	protected int[] cmpArray = null;
+	protected boolean highlight;
+	protected String hlColor;
 	
 	protected ReportBuilder() {
 	}
@@ -41,18 +44,26 @@ public abstract class ReportBuilder {
 		builder.ligretoNode = ligretoNode;
 		return builder;
 	}
+	
+	protected String getHlColor(int i) {
+		int cmp = cmpArray != null ? cmpArray[i] : 0;
+		if (cmp != 0 && highlight) {
+			return hlColor;
+		}
+		return null;
+	}
 
 	public void setColumn(int i, ResultSet rs, int rsi) throws SQLException {
 		Object o = rs.getObject(rsi);
 		if (rs.wasNull()) {
-			setColumn(columnStep*(i-1), NULL);
+			setColumn(columnStep*i, NULL, getHlColor(i));
 		} else {
-			setColumn(columnStep*(i-1), o);
+			setColumn(columnStep*i, o, getHlColor(i));
 		}
 	}
 
 	public void setColumn(int i, ResultSet rs) throws SQLException {
-		setColumn(i, rs, i);
+		setColumn(i-1, rs, i);
 	}
 
 	public void setTemplate(String template) {
@@ -67,18 +78,28 @@ public abstract class ReportBuilder {
 		actRow++;
 		actCol = baseCol;
 		columnStep = 1;
+		cmpArray = null;
 	}
 	
 	public void setColumnPosition(int column) {
 		actCol = baseCol + column;
 	}
 
-	public void setColumnPosition(int column, int step) {
+	public void setCmpArray(int[] cmpArray) {
+		this.cmpArray = cmpArray;
+	}
+	
+	public void setColumnPosition(int column, int step, int[] cmpArray) {
 		actCol = baseCol + column;
 		columnStep = step;
+		this.cmpArray = cmpArray;
 	}
 
-	public abstract void setColumn(int i, Object o);
+	public void setColumn(int i, Object o) {
+		setColumn(i, o, getHlColor(i));
+	}
+
+	public abstract void setColumn(int i, Object o, String color);
 	public abstract void setTarget(String target) throws InvalidTargetExpection;
 	public abstract void start() throws IOException;
 	public abstract void writeOutput() throws IOException;
@@ -119,13 +140,13 @@ public abstract class ReportBuilder {
 	
 	public void setJoinOnColumns(ResultSet rs, int[] on) throws SQLException {
 		for (int i=0; i < on.length; i++) {
-			setColumn(i+1, rs, on[i]);
+			setColumn(i, rs, on[i]);
 		}
 	}
 
 	public void setOtherColumns(ResultSet rs, int[] on) throws SQLException {
 		int rsLength = rs.getMetaData().getColumnCount();
-		int idx = 1;
+		int idx = 0;
 		for (int i=0; i < rsLength; i++) {
 			boolean onPresent = false;
 			for (int j=0; j < on.length; j++) {
@@ -139,5 +160,23 @@ public abstract class ReportBuilder {
 				idx++;
 			}
 		}
+	}
+
+	/**
+	 * Sets the difference highlighting option
+	 * 
+	 * @param highlight
+	 */
+	public void setHighlight(boolean highlight) {
+		this.highlight = highlight;
+	}
+
+	/**
+	 * Sets the difference highlighting color
+	 * 
+	 * @param hlColor The color to set
+	 */
+	public void setHlColor(String hlColor) {
+		this.hlColor = hlColor;
 	}
 }
