@@ -12,6 +12,18 @@
 		<query name="query1">select * from test where sys_dt = %%sys_dt</query>
 		<query name="query2">select * from test2</query>
 	</queries>
+	<ptp>
+		<preprocess>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</preprocess>
+		<transfer>
+			<target data-source="Source2" table="telt_table" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<postprocess>
+			<sql data-source="Source2">select * from telt_table</sql>
+		</postprocess>
+	</ptp>
 	<report name="Report Config" type="excel">
 		<template file="Blank.xls"/>
 		<output file="Report.xls"/>

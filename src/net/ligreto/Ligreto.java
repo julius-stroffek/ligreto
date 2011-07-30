@@ -32,7 +32,9 @@ public class Ligreto {
 		Options options = new Options();
 
 		Option help = new Option( "help", "print this help message" );
+		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file" );
 		options.addOption(help);
+		options.addOption(concat);
 		
 		CommandLineParser parser = new PosixParser();
 		CommandLine cmd = null;
@@ -50,10 +52,19 @@ public class Ligreto {
 		}
 		
 		try {
-			for (int i=0; i < files.length; i++) {
-				LigretoNode ligreto = Parser.parse(files[i]);
-				LigretoExecutor executor = new LigretoExecutor(ligreto);
+			if (cmd.hasOption("concat")) {
+				LigretoNode ligretoNode = new LigretoNode();
+				for (int i=0; i < files.length; i++) {
+					Parser.parse(files[i], ligretoNode);
+				}
+				LigretoExecutor executor = new LigretoExecutor(ligretoNode);
 				executor.executeReports();
+			} else {
+				for (int i=0; i < files.length; i++) {
+					LigretoNode ligreto = Parser.parse(files[i]);
+					LigretoExecutor executor = new LigretoExecutor(ligreto);
+					executor.executeReports();
+				}
 			}
 		} catch (SAXException e) {
 			e.printStackTrace();

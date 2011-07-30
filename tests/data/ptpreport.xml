@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<ptp>
+		<preprocess>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</preprocess>
+		<transfer>
+			<target data-source="Source2" table="telt_table" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<postprocess>
+			<sql data-source="Source2">select * from telt_table</sql>
+		</postprocess>
+	</ptp>
+	<report name="Simple Report">
+		<template file="blank.xls"/>
+		<output file="sqlreport.xls"/>
+		<data>
+			<sql target="A2" data-source="Source2" header="true">select * from telt_table</sql>
+			<sql target="Sheet2!D5" data-source="Source2" header="true">select * from telt_table</sql>
+		</data>
+	</report>
+</ligreto>

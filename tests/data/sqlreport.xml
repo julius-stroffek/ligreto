@@ -4,13 +4,14 @@
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
-			<uri value="jdbc:derby:test"/>
+			<uri value="jdbc:derby:db1"/>
 		</data-source>
 	</data-sources>
-	<report name="Simple Report">
+	<report>
 		<template file="blank.xls"/>
 		<output file="sqlreport.xls"/>
 		<data>
+			<sql data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="A2" data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="Sheet2!D5" data-source="Source1" header="true">select * from test_table</sql>
 		</data>

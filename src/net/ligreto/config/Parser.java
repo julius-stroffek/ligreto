@@ -26,10 +26,10 @@ public class Parser {
 	protected static final String XINCLUDE_FEATURE_ID = "http://apache.org/xml/features/xinclude";
 	
 	/**
-	 * This function parses the specified file and creates the LigretoNode object holding the whole configuration.
+	 * This function parses the specified file and uses the specified
+	 * <code>LigretoNode<code> object to holding the whole configuration.
 	 */
-	public static LigretoNode parse(String systemId) throws SAXException, IOException {
-		LigretoNode ligretoNode = new LigretoNode();
+	public static LigretoNode parse(String systemId, LigretoNode ligretoNode) throws SAXException, IOException {
 		SAXContentHandler handler = new SAXContentHandler(ligretoNode);
 		
 		XMLReader parser = XMLReaderFactory.createXMLReader(PARSER_NAME);
@@ -45,4 +45,14 @@ public class Parser {
 		
 		return ligretoNode;
 	}
+	
+	/**
+	 * This function parses the specified file and creates the <code>LigretoNode</code>
+	 * object holding the whole configuration.
+	 */
+	public static LigretoNode parse(String systemId) throws SAXException, IOException {
+		LigretoNode ligretoNode = new LigretoNode();
+		return parse(systemId, ligretoNode);
+	}
+	
 }

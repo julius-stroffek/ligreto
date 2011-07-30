@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 
-public class SQLReportTest {
+public class PTPReportTest {
 	@Before
 	public void setUp() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -25,11 +25,11 @@ public class SQLReportTest {
 		cnn.setAutoCommit(true);
 		Statement stm = cnn.createStatement();
 		try {
-			stm.execute("drop table test_table");
+			stm.execute("drop table ptp_table");
 		} catch (SQLException e) {
 			// do nothing
 		}
-		stm.execute("create table test_table (Id int, first_name varchar(32), last_name varchar(32), age int)");
+		stm.execute("create table ptp_table (Id int, first_name varchar(32), last_name varchar(32), age int)");
 		stm.execute("insert into test_table values (1, 'Martin', 'Velky', 52)");
 		stm.execute("insert into test_table values (1, 'Bruce', 'Abone', 13)");
 		cnn.close();
@@ -41,7 +41,7 @@ public class SQLReportTest {
 
 	@Test
 	public void testSqlReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("sqlreport.xml");
+		LigretoNode ligreto = Parser.parse("ptpreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		executor.executeReports();
 	}

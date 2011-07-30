@@ -45,7 +45,6 @@ public class LigretoExecutor {
 		reportBuilder.setOutput(reportNode.getOutput());
 		reportBuilder.start();
 		for (SqlNode sqlQuery : reportNode.sqlQueries()) {
-			reportBuilder.setTarget(sqlQuery.getTarget());
 			Connection cnn = null;
 			Statement stm = null;
 			ResultSet rs = null;
@@ -54,6 +53,12 @@ public class LigretoExecutor {
 				String qry = sqlQuery.getQuery().toString();
 				stm = cnn.createStatement();
 				rs = stm.executeQuery(qry);
+				
+				// Go to the next SQL query if we do not have the target defined
+				if (sqlQuery.getTarget() == null)
+					continue;
+				
+				reportBuilder.setTarget(sqlQuery.getTarget());
 				if (sqlQuery.getHeader()) {
 					reportBuilder.dumpHeader(rs);
 				}
