@@ -8,8 +8,13 @@ import java.util.Stack;
 import net.ligreto.config.nodes.DataSourceNode;
 import net.ligreto.config.nodes.JoinNode;
 import net.ligreto.config.nodes.LigretoNode;
+import net.ligreto.config.nodes.PTPNode;
+import net.ligreto.config.nodes.PostprocessNode;
+import net.ligreto.config.nodes.PreprocessNode;
 import net.ligreto.config.nodes.ReportNode;
 import net.ligreto.config.nodes.SqlNode;
+import net.ligreto.config.nodes.TargetNode;
+import net.ligreto.config.nodes.TransferNode;
 import net.ligreto.exceptions.AssertionException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
@@ -25,7 +30,25 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /** Object types being parsed by the parser. */
-enum ObjectType {NONE, LIGRETO, DATA_SOURCE, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, JOIN_SQL};
+enum ObjectType {
+	NONE,
+	LIGRETO,
+	DATA_SOURCE,
+	QUERY,
+	REPORT,
+	DATA,
+	TEMPLATE,
+	SQL,
+	JOIN,
+	JOIN_SQL,
+	PTP,
+	PTP_PREPROCESS,
+	PTP_PREPROCESS_SQL,
+	PTP_TRANSFER,
+	PTP_TRANSFER_SQL,
+	PTP_POSTPROCESS,
+	PTP_POSTPROCESS_SQL
+};
 
 /**
  * @author Julius Stroffek
@@ -53,6 +76,18 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	
 	/** The join node. */
 	JoinNode join;
+	
+	/** The Pre-Process/Transfer/Post-Process node - PTP */
+	PTPNode ptpNode;
+	
+	/** The Pre-Processing of PTP transfer */
+	PreprocessNode ptpPreprocess;
+	
+	/** The Post-Processing of PTP transfer */
+	PostprocessNode ptpPostprocess;
+	
+	/** The Transfer of PTP transfer */
+	TransferNode ptpTransfer;
 	
 	/** Constructs the report configuration content handler. */
 	public SAXContentHandler(LigretoNode ligretoNode) {
@@ -99,6 +134,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case JOIN_SQL:
 			join.addSql(sql);
 			sql = null;
+			break;
+		case PTP_PREPROCESS_SQL:
+			ptpPreprocess.addSql(sql);
+			break;
+		case PTP_POSTPROCESS_SQL:
+			ptpPostprocess.addSql(sql);
 			break;
 		case JOIN:
 			reportNode.addJoin(join);
@@ -154,6 +195,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} catch (ReportException e) {
 					throw new SAXException(e);
 				}
+			} else if ("ptp".equals(localName)) {
+				ptpNode = new PTPNode(ligretoNode);
+				ligretoNode.addPTP(ptpNode);
+				objectStack.push(ObjectType.PTP);
 			} else {
 				objectStack.push(ObjectType.NONE);
 			}
@@ -239,6 +284,88 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					);
 				}
 				objectStack.push(ObjectType.JOIN_SQL);
+				sql = new SqlNode(ligretoNode);
+				if (atts.getValue("data-source") != null) {
+					sql.setDataSource(atts.getValue("data-source"));
+				}
+				if (atts.getValue("name") != null) {
+					sql.setQueryName(atts.getValue("name"));
+				}
+				if (atts.getValue("on") != null) {
+					sql.setOn(atts.getValue("on"));
+				} 
+				if (atts.getValue("query") != null) {
+					sql.setQueryName(atts.getValue("query"));
+				}
+			}
+			break;
+		case PTP:
+			if ("preprocess".equals(localName)) {
+				ptpPreprocess = new PreprocessNode(ligretoNode);
+				objectStack.push(ObjectType.PTP_PREPROCESS);
+			} else if ("transfer".equals(localName)) {
+				ptpTransfer = new TransferNode(ligretoNode);
+				objectStack.push(ObjectType.PTP_TRANSFER);
+			} else if ("postprocess".equals(localName)) {
+				ptpPostprocess = new PostprocessNode(ligretoNode);
+				objectStack.push(ObjectType.PTP_POSTPROCESS);
+			}
+			break;
+		case PTP_PREPROCESS:
+			if ("sql".equals(localName)) {
+				objectStack.push(ObjectType.PTP_PREPROCESS_SQL);
+				sql = new SqlNode(ligretoNode);
+				if (atts.getValue("data-source") != null) {
+					sql.setDataSource(atts.getValue("data-source"));
+				}
+				if (atts.getValue("name") != null) {
+					sql.setQueryName(atts.getValue("name"));
+				}
+				if (atts.getValue("on") != null) {
+					sql.setOn(atts.getValue("on"));
+				} 
+				if (atts.getValue("query") != null) {
+					sql.setQueryName(atts.getValue("query"));
+				}
+			}
+			break;
+		case PTP_TRANSFER:
+			if ("target".equals(localName)) {
+				objectStack.push(ObjectType.NONE);
+				TargetNode ptpTarget = new TargetNode(ligretoNode);
+				if (atts.getValue("table") != null) {
+					ptpTarget.setTable(atts.getValue("table"));
+				}
+				if (atts.getValue("data-source") != null) {
+					ptpTarget.setDataSource(atts.getValue("data-source"));
+				}
+				if (atts.getValue("create") != null) {
+					ptpTarget.setCreate(atts.getValue("create"));
+				}
+				if (atts.getValue("truncate") != null) {
+					ptpTarget.setTruncate(atts.getValue("truncate"));
+				}
+				ptpTransfer.setTargetNode(ptpTarget);
+			} else if ("sql".equals(localName)) {
+				objectStack.push(ObjectType.PTP_TRANSFER_SQL);
+				sql = new SqlNode(ligretoNode);
+				if (atts.getValue("data-source") != null) {
+					sql.setDataSource(atts.getValue("data-source"));
+				}
+				if (atts.getValue("name") != null) {
+					sql.setQueryName(atts.getValue("name"));
+				}
+				if (atts.getValue("on") != null) {
+					sql.setOn(atts.getValue("on"));
+				} 
+				if (atts.getValue("query") != null) {
+					sql.setQueryName(atts.getValue("query"));
+				}
+			}
+			break;
+		case PTP_POSTPROCESS:
+			if ("sql".equals(localName)) {
+				objectStack.push(ObjectType.PTP_POSTPROCESS_SQL);
 				sql = new SqlNode(ligretoNode);
 				if (atts.getValue("data-source") != null) {
 					sql.setDataSource(atts.getValue("data-source"));

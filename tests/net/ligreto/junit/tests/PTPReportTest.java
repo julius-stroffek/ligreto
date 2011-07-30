@@ -43,7 +43,7 @@ public class PTPReportTest {
 	public void testSqlReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("ptpreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.executeReports();
+		executor.execute();
 	}
 
 }

@@ -4,6 +4,8 @@
 package net.ligreto.config.nodes;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This class encapsulates the main <ligreto> node in the report configuration file.
@@ -15,7 +17,8 @@ public class LigretoNode extends Node {
 	protected HashMap<String, DataSourceNode> dataSourceMap = new HashMap<String, DataSourceNode>();
 	protected HashMap<String, String> queryMap = new HashMap<String, String>();
 	protected HashMap<String, String> paramMap = new HashMap<String, String>();
-	protected HashMap<Integer, ReportNode> reportMap = new HashMap<Integer, ReportNode>();
+	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
+	protected List<PTPNode> ptpNodes = new LinkedList<PTPNode>();
 
 	public LigretoNode() {
 		super(null);
@@ -34,7 +37,11 @@ public class LigretoNode extends Node {
 	}
 	
 	public void addReport(ReportNode reportNode) {
-		reportMap.put(reportMap.size(), reportNode);
+		reportNodes.add(reportNode);
+	}
+	
+	public void addPTP(PTPNode ptpNode) {
+		ptpNodes.add(ptpNode);
 	}
 	
 	public String substituteParams(String string) {
@@ -46,7 +53,11 @@ public class LigretoNode extends Node {
 	}
 	
 	public Iterable<ReportNode> reports() {
-		return reportMap.values();
+		return reportNodes;
+	}
+	
+	public Iterable<PTPNode> ptps() {
+		return ptpNodes;
 	}
 	
 	public DataSourceNode getDataSourceNode(String name) {
@@ -56,4 +67,5 @@ public class LigretoNode extends Node {
 	public String getQuery(String name) {
 		return substituteParams(queryMap.get(name));
 	}
+
 }

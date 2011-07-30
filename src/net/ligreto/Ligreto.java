@@ -63,7 +63,7 @@ public class Ligreto {
 				for (int i=0; i < files.length; i++) {
 					LigretoNode ligreto = Parser.parse(files[i]);
 					LigretoExecutor executor = new LigretoExecutor(ligreto);
-					executor.executeReports();
+					executor.execute();
 				}
 			}
 		} catch (SAXException e) {

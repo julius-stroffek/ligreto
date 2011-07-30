@@ -43,7 +43,7 @@ public class SQLReportTest {
 	public void testSqlReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("sqlreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.executeReports();
+		executor.execute();
 	}
 
 }

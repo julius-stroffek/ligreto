@@ -14,6 +14,7 @@ import java.util.List;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.config.nodes.JoinNode;
 import net.ligreto.config.nodes.LigretoNode;
+import net.ligreto.config.nodes.PTPNode;
 import net.ligreto.config.nodes.ReportNode;
 import net.ligreto.config.nodes.SqlNode;
 import net.ligreto.exceptions.LigretoException;
@@ -32,11 +33,27 @@ public class LigretoExecutor {
 		ligretoNode = aLigretoNode;
 	}
 	
+	public void execute() throws ClassNotFoundException, SQLException, IOException, LigretoException {
+		executePTPs();
+		executeReports();
+	}
+	
+	public void executePTPs() {
+		for (PTPNode ptpNode : ligretoNode.ptps()) {
+			executePTP(ptpNode);
+		}
+	}
+	
 	public void executeReports() throws ClassNotFoundException, SQLException, IOException, LigretoException {
 		Database.getInstance(ligretoNode);
+		
 		for (ReportNode reportNode : ligretoNode.reports()) {
 			executeReport(reportNode);
 		}
+	}
+	
+	public void executePTP(PTPNode ptpNode) {
+		throw new UnimplementedMethodException();
 	}
 	
 	public void executeReport(ReportNode reportNode) throws ClassNotFoundException, SQLException, IOException, LigretoException {

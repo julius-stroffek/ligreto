@@ -77,6 +77,6 @@ public class JoinReportTest {
 	public void testJoinReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("joinreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.executeReports();
+		executor.execute();
 	}
 }
