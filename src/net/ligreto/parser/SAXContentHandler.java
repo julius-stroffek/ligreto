@@ -1,24 +1,24 @@
 /**
  * 
  */
-package net.ligreto.config;
+package net.ligreto.parser;
 
 import java.util.Stack;
 
-import net.ligreto.config.nodes.DataSourceNode;
-import net.ligreto.config.nodes.JoinNode;
-import net.ligreto.config.nodes.LigretoNode;
-import net.ligreto.config.nodes.PTPNode;
-import net.ligreto.config.nodes.PostprocessNode;
-import net.ligreto.config.nodes.PreprocessNode;
-import net.ligreto.config.nodes.ReportNode;
-import net.ligreto.config.nodes.SqlNode;
-import net.ligreto.config.nodes.TargetNode;
-import net.ligreto.config.nodes.TransferNode;
 import net.ligreto.exceptions.AssertionException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
 
+import net.ligreto.parser.nodes.DataSourceNode;
+import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.parser.nodes.PtpNode;
+import net.ligreto.parser.nodes.PostprocessNode;
+import net.ligreto.parser.nodes.PreprocessNode;
+import net.ligreto.parser.nodes.ReportNode;
+import net.ligreto.parser.nodes.SqlNode;
+import net.ligreto.parser.nodes.TargetNode;
+import net.ligreto.parser.nodes.TransferNode;
 import net.ligreto.util.Pair;
 
 import org.xml.sax.Attributes;
@@ -78,7 +78,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	JoinNode join;
 	
 	/** The Pre-Process/Transfer/Post-Process node - PTP */
-	PTPNode ptpNode;
+	PtpNode ptpNode;
 	
 	/** The Pre-Processing of PTP transfer */
 	PreprocessNode ptpPreprocess;
@@ -102,6 +102,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case SQL:
 		case JOIN_SQL:
+		case PTP_TRANSFER_SQL:
+		case PTP_PREPROCESS_SQL:
+		case PTP_POSTPROCESS_SQL:
 			sql.getQueryBuilder().append(chars, start, length);
 			break;
 		}
@@ -196,7 +199,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					throw new SAXException(e);
 				}
 			} else if ("ptp".equals(localName)) {
-				ptpNode = new PTPNode(ligretoNode);
+				ptpNode = new PtpNode(ligretoNode);
+				ptpNode.setName(atts.getValue("name"));
 				ligretoNode.addPTP(ptpNode);
 				objectStack.push(ObjectType.PTP);
 			} else {
@@ -301,14 +305,17 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case PTP:
 			if ("preprocess".equals(localName)) {
-				ptpPreprocess = new PreprocessNode(ligretoNode);
 				objectStack.push(ObjectType.PTP_PREPROCESS);
+				ptpPreprocess = new PreprocessNode(ligretoNode);
+				ptpNode.setPreprocessNode(ptpPreprocess);
 			} else if ("transfer".equals(localName)) {
-				ptpTransfer = new TransferNode(ligretoNode);
 				objectStack.push(ObjectType.PTP_TRANSFER);
+				ptpTransfer = new TransferNode(ligretoNode);
+				ptpNode.setTransferNode(ptpTransfer);
 			} else if ("postprocess".equals(localName)) {
-				ptpPostprocess = new PostprocessNode(ligretoNode);
 				objectStack.push(ObjectType.PTP_POSTPROCESS);
+				ptpPostprocess = new PostprocessNode(ligretoNode);
+				ptpNode.setPostprocessNode(ptpPostprocess);
 			}
 			break;
 		case PTP_PREPROCESS:
@@ -361,6 +368,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if (atts.getValue("query") != null) {
 					sql.setQueryName(atts.getValue("query"));
 				}
+				ptpTransfer.setSqlNode(sql);
 			}
 			break;
 		case PTP_POSTPROCESS:

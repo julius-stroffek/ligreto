@@ -1,12 +1,13 @@
-package net.ligreto.config.nodes;
+package net.ligreto.parser.nodes;
 
-public class PTPNode extends Node {
+public class PtpNode extends Node {
 
+	protected String name;
 	protected PreprocessNode preprocessNode;
 	protected TransferNode transferNode;
 	protected PostprocessNode postprocessNode;
 	
-	public PTPNode(LigretoNode aLigretoNode) {
+	public PtpNode(LigretoNode aLigretoNode) {
 		super(aLigretoNode);
 	}
 
@@ -50,6 +51,20 @@ public class PTPNode extends Node {
 	 */
 	public void setPostprocessNode(PostprocessNode postprocessNode) {
 		this.postprocessNode = postprocessNode;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

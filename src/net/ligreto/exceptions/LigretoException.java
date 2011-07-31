@@ -8,6 +8,7 @@ public class LigretoException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	public LigretoException() {
+		super();
 	}
 
 	public LigretoException(String message) {

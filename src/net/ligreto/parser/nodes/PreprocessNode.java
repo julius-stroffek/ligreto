@@ -1,4 +1,4 @@
-package net.ligreto.config.nodes;
+package net.ligreto.parser.nodes;
 
 import java.util.ArrayList;
 import java.util.List;

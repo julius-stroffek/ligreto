@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.ligreto.config.nodes;
+package net.ligreto.parser.nodes;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,7 +18,7 @@ public class LigretoNode extends Node {
 	protected HashMap<String, String> queryMap = new HashMap<String, String>();
 	protected HashMap<String, String> paramMap = new HashMap<String, String>();
 	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
-	protected List<PTPNode> ptpNodes = new LinkedList<PTPNode>();
+	protected List<PtpNode> ptpNodes = new LinkedList<PtpNode>();
 
 	public LigretoNode() {
 		super(null);
@@ -40,7 +40,7 @@ public class LigretoNode extends Node {
 		reportNodes.add(reportNode);
 	}
 	
-	public void addPTP(PTPNode ptpNode) {
+	public void addPTP(PtpNode ptpNode) {
 		ptpNodes.add(ptpNode);
 	}
 	
@@ -56,7 +56,7 @@ public class LigretoNode extends Node {
 		return reportNodes;
 	}
 	
-	public Iterable<PTPNode> ptps() {
+	public Iterable<PtpNode> ptps() {
 		return ptpNodes;
 	}
 	

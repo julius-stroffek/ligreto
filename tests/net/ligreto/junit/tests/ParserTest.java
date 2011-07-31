@@ -7,7 +7,7 @@ package net.ligreto.junit.tests;
 
 import java.io.IOException;
 
-import net.ligreto.config.Parser;
+import net.ligreto.parser.Parser;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 public class ParserTest {
 
 	/**
-	 * Test method for {@link net.ligreto.config.nodes.Parser#parse(java.lang.String)}.
+	 * Test method for {@link net.ligreto.parser.nodes.Parser#parse(java.lang.String)}.
 	 * @throws IOException 
 	 * @throws SAXException 
 	 */

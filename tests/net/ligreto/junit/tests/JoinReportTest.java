@@ -10,10 +10,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.ligreto.LigretoExecutor;
-import net.ligreto.config.Parser;
-import net.ligreto.config.nodes.LigretoNode;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.executor.LigretoExecutor;
+import net.ligreto.parser.Parser;
+import net.ligreto.parser.nodes.LigretoNode;
 
 import org.junit.After;
 import org.junit.Before;

@@ -13,9 +13,9 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	ParserTest.class,
-	SQLReportTest.class,
+	SqlReportTest.class,
 	JoinReportTest.class,
-	PTPReportTest.class
+	PtpReportTest.class
 })
 public class AllTests {
 	/**

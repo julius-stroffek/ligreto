@@ -1,11 +1,11 @@
 /**
  * 
  */
-package net.ligreto.config;
+package net.ligreto.parser;
 
 import java.io.IOException;
 
-import net.ligreto.config.nodes.LigretoNode;
+import net.ligreto.parser.nodes.LigretoNode;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

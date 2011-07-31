@@ -5,9 +5,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import net.ligreto.config.nodes.*;
-import net.ligreto.exceptions.InvalidTargetExpection;
+import net.ligreto.exceptions.InvalidTargetException;
 import net.ligreto.exceptions.UnimplementedMethodException;
+import net.ligreto.parser.nodes.*;
 
 public abstract class ReportBuilder {
 	public static final String NULL="";
@@ -100,7 +100,7 @@ public abstract class ReportBuilder {
 	}
 
 	public abstract void setColumn(int i, Object o, String color);
-	public abstract void setTarget(String target) throws InvalidTargetExpection;
+	public abstract void setTarget(String target) throws InvalidTargetException;
 	public abstract void start() throws IOException;
 	public abstract void writeOutput() throws IOException;
 

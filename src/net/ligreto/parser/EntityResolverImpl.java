@@ -1,4 +1,4 @@
-package net.ligreto.config;
+package net.ligreto.parser;
 
 import java.io.IOException;
 import java.io.InputStream;

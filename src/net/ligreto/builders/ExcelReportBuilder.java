@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import net.ligreto.exceptions.InvalidTargetExpection;
+import net.ligreto.exceptions.InvalidTargetException;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -22,7 +22,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	Sheet sheet;
 	Row row;
 	
-	public void setTarget(String target) throws InvalidTargetExpection {
+	public void setTarget(String target) throws InvalidTargetException {
 		CellReference ref = new CellReference(target);
 		Sheet sheet;
 		if (ref.getSheetName() != null) {
@@ -39,7 +39,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 			actRow = baseRow-1;
 			actCol = baseCol;
 		} else {
-			throw new InvalidTargetExpection("The target reference is invalid: \"" + target + "\"");
+			throw new InvalidTargetException("The target reference is invalid: \"" + target + "\"");
 		}
 	}
 

@@ -4,11 +4,11 @@
 package net.ligreto;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
-import net.ligreto.config.Parser;
-import net.ligreto.config.nodes.LigretoNode;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.executor.LigretoExecutor;
+import net.ligreto.parser.Parser;
+import net.ligreto.parser.nodes.LigretoNode;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -71,10 +71,6 @@ public class Ligreto {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (LigretoException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}

@@ -6,9 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.ligreto.config.nodes.DataSourceNode;
-import net.ligreto.config.nodes.LigretoNode;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
+import net.ligreto.parser.nodes.DataSourceNode;
+import net.ligreto.parser.nodes.LigretoNode;
 
 public class Database {
 	protected static Database instance;
