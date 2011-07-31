@@ -55,29 +55,31 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 			return;
 		
 		for (SqlNode sqlNode : sqlNodes) {
-			Connection cnn = null;
-			Statement stm = null;
-			ResultSet rs = null;
 			try {
-				cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
-				String qry = sqlNode.getQuery().toString();
-				stm = cnn.createStatement();
-				rs = stm.executeQuery(qry);
-				if (callBack != null) {
-					if (callBack.prepareProcessing(sqlNode, rs)) {
-						while (rs.next()) {
-							callBack.processResultSetRow(rs);
+				Connection cnn = null;
+				Statement stm = null;
+				ResultSet rs = null;
+				try {
+					cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
+					String qry = sqlNode.getQuery().toString();
+					stm = cnn.createStatement();
+					rs = stm.executeQuery(qry);
+					if (callBack != null) {
+						if (callBack.prepareProcessing(sqlNode, rs)) {
+							while (rs.next()) {
+								callBack.processResultSetRow(rs);
+							}
 						}
 					}
-				}
-			} catch (Exception e) {
-				throw new LigretoException("Error processing SQL query: " + sqlNode.getQuery().toString(), e);
-			} finally {
-				try {
+				} finally {
 					Database.close(cnn, stm, rs);
-				} catch (SQLException e) {
-					throw new LigretoException("Database error on data source: " + sqlNode.getDataSource(), e);
 				}
+			} catch (SQLException e) {
+				throw new LigretoException("Database error on data source: " + sqlNode.getQuery().toString(), e);
+			} catch (ClassNotFoundException e) {
+				throw new LigretoException("Database driver not found for data source: " + sqlNode.getDataSource(), e);
+			} catch (Exception e) {
+				throw new LigretoException("Error processing while processing SQL query: " + sqlNode.getQuery(), e);
 			}
 		}
 	}

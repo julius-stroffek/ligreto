@@ -32,7 +32,21 @@ public class PtpReportTest {
 		stm.execute("create table ptp_table (Id int, first_name varchar(32), last_name varchar(32), age int)");
 		stm.execute("insert into ptp_table values (1, 'Martin', 'Velky', 52)");
 		stm.execute("insert into ptp_table values (1, 'Bruce', 'Abone', 13)");
+		stm.close();
 		cnn.close();
+		
+		// Just a temporary workaround for the table to exist
+		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2");
+		cnn2.setAutoCommit(true);
+		Statement stm2 = cnn2.createStatement();
+		try {
+			stm2.execute("drop table telt_table");
+		} catch (SQLException e) {
+			// do nothing
+		}
+		stm2.execute("create table telt_table (Id int, first_name varchar(32), last_name varchar(32), age int)");
+		stm2.close();
+		cnn2.close();
 	}
 
 	@After

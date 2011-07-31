@@ -25,7 +25,7 @@
 	</ptp>
 	<report name="Simple Report">
 		<template file="blank.xls"/>
-		<output file="sqlreport.xls"/>
+		<output file="ptpreport.xls"/>
 		<data>
 			<sql target="A2" data-source="Source2" header="true">select * from telt_table</sql>
 			<sql target="Sheet2!D5" data-source="Source2" header="true">select * from telt_table</sql>
