@@ -89,13 +89,77 @@ public class PtpExecutor extends Executor {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=1; i <= rsmd.getColumnCount(); i++) {
 			switch (rsmd.getColumnType(i)) {
-			case Types.INTEGER:
+			case Types.BIGINT:
+				insertStmt.setLong(i, rs.getLong(i));
+				break;
+			case Types.BOOLEAN:
+				insertStmt.setBoolean(i, rs.getBoolean(i));
+				break;
+			case Types.CHAR: 
+				insertStmt.setString(i, rs.getString(i));
+				break;
+			case Types.DATE:
+				insertStmt.setDate(i, rs.getDate(i));
+				break;
+			case Types.DECIMAL: 
+				insertStmt.setBigDecimal(i, rs.getBigDecimal(i));
+				break;
+			case Types.DOUBLE: 
+				insertStmt.setDouble(i, rs.getDouble(i));
+				break;
+			case Types.FLOAT: 
+				insertStmt.setFloat(i, rs.getFloat(i));
+				break;
+			case Types.INTEGER: 
 				insertStmt.setInt(i, rs.getInt(i));
+				break;
+			case Types.LONGNVARCHAR: 
+				insertStmt.setString(i, rs.getString(i));
+				break;
+			case Types.LONGVARCHAR: 
+				insertStmt.setString(i, rs.getString(i));
+				break;
+			case Types.NCHAR: 
+				insertStmt.setString(i, rs.getString(i));
+				break;
+			case Types.NUMERIC: 
+				insertStmt.setBigDecimal(i, rs.getBigDecimal(i));
+				break;
+			case Types.NVARCHAR: 
+				insertStmt.setString(i, rs.getString(i));
+				break;
+			case Types.REAL:
+				insertStmt.setFloat(i, rs.getFloat(i));
+				break;
+			case Types.SMALLINT: 
+				insertStmt.setShort(i, rs.getShort(i));
+				break;
+			case Types.TIMESTAMP:
+				insertStmt.setTimestamp(i, rs.getTimestamp(i));
+				break;
+			case Types.TINYINT:
+				insertStmt.setShort(i, rs.getShort(i));
 				break;
 			case Types.VARCHAR:
 				insertStmt.setString(i, rs.getString(i));
 				break;
-			// TODO Add support for other data types
+			case Types.ARRAY: 
+			case Types.BINARY: 
+			case Types.BIT: 
+			case Types.BLOB: 
+			case Types.CLOB: 
+			case Types.DATALINK:
+			case Types.DISTINCT: 
+			case Types.JAVA_OBJECT:
+			case Types.LONGVARBINARY: 
+			case Types.NCLOB: 
+			case Types.OTHER:
+			case Types.REF: 
+			case Types.ROWID: 
+			case Types.SQLXML: 
+			case Types.STRUCT: 
+			case Types.TIME: 
+			case Types.VARBINARY: 
 			default:
 				throw new LigretoException("Unsupported data type.");
 			}
@@ -115,15 +179,97 @@ public class PtpExecutor extends Executor {
 			sb.append(rsmd.getColumnName(i));
 			sb.append(" ");
 			switch (rsmd.getColumnType(i)) {
-			case Types.INTEGER:
+			case Types.BIGINT:
+				sb.append("long");
+				break;
+			case Types.BOOLEAN:
+				sb.append("boolean");
+				break;
+			case Types.CHAR: 
+				sb.append("char(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(")");
+				break;
+			case Types.DATE:
+				sb.append("date");
+				break;
+			case Types.DECIMAL: 
+				sb.append("decimal(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(",");
+				sb.append(rsmd.getScale(i));
+				sb.append(")");
+				break;
+			case Types.DOUBLE: 
+				sb.append("double");
+				break;
+			case Types.FLOAT: 
+				sb.append("float");
+				break;
+			case Types.INTEGER: 
 				sb.append("int");
+				break;
+			case Types.LONGNVARCHAR: 
+				sb.append("longnvarchar(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(")");
+				break;
+			case Types.LONGVARCHAR: 
+				sb.append("longvarchar(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(")");
+				break;
+			case Types.NCHAR: 
+				sb.append("nchar(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(")");
+				break;
+			case Types.NUMERIC: 
+				sb.append("numeric(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(",");
+				sb.append(rsmd.getScale(i));
+				sb.append(")");
+				break;
+			case Types.NVARCHAR: 
+				sb.append("nvarchar(");
+				sb.append(rsmd.getPrecision(i));
+				sb.append(")");
+				break;
+			case Types.REAL:
+				sb.append("float");
+				break;
+			case Types.SMALLINT: 
+				sb.append("short");
+				break;
+			case Types.TIMESTAMP:
+				sb.append("timestamp");
+				break;
+			case Types.TINYINT:
+				sb.append("short");
 				break;
 			case Types.VARCHAR:
 				sb.append("varchar(");
 				sb.append(rsmd.getPrecision(1));
 				sb.append(")");
 				break;
-				// TODO Add support for other data types
+			case Types.ARRAY: 
+			case Types.BINARY: 
+			case Types.BIT: 
+			case Types.BLOB: 
+			case Types.CLOB: 
+			case Types.DATALINK:
+			case Types.DISTINCT: 
+			case Types.JAVA_OBJECT:
+			case Types.LONGVARBINARY: 
+			case Types.NCLOB: 
+			case Types.OTHER:
+			case Types.REF: 
+			case Types.ROWID: 
+			case Types.SQLXML: 
+			case Types.STRUCT: 
+			case Types.TIME: 
+			case Types.VARBINARY: 
 			default:
 				throw new LigretoException("Unsupported data type.");
 			}
