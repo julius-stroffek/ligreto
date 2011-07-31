@@ -5,6 +5,7 @@ public class TargetNode extends Node {
 	protected String table;
 	protected String dataSource;
 	protected boolean create = false;
+	protected boolean recreate = false;
 	protected boolean truncate = false;
 	
 	public TargetNode(LigretoNode aLigretoNode) {
@@ -54,6 +55,20 @@ public class TargetNode extends Node {
 	}
 
 	/**
+	 * @return the recreate
+	 */
+	public boolean isRecreate() {
+		return recreate;
+	}
+
+	/**
+	 * @param recreate the recreate to set
+	 */
+	public void setRecreate(boolean recreate) {
+		this.recreate = recreate;
+	}
+	
+	/**
 	 * @return the truncate
 	 */
 	public boolean isTruncate() {
@@ -73,6 +88,14 @@ public class TargetNode extends Node {
 	 */
 	public void setCreate(String create) {
 		this.create = Boolean.parseBoolean(create);	
+	}
+
+	/**
+	 * Parses the string value into <code>truncate</code> field
+	 * @param truncate The string value to parse
+	 */
+	public void setRecreate(String recreate) {
+		this.recreate = Boolean.parseBoolean(recreate);
 	}
 
 	/**

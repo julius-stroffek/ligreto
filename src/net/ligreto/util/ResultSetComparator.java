@@ -112,7 +112,7 @@ public class ResultSetComparator {
 				i2++;
 			result[i] = compare(rs1, i1, rs2, i2);
 		}
-		for (int j=i; j < cmpCount; j++)
+		for (int j=i+1; j < cmpCount; j++)
 			result[j] = colCount1 > colCount2 ? 1 : -1;
 		return result;
 	}

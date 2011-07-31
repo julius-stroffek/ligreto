@@ -30,8 +30,9 @@ public class PtpReportTest {
 			// do nothing
 		}
 		stm.execute("create table ptp_table (Id int, first_name varchar(32), last_name varchar(32), age int)");
-		stm.execute("insert into ptp_table values (1, 'Martin', 'Velky', 52)");
-		stm.execute("insert into ptp_table values (1, 'Bruce', 'Abone', 13)");
+		stm.execute("insert into ptp_table values (1, '2Spring', '3Big', 12)");
+		stm.execute("insert into ptp_table values (2, '4Summer', '5Brother', 23)");
+		stm.execute("insert into ptp_table values (3, '6Autumn', '7Winter', 34)");
 		stm.close();
 		cnn.close();
 		

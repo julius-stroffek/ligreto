@@ -59,6 +59,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 
 	public void setColumn(int i, Object o, String color) {
 		Cell cell = createCell(row, actCol + i);
+		// TODO Add support for other data types
 		cell.setCellValue(o.toString());
 		if (color != null)
 			setCellColor(cell, color);
@@ -68,6 +69,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 		CellStyle style = cell.getCellStyle();
 		CellStyle newStyle = wb.createCellStyle();
 		Font font = wb.getFontAt(style.getFontIndex());
+		// TODO Add the color support for high-lighting
 		HSSFColor color = new HSSFColor.RED();
 		Font newFont = wb.findFont(
 				font.getBoldweight(),

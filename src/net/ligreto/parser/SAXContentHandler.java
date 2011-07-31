@@ -311,7 +311,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			} else if ("transfer".equals(localName)) {
 				objectStack.push(ObjectType.PTP_TRANSFER);
 				ptpTransfer = new TransferNode(ligretoNode);
-				ptpNode.setTransferNode(ptpTransfer);
+				ptpNode.addTransferNode(ptpTransfer);
 			} else if ("postprocess".equals(localName)) {
 				objectStack.push(ObjectType.PTP_POSTPROCESS);
 				ptpPostprocess = new PostprocessNode(ligretoNode);
@@ -348,6 +348,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				}
 				if (atts.getValue("create") != null) {
 					ptpTarget.setCreate(atts.getValue("create"));
+				}
+				if (atts.getValue("recreate") != null) {
+					ptpTarget.setRecreate(atts.getValue("recreate"));
 				}
 				if (atts.getValue("truncate") != null) {
 					ptpTarget.setTruncate(atts.getValue("truncate"));

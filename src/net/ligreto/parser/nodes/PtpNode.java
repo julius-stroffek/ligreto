@@ -1,10 +1,13 @@
 package net.ligreto.parser.nodes;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class PtpNode extends Node {
 
 	protected String name;
 	protected PreprocessNode preprocessNode;
-	protected TransferNode transferNode;
+	protected List<TransferNode> transferNodes = new LinkedList<TransferNode>();
 	protected PostprocessNode postprocessNode;
 	
 	public PtpNode(LigretoNode aLigretoNode) {
@@ -28,15 +31,15 @@ public class PtpNode extends Node {
 	/**
 	 * @return the transferNode
 	 */
-	public TransferNode getTransferNode() {
-		return transferNode;
+	public Iterable<TransferNode> transferNodes() {
+		return transferNodes;
 	}
 
 	/**
 	 * @param transferNode the transferNode to set
 	 */
-	public void setTransferNode(TransferNode transferNode) {
-		this.transferNode = transferNode;
+	public void addTransferNode(TransferNode transferNode) {
+		transferNodes.add(transferNode);
 	}
 
 	/**

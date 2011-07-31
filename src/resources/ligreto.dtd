@@ -41,7 +41,7 @@
 <!ATTLIST join hlColor CDATA "d02020">
 <!ATTLIST join on CDATA #IMPLIED>
 
-<!ELEMENT ptp (preprocess,transfer,postprocess)>
+<!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>
 
 <!ELEMENT preprocess (sql+)>
@@ -54,6 +54,7 @@
 <!ATTLIST target data-source CDATA #IMPLIED>
 <!ATTLIST target table CDATA #IMPLIED>
 <!ATTLIST target create (true|false) "false">
+<!ATTLIST target recreate (true|false) "false">
 <!ATTLIST target truncate (true|false) "false">
 
 <!ELEMENT queries (query*)>

@@ -13,6 +13,7 @@ import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.TargetNode;
+import net.ligreto.parser.nodes.TransferNode;
 
 public class PtpExecutor extends Executor {
 
@@ -20,6 +21,7 @@ public class PtpExecutor extends Executor {
 	Iterable<PtpNode> ptpNodes;
 	
 	protected String insertQry;
+	protected String createQry;
 	protected PreparedStatement insertStmt;
 	protected Connection tgtCnn;
 	
@@ -30,7 +32,7 @@ public class PtpExecutor extends Executor {
 		}
 	}
 
-	private void executePTP(PtpNode ptpNode) throws LigretoException {
+	protected void executePTP(PtpNode ptpNode) throws LigretoException {
 		try {
 			// Do pre-processing
 			SqlExecutor sqlExecutor = new SqlExecutor();
@@ -40,9 +42,11 @@ public class PtpExecutor extends Executor {
 			}
 			
 			// Do the transfer of data
-			SqlNode sqlNode = ptpNode.getTransferNode().getSqlNode();
-			TargetNode targetNode = ptpNode.getTransferNode().getTargetNode();
-			transferData(sqlNode, targetNode);
+			for (TransferNode transferNode : ptpNode.transferNodes()) {
+				SqlNode sqlNode = transferNode.getSqlNode();
+				TargetNode targetNode = transferNode.getTargetNode();
+				transferData(sqlNode, targetNode);
+			}
 			
 			// Do post-processing
 			if (ptpNode.getPostprocessNode() != null) {
@@ -55,7 +59,7 @@ public class PtpExecutor extends Executor {
 		
 	}
 
-	private void transferData(SqlNode sqlNode, TargetNode targetNode) throws LigretoException {
+	protected void transferData(SqlNode sqlNode, TargetNode targetNode) throws LigretoException {
 		try {
 			Connection cnn = null;
 			Statement stm = null;
@@ -81,7 +85,7 @@ public class PtpExecutor extends Executor {
 		}
 	}
 
-	private void transferRow(ResultSet rs) throws SQLException, LigretoException {
+	protected void transferRow(ResultSet rs) throws SQLException, LigretoException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=1; i <= rsmd.getColumnCount(); i++) {
 			switch (rsmd.getColumnType(i)) {
@@ -91,6 +95,7 @@ public class PtpExecutor extends Executor {
 			case Types.VARCHAR:
 				insertStmt.setString(i, rs.getString(i));
 				break;
+			// TODO Add support for other data types
 			default:
 				throw new LigretoException("Unsupported data type.");
 			}
@@ -98,7 +103,38 @@ public class PtpExecutor extends Executor {
 		insertStmt.execute();
 	}
 
-	private void prepareTarget(TargetNode targetNode, ResultSet rs) throws SQLException, ClassNotFoundException, LigretoException {
+	protected void generateCreateTableQuery(TargetNode targetNode, ResultSet rs) throws SQLException, LigretoException {
+		ResultSetMetaData rsmd = rs.getMetaData();
+		StringBuilder sb = new StringBuilder();
+
+		// Build the insert query first
+		sb.append("create table ");
+		sb.append(targetNode.getTable());
+		sb.append(" (");
+		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+			sb.append(rsmd.getColumnName(i));
+			sb.append(" ");
+			switch (rsmd.getColumnType(i)) {
+			case Types.INTEGER:
+				sb.append("int");
+				break;
+			case Types.VARCHAR:
+				sb.append("varchar(");
+				sb.append(rsmd.getPrecision(1));
+				sb.append(")");
+				break;
+				// TODO Add support for other data types
+			default:
+				throw new LigretoException("Unsupported data type.");
+			}
+			sb.append(",");
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		sb.append(")");
+		createQry = sb.toString();
+	}
+
+	protected void prepareTarget(TargetNode targetNode, ResultSet rs) throws SQLException, ClassNotFoundException, LigretoException {
 		try {
 			ResultSetMetaData rsmd = rs.getMetaData();
 			StringBuilder sb = new StringBuilder();
@@ -124,11 +160,29 @@ public class PtpExecutor extends Executor {
 			tgtCnn = Database.getInstance().getConnection(targetNode.getDataSource());
 			tgtCnn.setAutoCommit(true);
 
-			if (targetNode.isCreate()) {
-				System.err.println("Table creation is not yet implemented.");
+			boolean tableExists = true;
+			boolean createTable = targetNode.isCreate();
+			Statement stm = tgtCnn.createStatement();
+			
+			try {
+				stm.execute("select * from " + targetNode.getTable());
+			} catch (SQLException e) {
+				tableExists = false;
+			}
+			if (targetNode.isRecreate()) {
+				try {
+					stm.execute("drop table " + targetNode.getTable());
+				} catch (SQLException e) {
+					// do nothing here as the table might not exist
+				}
+				createTable = true;
+				tableExists = false;
+			}
+			if (createTable && !tableExists) {
+				generateCreateTableQuery(targetNode, rs);
+				stm.execute(createQry);
 			}
 			if (targetNode.isTruncate()) {
-				Statement stm = tgtCnn.createStatement();
 				stm.execute("truncate table " + targetNode.getTable());
 			}
 			insertStmt = tgtCnn.prepareStatement(insertQry);

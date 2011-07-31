@@ -99,6 +99,7 @@ public abstract class ReportBuilder {
 		setColumn(i, o, getHlColor(i));
 	}
 
+	// TODO Add support for other data types
 	public abstract void setColumn(int i, Object o, String color);
 	public abstract void setTarget(String target) throws InvalidTargetException;
 	public abstract void start() throws IOException;
