@@ -32,8 +32,8 @@ public class LigretoNode extends Node {
 		queryMap.put(name, query);
 	}
 
-	public void addParam(String name, String query) {
-		paramMap.put(name, query);
+	public void addParam(String name, String value) {
+		paramMap.put(name, value);
 	}
 	
 	public void addReport(ReportNode reportNode) {

@@ -30,10 +30,12 @@ public class AllTests {
 		cnn.close();
 		cnn = DriverManager.getConnection("jdbc:derby:db2", properties);
 		cnn.close();
+		/*
 		cnn = DriverManager.getConnection("jdbc:derby:db3", properties);
 		cnn.close();
 		cnn = DriverManager.getConnection("jdbc:derby:db4", properties);
 		cnn.close();
+		*/
 	}
 	
 	/**

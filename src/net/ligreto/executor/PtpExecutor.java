@@ -8,6 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.Database;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.PtpNode;
@@ -17,12 +20,22 @@ import net.ligreto.parser.nodes.TransferNode;
 
 public class PtpExecutor extends Executor {
 
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(PtpExecutor.class);
+	
 	/** Iterable object holding the PTP nodes to be processed. */ 
 	Iterable<PtpNode> ptpNodes;
 	
+	/** The generated "insert" query for the transfer process according the select result set. */
 	protected String insertQry;
+	
+	/** The generated "create table" query for the target according the select result set. */
 	protected String createQry;
+	
+	/** The prepared statement for the insertion part of the data transfer process. */
 	protected PreparedStatement insertStmt;
+	
+	/** The connection to the target data source. */
 	protected Connection tgtCnn;
 	
 	@Override
@@ -32,17 +45,25 @@ public class PtpExecutor extends Executor {
 		}
 	}
 
+	/**
+	 * Executes the Pre-process/Transfer/Post-process for the specified PTP node.
+	 * 
+	 * @param ptpNode The node to be processed.
+	 * @throws LigretoException On any failure with the chained exception.
+	 */
 	protected void executePTP(PtpNode ptpNode) throws LigretoException {
 		try {
 			// Do pre-processing
 			SqlExecutor sqlExecutor = new SqlExecutor();
 			if (ptpNode.getPreprocessNode() != null) {
+				log.info("Running transfer pre-processing.");
 				sqlExecutor.setSqlNodes(ptpNode.getPreprocessNode().sqlQueries());
 				sqlExecutor.execute();
 			}
 			
 			// Do the transfer of data
 			for (TransferNode transferNode : ptpNode.transferNodes()) {
+				log.info("Running transfer process.");
 				SqlNode sqlNode = transferNode.getSqlNode();
 				TargetNode targetNode = transferNode.getTargetNode();
 				transferData(sqlNode, targetNode);
@@ -50,10 +71,12 @@ public class PtpExecutor extends Executor {
 			
 			// Do post-processing
 			if (ptpNode.getPostprocessNode() != null) {
+				log.info("Running transfer post-processing.");
 				sqlExecutor.setSqlNodes(ptpNode.getPostprocessNode().sqlQueries());
 				sqlExecutor.execute();
 			}
 		} catch (Exception e) {
+			log.error("Error processing the PTP transfer.", e);
 			throw new LigretoException("Error processing the PTP transfer: " + ptpNode.getName(), e);
 		}
 		
@@ -79,8 +102,10 @@ public class PtpExecutor extends Executor {
 				Database.close(cnn, stm, rs);
 			}
 		} catch (SQLException e) {
+			log.error("Database error on data source: " + sqlNode.getDataSource(), e);
 			throw new LigretoException("Database error on data source: " + sqlNode.getDataSource(), e);
 		} catch (ClassNotFoundException e) {
+			log.error("Database driver not found for data source: " + sqlNode.getDataSource(), e);
 			throw new LigretoException("Database driver not found for data source: " + sqlNode.getDataSource(), e);			
 		}
 	}
@@ -161,6 +186,7 @@ public class PtpExecutor extends Executor {
 			case Types.TIME: 
 			case Types.VARBINARY: 
 			default:
+				log.fatal("Unsupported data type.");
 				throw new LigretoException("Unsupported data type.");
 			}
 		}
@@ -271,6 +297,7 @@ public class PtpExecutor extends Executor {
 			case Types.TIME: 
 			case Types.VARBINARY: 
 			default:
+				log.fatal("Unsupported data type.");
 				throw new LigretoException("Unsupported data type.");
 			}
 			sb.append(",");
@@ -278,6 +305,8 @@ public class PtpExecutor extends Executor {
 		sb.deleteCharAt(sb.length() - 1);
 		sb.append(")");
 		createQry = sb.toString();
+		log.debug("create table query generated from the query result:");
+		log.debug(createQry);
 	}
 
 	protected void prepareTarget(TargetNode targetNode, ResultSet rs) throws SQLException, ClassNotFoundException, LigretoException {
@@ -301,6 +330,9 @@ public class PtpExecutor extends Executor {
 			sb.deleteCharAt(sb.length() - 1);
 			sb.append(")");
 			insertQry = sb.toString();
+			log.debug("insert into query generated from the query result:");
+			log.debug(insertQry);
+			
 
 			// Get the target connection
 			tgtCnn = Database.getInstance().getConnection(targetNode.getDataSource());
@@ -317,6 +349,7 @@ public class PtpExecutor extends Executor {
 			}
 			if (targetNode.isRecreate()) {
 				try {
+					log.info("Dropping the already existing table: " + targetNode.getTable());
 					stm.execute("drop table " + targetNode.getTable());
 				} catch (SQLException e) {
 					// do nothing here as the table might not exist
@@ -326,13 +359,16 @@ public class PtpExecutor extends Executor {
 			}
 			if (createTable && !tableExists) {
 				generateCreateTableQuery(targetNode, rs);
+				log.info("Creating the table according the query result: " + targetNode.getTable());
 				stm.execute(createQry);
 			}
 			if (targetNode.isTruncate()) {
+				log.info("Truncating the table: " + targetNode.getTable());
 				stm.execute("truncate table " + targetNode.getTable());
 			}
 			insertStmt = tgtCnn.prepareStatement(insertQry);
 		} catch (SQLException e) {
+			log.error("Database error on data source: " + targetNode.getDataSource(), e);
 			throw new LigretoException("Database error on data source: " + targetNode.getDataSource(), e);
 		}
 	}

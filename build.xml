@@ -37,8 +37,10 @@
 		<javac srcdir="${tests}" destdir="${build}" includeantruntime="false" debug="yes">
 			<classpath refid="build.classpath"/>
 		</javac>
-		<copy todir="${build}/resources" includeEmptyDirs="true">
-			<fileset dir="${resources}"/>
+		<copy todir="${build}" includeEmptyDirs="true">
+			<fileset dir="${src}">
+				<exclude name="**/*.java"/>
+			</fileset>
 		</copy>
 	</target>
 	<target name="build" depends="clean,compile">
@@ -68,14 +70,14 @@
 			<classpath refid="run.classpath"/>
 		</java>
 	</target>
-	<target name="test.prepare">
+	<target name="test.prepare" depends="package">
 		<delete dir="${testing}"/>
 		<mkdir dir="${testing}"/>
 		<copy todir="${testing}" includeEmptyDirs="true">
 			<fileset dir="${tests.data}"/>
 		</copy>
 	</target>
-	<target name="test" depends="package,test.prepare">
+	<target name="test" depends="test.prepare">
 		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
 			<test name="net.ligreto.junit.tests.AllTests"/>
 			<classpath refid="test.classpath"/>

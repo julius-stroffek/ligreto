@@ -33,8 +33,15 @@ public class Ligreto {
 
 		Option help = new Option( "help", "print this help message" );
 		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file" );
+		Option param = new Option(
+			"D",
+			true,
+			"specifies the report parameter value in a form PARAM=VALUE."
+			 + " This overrides the values specified in input files."
+		);
 		options.addOption(help);
 		options.addOption(concat);
+		options.addOption(param);
 		
 		CommandLineParser parser = new PosixParser();
 		CommandLine cmd = null;
@@ -47,22 +54,38 @@ public class Ligreto {
 		
 		if (cmd.hasOption("help") || files.length == 0) {
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp( "ligreto [OPTIONS] file1.xml [file2.xml...]", options);
+			formatter.printHelp(
+				"ligreto.sh [OPTIONS] file1.xml [file2.xml...]",
+				"---",
+				options,
+				"\nExample:\n ligreto.sh -concat -D sysdate=2011-12-31 config.xml report1.xml\n---",
+				false
+			);
+			//formatter.printHelp(cmdLineSyntax, header, options, footer, autoUsage)
 			System.exit(1);
 		}
 		
+		String[] params = cmd.getOptionValues("D");
 		try {
 			if (cmd.hasOption("concat")) {
 				LigretoNode ligretoNode = new LigretoNode();
 				for (int i=0; i < files.length; i++) {
 					Parser.parse(files[i], ligretoNode);
 				}
+				for (int j=0; j < params.length; j++) {
+					String p[] = params[j].split("=");
+					ligretoNode.addParam(p[0], p[1]);
+				}
 				LigretoExecutor executor = new LigretoExecutor(ligretoNode);
 				executor.executeReports();
 			} else {
 				for (int i=0; i < files.length; i++) {
-					LigretoNode ligreto = Parser.parse(files[i]);
-					LigretoExecutor executor = new LigretoExecutor(ligreto);
+					LigretoNode ligretoNode = Parser.parse(files[i]);
+					LigretoExecutor executor = new LigretoExecutor(ligretoNode);
+					for (int j=0; j < params.length; j++) {
+						String p[] = params[j].split("=");
+						ligretoNode.addParam(p[0], p[1]);
+					}
 					executor.execute();
 				}
 			}

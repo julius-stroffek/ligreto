@@ -16,5 +16,7 @@
 	<classpathentry kind="lib" path="lib/derbynet.jar"/>
 	<classpathentry kind="lib" path="lib/derbyrun.jar"/>
 	<classpathentry kind="lib" path="lib/derbytools.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.13.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
