@@ -329,6 +329,21 @@ public class PtpExecutor extends Executor {
 		log.debug(createQry);
 	}
 
+	/**
+	 * This function will prepare the target and could do the following:
+	 * <ul>
+	 * <li>drop the table if it should be re-created</li>
+	 * <li>create the table according the result set</li>
+	 * <li>truncate the already existing table</li>
+	 * <li>generate the insert statement for the transfer</li>
+	 * </ul>
+	 * 
+	 * @param targetNode The description of the target from the parser.
+	 * @param rs The result set of the source query.
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 * @throws LigretoException
+	 */
 	protected void prepareTarget(TargetNode targetNode, ResultSet rs) throws SQLException, ClassNotFoundException, LigretoException {
 		try {
 			ResultSetMetaData rsmd = rs.getMetaData();
