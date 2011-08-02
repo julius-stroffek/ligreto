@@ -101,7 +101,7 @@ public abstract class ReportBuilder {
 
 	// TODO Add support for other data types
 	public abstract void setColumn(int i, Object o, String color);
-	public abstract void setTarget(String target) throws InvalidTargetException;
+	public abstract void setTarget(String target, boolean append) throws InvalidTargetException;
 	public abstract void start() throws IOException;
 	public abstract void writeOutput() throws IOException;
 

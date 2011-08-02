@@ -7,6 +7,7 @@ public class TargetNode extends Node {
 	protected boolean create = false;
 	protected boolean recreate = false;
 	protected boolean truncate = false;
+	protected int commitInterval = 1;
 	
 	public TargetNode(LigretoNode aLigretoNode) {
 		super(aLigretoNode);
@@ -104,6 +105,27 @@ public class TargetNode extends Node {
 	 */
 	public void setTruncate(String truncate) {
 		this.truncate = Boolean.parseBoolean(truncate);	
+	}
+
+	/**
+	 * @return the commitInterval
+	 */
+	public int getCommitInterval() {
+		return commitInterval;
+	}
+
+	/**
+	 * @param commitInterval the commit interval to set
+	 */
+	public void setCommitInterval(int commitInterval) {
+		this.commitInterval = commitInterval;
+	}
+
+	/**
+	 * @param commitInterval the commit interval to parse and set
+	 */
+	public void setCommitInterval(String commitInterval) {
+		this.commitInterval = Integer.parseInt(commitInterval);
 	}
 
 }

@@ -249,6 +249,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if (atts.getValue("header") != null) {
 					sql.setHeader(atts.getValue("header"));
 				} 
+				if (atts.getValue("append") != null) {
+					sql.setAppend(atts.getValue("append"));
+				} 
 			} else if ("join".equals(localName)) {
 				objectStack.push(ObjectType.JOIN);
 				join = new JoinNode(ligretoNode);
@@ -275,6 +278,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				}
 				if (atts.getValue("header") != null) {
 					join.setHeader(atts.getValue("header"));
+				} 
+				if (atts.getValue("append") != null) {
+					join.setAppend(atts.getValue("append"));
 				} 
 			}
 			break;
@@ -354,6 +360,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				}
 				if (atts.getValue("truncate") != null) {
 					ptpTarget.setTruncate(atts.getValue("truncate"));
+				}
+				if (atts.getValue("commitInterval") != null) {
+					ptpTarget.setCommitInterval(atts.getValue("commitInterval"));
 				}
 				ptpTransfer.setTargetNode(ptpTarget);
 			} else if ("sql".equals(localName)) {

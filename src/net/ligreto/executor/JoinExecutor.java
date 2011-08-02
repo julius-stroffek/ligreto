@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.Database;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.LigretoException;
@@ -17,6 +20,9 @@ import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetComparator;
 
 public class JoinExecutor extends Executor implements JoinResultCallBack {
+
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(JoinExecutor.class);
 
 	/** Iterable object holding the join nodes to be processed. */
 	Iterable<JoinNode> joinNodes;
@@ -63,8 +69,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		}
 	}
 
-	private void executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
-		reportBuilder.setTarget(joinNode.getTarget());
+	protected void executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
+		reportBuilder.setTarget(joinNode.getTarget(), joinNode.isAppend());
 		JoinNode.JoinType joinType = joinNode.getJoinType();
 		List<SqlNode> sqlQueries = joinNode.getSqlQueries();
 		
@@ -85,7 +91,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			String qry2 = sqlQueries.get(1).getQuery().toString();			
 			stm1 = cnn1.createStatement();
 			stm2 = cnn2.createStatement();
+			
+			log.info("Executing the SQL query on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
+			log.info(qry1);
 			rs1 = stm1.executeQuery(qry1);
+			
+			log.info("Executing the SQL query on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
+			log.info(qry2);
 			rs2 = stm2.executeQuery(qry2);
 			
 			ResultSetMetaData rsmd1 = rs1.getMetaData();

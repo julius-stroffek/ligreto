@@ -25,7 +25,7 @@
 	</ptp>
 	<ptp>
 		<transfer>
-			<target data-source="Source2" table="double_table" truncate="false" create="true"/>
+			<target data-source="Source2" table="double_table" commitInterval="2" truncate="false" create="true"/>
 			<sql data-source="Source1">select * from ptp_table</sql>
 		</transfer>
 		<transfer>

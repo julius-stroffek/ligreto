@@ -6,6 +6,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.Database;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.LigretoException;
@@ -16,6 +19,9 @@ import net.ligreto.parser.nodes.SqlNode;
  *
  */
 public class SqlExecutor extends Executor implements SqlResultCallBack {
+
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(SqlExecutor.class);
 
 	/** Iterable object holding the SQL nodes to be processed. */ 
 	protected Iterable<SqlNode> sqlNodes;
@@ -32,7 +38,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		if (sqlNode.getTarget() == null)
 			return false;
 		
-		reportBuilder.setTarget(sqlNode.getTarget());
+		reportBuilder.setTarget(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
 			reportBuilder.dumpHeader(rs);
 		}
@@ -63,6 +69,8 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 					cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
 					String qry = sqlNode.getQuery().toString();
 					stm = cnn.createStatement();
+					log.info("Executing the SQL query on \"" + sqlNode.getDataSource() + "\" data source:");
+					log.info(qry);
 					rs = stm.executeQuery(qry);
 					if (callBack != null) {
 						if (callBack.prepareProcessing(sqlNode, rs)) {
@@ -75,11 +83,17 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 					Database.close(cnn, stm, rs);
 				}
 			} catch (SQLException e) {
-				throw new LigretoException("Database error on data source: " + sqlNode.getQuery().toString(), e);
+				String msg = "Database error on data source: " + sqlNode.getQuery().toString();
+				log.error(msg);
+				throw new LigretoException(msg, e);
 			} catch (ClassNotFoundException e) {
-				throw new LigretoException("Database driver not found for data source: " + sqlNode.getDataSource(), e);
+				String msg = "Database driver not found for data source: " + sqlNode.getDataSource();
+				log.error(msg);
+				throw new LigretoException(msg, e);
 			} catch (Exception e) {
-				throw new LigretoException("Error processing while processing SQL query: " + sqlNode.getQuery(), e);
+				String msg = "Error processing while processing SQL query: " + sqlNode.getQuery();
+				log.error(msg);
+				throw new LigretoException(msg, e);
 			}
 		}
 	}

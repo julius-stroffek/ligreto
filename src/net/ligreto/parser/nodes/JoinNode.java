@@ -19,6 +19,7 @@ public class JoinNode extends Node {
 	protected boolean interlaced = false;
 	protected boolean highlight = false;
 	protected boolean header = false;
+	protected boolean append = false;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected int[] on;
 	
@@ -177,6 +178,26 @@ public class JoinNode extends Node {
 	 */
 	public void setHeader(String header) {
 		this.header = Boolean.parseBoolean(header);
+	}
+
+	/**
+	 * @return the append
+	 */
+	public boolean isAppend() {
+		return append;
+	}
+	/**
+	 * @param append the append to set
+	 */
+	public void setAppend(boolean append) {
+		this.append = append;
+	}
+
+	/**
+	 * @param header the header to set
+	 */
+	public void setAppend(String append) {
+		this.append = Boolean.parseBoolean(append);
 	}
 
 	/**

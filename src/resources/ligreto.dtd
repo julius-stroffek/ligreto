@@ -30,6 +30,7 @@
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
 <!ATTLIST sql header (true|false) "false">
+<!ATTLIST sql append (true|false) "false">
 
 <!ELEMENT join (sql,sql+)>
 <!ATTLIST join target CDATA #IMPLIED>
@@ -38,6 +39,7 @@
 <!ATTLIST join interlaced (true|false) "false">
 <!ATTLIST join highlight (true|false) "false">
 <!ATTLIST join header (true|false) "false">
+<!ATTLIST join append (true|false) "false">
 <!ATTLIST join hlColor CDATA "d02020">
 <!ATTLIST join on CDATA #IMPLIED>
 
@@ -56,6 +58,7 @@
 <!ATTLIST target create (true|false) "false">
 <!ATTLIST target recreate (true|false) "false">
 <!ATTLIST target truncate (true|false) "false">
+<!ATTLIST target commitInterval CDATA #IMPLIED>
 
 <!ELEMENT queries (query*)>
 <!ELEMENT query (#PCDATA)>

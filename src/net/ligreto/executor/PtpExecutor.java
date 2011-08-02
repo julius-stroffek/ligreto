@@ -91,22 +91,42 @@ public class PtpExecutor extends Executor {
 				cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
 				String qry = sqlNode.getQuery().toString();
 				stm = cnn.createStatement();
+				
+				log.info("Executing the SQL query on \"" + sqlNode.getDataSource() + "\" data source:");
+				log.info(qry);
 				rs = stm.executeQuery(qry);
 				
 				prepareTarget(targetNode, rs);
 				
-				while (rs.next()) {
-					transferRow(rs);
+				if (targetNode.getCommitInterval() > 1) {
+					log.info("Using commit interval: " + targetNode.getCommitInterval());
+					tgtCnn.setAutoCommit(false);
+					int insCnt = 0;
+					while (rs.next()) {
+						transferRow(rs);
+						if (++insCnt == targetNode.getCommitInterval()) {
+							tgtCnn.commit();
+							insCnt = 0;
+						}
+					}
+					tgtCnn.commit();
+				} else {
+					tgtCnn.setAutoCommit(true);
+					while (rs.next()) {
+						transferRow(rs);
+					}
 				}
 			} finally {
 				Database.close(cnn, stm, rs);
 			}
 		} catch (SQLException e) {
-			log.error("Database error on data source: " + sqlNode.getDataSource(), e);
-			throw new LigretoException("Database error on data source: " + sqlNode.getDataSource(), e);
+			String msg = "Database error on data source: " + sqlNode.getDataSource();
+			log.error(msg, e);
+			throw new LigretoException(msg, e);
 		} catch (ClassNotFoundException e) {
-			log.error("Database driver not found for data source: " + sqlNode.getDataSource(), e);
-			throw new LigretoException("Database driver not found for data source: " + sqlNode.getDataSource(), e);			
+			String msg = "Database driver not found for data source: " + sqlNode.getDataSource();
+			log.error(msg, e);
+			throw new LigretoException(msg, e);			
 		}
 	}
 

@@ -13,6 +13,7 @@ public class SqlNode extends Node {
 	protected String dataSource;
 	protected String target;
 	protected boolean header;
+	protected boolean append;
 	protected int[] on;
 	
 	/** Constructs SQL node. */
@@ -102,6 +103,27 @@ public class SqlNode extends Node {
 	 */
 	public void setHeader(String header) {
 		this.header = Boolean.parseBoolean(header);
+	}
+
+	/**
+	 * @return the append
+	 */
+	public boolean isAppend() {
+		return append;
+	}
+
+	/**
+	 * @param append the append to set
+	 */
+	public void setAppend(boolean append) {
+		this.append = append;
+	}
+
+	/**
+	 * @param append the append to set
+	 */
+	public void setAppend(String append) {
+		this.append = Boolean.parseBoolean(append);
 	}
 
 	/**

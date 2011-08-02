@@ -4,6 +4,7 @@
 	<property name="resources" location="${basedir}/src/resources"/>
 	<property name="tests" location="${basedir}/tests"/>
 	<property name="tests.data" location="${basedir}/tests/data"/>
+	<property name="tests.results" location="${basedir}/tests/results"/>
 	<property name="build" location="${basedir}/build/classes"/>
 	<property name="dist" location="${basedir}/dist" />
 	<property name="testing" location="${basedir}/testing" />
@@ -75,6 +76,7 @@
 		<mkdir dir="${testing}"/>
 		<copy todir="${testing}" includeEmptyDirs="true">
 			<fileset dir="${tests.data}"/>
+			<fileset dir="${tests.results}"/>
 		</copy>
 	</target>
 	<target name="test" depends="test.prepare">
