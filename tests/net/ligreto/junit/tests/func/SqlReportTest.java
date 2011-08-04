@@ -11,15 +11,15 @@ import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
 
 public class SqlReportTest {
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		Connection cnn = DriverManager.getConnection("jdbc:derby:db1");
 		cnn.setAutoCommit(true);
@@ -35,8 +35,8 @@ public class SqlReportTest {
 		cnn.close();
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterClass
+	public static void tearDown() throws Exception {
 	}
 
 	@Test

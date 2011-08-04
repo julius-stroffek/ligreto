@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 public class PtpReportTest {
 	@BeforeClass
-	public void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		Connection cnn = DriverManager.getConnection("jdbc:derby:db1");
 		cnn.setAutoCommit(true);
@@ -38,7 +38,7 @@ public class PtpReportTest {
 	}
 
 	@AfterClass
-	public void tearDownAfterClass() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 	}
 
 	@Test

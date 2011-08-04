@@ -15,8 +15,8 @@ import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -29,8 +29,8 @@ public class JoinReportTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		Connection cnn1 = DriverManager.getConnection("jdbc:derby:db1");
 		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2");
@@ -69,8 +69,8 @@ public class JoinReportTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@After
-	public void tearDown() throws Exception {
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
 	}
 
 	@Test
