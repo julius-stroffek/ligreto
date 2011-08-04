@@ -28,6 +28,8 @@ public class PtpPerformance {
 	/** The number of rows to be tested. */
 	public static final long rowCount = 100000;
 	
+	/** The number of rows to be tested. */
+	public static final long commitInterval = 10000;
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -44,7 +46,7 @@ public class PtpPerformance {
 		}
 		stm.execute("create table ptp_perf_table (Id int, stamp timestamp, first_name varchar(32), last_name varchar(32), age int)");
 		PreparedStatement pstm = cnn.prepareStatement("insert into ptp_perf_table values (?, ?, ?, ?, ?)");
-		cnn.setAutoCommit(true);
+		cnn.setAutoCommit(false);
 		long startStamp = System.currentTimeMillis();
 		for (long l=0; l < rowCount; l++) {
 			pstm.setLong(1, l);
@@ -53,7 +55,10 @@ public class PtpPerformance {
 			pstm.setString(4, "LastName" + l);
 			pstm.setInt(5, (int) (l % 120));
 			pstm.execute();
+			if (l % commitInterval == 0)
+				cnn.commit();
 		}
+		cnn.commit();
 		long endStamp = System.currentTimeMillis();
 		TestUtils.storePerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
 		pstm.close();

@@ -36,6 +36,6 @@ public class TestUtils {
 	
 	/** Stores the performance testing results into the target DB for further reference. */
 	public static void storePerfResults(String operation, long amount, long millis) {
-		log.info("Operation: " + operation + " on " + amount + " records took " + millis/100 + " seconds.");
+		log.info("Operation: " + operation + " on " + amount + " records took " + millis/1000 + " seconds.");
 	}
 }

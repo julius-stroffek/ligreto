@@ -296,7 +296,7 @@ public class PtpExecutor extends Executor {
 				break;
 			case Types.VARCHAR:
 				sb.append("varchar(");
-				sb.append(rsmd.getPrecision(1));
+				sb.append(rsmd.getPrecision(i));
 				sb.append(")");
 				break;
 			case Types.ARRAY: 
