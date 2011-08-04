@@ -1,4 +1,6 @@
-package net.ligreto.junit.tests;
+package net.ligreto.junit.tests.unit;
+
+import net.ligreto.junit.tests.TestUtils;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -8,16 +10,13 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	net.ligreto.junit.tests.unit.AllTests.class,
-	net.ligreto.junit.tests.func.AllTests.class,
-	net.ligreto.junit.tests.perf.AllTests.class
 })
 public class AllTests {
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@BeforeClass
-	public static void setUp() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
 		TestUtils.createDBs();
 	}
 	
@@ -25,6 +24,6 @@ public class AllTests {
 	 * @throws java.lang.Exception
 	 */
 	@AfterClass
-	public static void tearDown() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 	}	
 }

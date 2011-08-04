@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.ligreto.junit.tests;
+package net.ligreto.junit.tests.func;
 
 //import static org.junit.Assert.*;
 

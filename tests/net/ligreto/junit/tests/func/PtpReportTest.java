@@ -1,4 +1,4 @@
-package net.ligreto.junit.tests;
+package net.ligreto.junit.tests.func;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -11,15 +11,15 @@ import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
 
 public class PtpReportTest {
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public void setUpBeforeClass() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		Connection cnn = DriverManager.getConnection("jdbc:derby:db1");
 		cnn.setAutoCommit(true);
@@ -35,23 +35,10 @@ public class PtpReportTest {
 		stm.execute("insert into ptp_table values (3, '6Autumn', '7Winter', 34)");
 		stm.close();
 		cnn.close();
-		
-		// Just a temporary workaround for the table to exist
-		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2");
-		cnn2.setAutoCommit(true);
-		Statement stm2 = cnn2.createStatement();
-		try {
-			stm2.execute("drop table telt_table");
-		} catch (SQLException e) {
-			// do nothing
-		}
-		stm2.execute("create table telt_table (Id int, first_name varchar(32), last_name varchar(32), age int)");
-		stm2.close();
-		cnn2.close();
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterClass
+	public void tearDownAfterClass() throws Exception {
 	}
 
 	@Test

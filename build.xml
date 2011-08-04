@@ -79,11 +79,26 @@
 			<fileset dir="${tests.results}"/>
 		</copy>
 	</target>
-	<target name="test" depends="test.prepare">
+	<target name="test.unit" depends="test.prepare">
 		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
-			<test name="net.ligreto.junit.tests.AllTests"/>
+			<test name="net.ligreto.junit.tests.unit.AllTests"/>
 			<classpath refid="test.classpath"/>
 			<formatter type="plain" usefile="false"/>
 		</junit>
 	</target>
+	<target name="test.func" depends="test.prepare">
+		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+			<test name="net.ligreto.junit.tests.func.AllTests"/>
+			<classpath refid="test.classpath"/>
+			<formatter type="plain" usefile="false"/>
+		</junit>
+	</target>
+	<target name="test.perf" depends="test.prepare">
+		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+			<test name="net.ligreto.junit.tests.perf.AllTests"/>
+			<classpath refid="test.classpath"/>
+			<formatter type="plain" usefile="false"/>
+		</junit>
+	</target>
+	<target name="test" depends="test.unit,test.func,test.perf"/>
 </project>
