@@ -61,8 +61,7 @@ public class DataSourceNode extends Node {
 	}
 	
 	/**
-	 * @param name The parameter name
-	 * @return The value of the specified parameter
+	 * @return The {@link Properties} object of all the parameters
 	 */
 	public Properties getParameters() {
 		return parameters;

@@ -29,7 +29,7 @@ public class SqlNode extends Node {
 	}
 	
 	/**
-	 * @param name the name to set
+	 * @param queryName the query name to set
 	 */
 	public void setQueryName(String queryName) {
 		this.queryName = queryName;

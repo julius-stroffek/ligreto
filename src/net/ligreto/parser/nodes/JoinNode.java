@@ -194,7 +194,8 @@ public class JoinNode extends Node {
 	}
 
 	/**
-	 * @param header the header to set
+	 * @param append the append to set which indicates whether the newly added
+	 *        data should be appended to the target location.
 	 */
 	public void setAppend(String append) {
 		this.append = Boolean.parseBoolean(append);

@@ -1,4 +1,4 @@
-<project default="run" basedir=".">
+<project default="package" basedir=".">
 	<property name="lib" location="${basedir}/lib"/>
 	<property name="src" location="${basedir}/src"/>
 	<property name="resources" location="${basedir}/src/resources"/>
@@ -7,6 +7,7 @@
 	<property name="tests.results" location="${basedir}/tests/results"/>
 	<property name="build" location="${basedir}/build/classes"/>
 	<property name="dist" location="${basedir}/dist" />
+	<property name="javadoc" location="${basedir}/javadoc" />
 	<property name="testing" location="${basedir}/testing" />
 	<path id="build.classpath">
 		<fileset dir="${lib}">
@@ -66,10 +67,11 @@
 			</fileset> 
 		</jar>
 	</target>
-	<target name="run">
-		<java classname="net.ligreto.Ligreto" fork="true" failonerror="true">
-			<classpath refid="run.classpath"/>
-		</java>
+	<target name="javadoc">
+		<mkdir dir="${javadoc}"/>
+		<javadoc sourcepath="${src}" destdir="${javadoc}" access="private">
+			<classpath refid="build.classpath"/>
+		</javadoc>
 	</target>
 	<target name="test.prepare" depends="package">
 		<delete dir="${testing}"/>

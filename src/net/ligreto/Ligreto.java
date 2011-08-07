@@ -72,19 +72,23 @@ public class Ligreto {
 				for (int i=0; i < files.length; i++) {
 					Parser.parse(files[i], ligretoNode);
 				}
-				for (int j=0; j < params.length; j++) {
-					String p[] = params[j].split("=");
-					ligretoNode.addParam(p[0], p[1]);
+				if (params != null) {
+					for (int j=0; j < params.length; j++) {
+						String p[] = params[j].split("=");
+						ligretoNode.addParam(p[0], p[1]);
+					}
 				}
 				LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-				executor.executeReports();
+				executor.execute();
 			} else {
 				for (int i=0; i < files.length; i++) {
 					LigretoNode ligretoNode = Parser.parse(files[i]);
 					LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-					for (int j=0; j < params.length; j++) {
-						String p[] = params[j].split("=");
-						ligretoNode.addParam(p[0], p[1]);
+					if (params != null) {
+						for (int j=0; j < params.length; j++) {
+							String p[] = params[j].split("=");
+							ligretoNode.addParam(p[0], p[1]);
+						}
 					}
 					executor.execute();
 				}

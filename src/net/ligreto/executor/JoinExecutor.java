@@ -87,24 +87,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			cnn1 = Database.getInstance().getConnection(sqlQueries.get(0).getDataSource());
 			cnn2 = Database.getInstance().getConnection(sqlQueries.get(1).getDataSource());
 		
-			String qry1 = sqlQueries.get(0).getQuery().toString();
-			String qry2 = sqlQueries.get(1).getQuery().toString();			
+			StringBuilder qry1 = new StringBuilder(sqlQueries.get(0).getQuery().toString());
+			StringBuilder qry2 = new StringBuilder(sqlQueries.get(1).getQuery().toString());			
 			stm1 = cnn1.createStatement();
 			stm2 = cnn2.createStatement();
 			
-			log.info("Executing the SQL query on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
-			log.info(qry1);
-			rs1 = stm1.executeQuery(qry1);
-			
-			log.info("Executing the SQL query on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
-			log.info(qry2);
-			rs2 = stm2.executeQuery(qry2);
-			
-			ResultSetMetaData rsmd1 = rs1.getMetaData();
-			ResultSetMetaData rsmd2 = rs2.getMetaData();
 			int on1[] = sqlQueries.get(0).getOn();
 			int on2[] = sqlQueries.get(1).getOn();
-			
 			if (on1 == null)
 				on1 = joinNode.getOn();
 			if (on2 == null)
@@ -116,6 +105,30 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			// Do certain sanity checks here
 			if (on1.length != on2.length)
 				throw new LigretoException("All queries in the join have to have the same number of \"on\" columns.");
+			
+			// Things are all right, so we will continue...
+			int onLength = on1.length;
+			qry1.append(" order by ");
+			qry2.append(" order by ");
+			for (int i=0; i < on1.length; i++) {
+				qry1.append(on1[i]);
+				qry1.append(",");
+				qry2.append(on2[i]);
+				qry2.append(",");
+			}
+			qry1.deleteCharAt(qry1.length() - 1);
+			qry2.deleteCharAt(qry2.length() - 1);
+			
+			log.info("Executing the SQL query on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
+			log.info(qry1);
+			rs1 = stm1.executeQuery(qry1.toString());
+			
+			log.info("Executing the SQL query on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
+			log.info(qry2);
+			rs2 = stm2.executeQuery(qry2.toString());
+			
+			ResultSetMetaData rsmd1 = rs1.getMetaData();
+			ResultSetMetaData rsmd2 = rs2.getMetaData();
 			
 			for (int i=0; i < on1.length; i++) {
 				if (on1[i] > rsmd1.getColumnCount())
@@ -129,8 +142,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 							+ on2[i] + "\" and should be \"" + rsmd2.getColumnCount() + "\" the largest.");
 			}
 
-			// Things are all right, so we will continue...
-			int onLength = on1.length;
 			int rs1Length = rs1.getMetaData().getColumnCount();
 			int rs2Length = rs1.getMetaData().getColumnCount();
 			
@@ -171,7 +182,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 						reportBuilder.nextRow();
-						reportBuilder.setCmpArray(higherArray);
+						reportBuilder.setHighlightArray(higherArray);
 						reportBuilder.setJoinOnColumns(rs1, on1);
 						if (joinNode.getInterlaced()) {
 							reportBuilder.setColumnPosition(onLength, 2, lowerArray);
@@ -211,7 +222,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 1:
 					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 						reportBuilder.nextRow();							
-						reportBuilder.setCmpArray(lowerArray);
+						reportBuilder.setHighlightArray(lowerArray);
 						reportBuilder.setJoinOnColumns(rs2, on2);
 						if (joinNode.getInterlaced()) {
 							reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
@@ -227,7 +238,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 				while (hasNext1) {
 					reportBuilder.nextRow();
-					reportBuilder.setCmpArray(higherArray);
+					reportBuilder.setHighlightArray(higherArray);
 					reportBuilder.setJoinOnColumns(rs1, on1);
 					if (joinNode.getInterlaced()) {
 						reportBuilder.setColumnPosition(onLength, 2, lowerArray);
@@ -241,7 +252,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 				while (hasNext2) {
 					reportBuilder.nextRow();
-					reportBuilder.setCmpArray(lowerArray);
+					reportBuilder.setHighlightArray(lowerArray);
 					reportBuilder.setJoinOnColumns(rs2, on2);
 					if (joinNode.getInterlaced()) {
 						reportBuilder.setColumnPosition(onLength+1, 2, higherArray);

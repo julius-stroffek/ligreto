@@ -93,7 +93,7 @@ public class TargetNode extends Node {
 
 	/**
 	 * Parses the string value into <code>truncate</code> field
-	 * @param truncate The string value to parse
+	 * @param recreate The string value to parse
 	 */
 	public void setRecreate(String recreate) {
 		this.recreate = Boolean.parseBoolean(recreate);
