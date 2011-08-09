@@ -6,6 +6,9 @@ package net.ligreto.parser.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.ligreto.exceptions.InvalidFormatException;
+import net.ligreto.util.MiscUtils;
+
 /**
  * @author Julius Stroffek
  *
@@ -14,7 +17,7 @@ public class JoinNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER};
 	protected JoinType joinType = JoinType.FULL;
 	protected String target;
-	protected String hlColor;
+	protected short[] rgbHlColor;
 	protected boolean diffs = false;
 	protected boolean interlaced = false;
 	protected boolean highlight = false;
@@ -78,15 +81,23 @@ public class JoinNode extends Node {
 	/**
 	 * @return the hlColor
 	 */
-	public String getHlColor() {
-		return hlColor;
+	public short[] getHlColor() {
+		return rgbHlColor;
 	}
 
 	/**
 	 * @param hlColor the hlColor to set
 	 */
-	public void setHlColor(String hlColor) {
-		this.hlColor = hlColor;
+	public void setHlColor(short[] rgbHlColor) {
+		this.rgbHlColor = rgbHlColor;
+	}
+
+	/**
+	 * @param hlColor the hlColor to set
+	 * @throws InvalidFormatException 
+	 */
+	public void setHlColor(String rgbHlColor) throws InvalidFormatException {
+		this.rgbHlColor = MiscUtils.parseRGB(rgbHlColor);
 	}
 
 	/**

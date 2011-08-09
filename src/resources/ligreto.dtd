@@ -40,7 +40,8 @@
 <!ATTLIST join highlight (true|false) "false">
 <!ATTLIST join header (true|false) "false">
 <!ATTLIST join append (true|false) "false">
-<!ATTLIST join hlColor CDATA "d02020">
+<!-- Color string is in a form of #RRGGBB -->
+<!ATTLIST join hlColor CDATA "#d02020">
 <!ATTLIST join on CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>

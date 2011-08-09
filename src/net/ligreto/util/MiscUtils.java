@@ -1,5 +1,7 @@
 package net.ligreto.util;
 
+import net.ligreto.exceptions.InvalidFormatException;
+
 public class MiscUtils {
 	/**
 	 * This function searches the specified array for the given element.
@@ -27,5 +29,28 @@ public class MiscUtils {
 				return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * 
+	 * @param rgb color in a form #RRGGBB where RR, GG and BB are hex numbers for red, green and blue.
+	 * @return parsed array of red, green and blue values
+	 * @throws InvalidFormatException 
+	 */
+	public static short[] parseRGB(String rgb) throws InvalidFormatException {
+		short[] result = new short[3];
+		
+		if (!rgb.startsWith("#"))
+			throw new InvalidFormatException("Invalid color string (should be '#RRGGBB'): " + rgb);
+		
+		String rr = rgb.substring(1, 3);
+		String gg = rgb.substring(3, 5);
+		String bb = rgb.substring(5, 7);
+		
+		result[0] = Short.parseShort(rr, 16);
+		result[1] = Short.parseShort(gg, 16);
+		result[2] = Short.parseShort(bb, 16);
+		
+		return result;
 	}
 }

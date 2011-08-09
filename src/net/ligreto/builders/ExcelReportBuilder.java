@@ -1,5 +1,6 @@
 package net.ligreto.builders;
 
+import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,8 +8,10 @@ import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Date;
+import java.util.Hashtable;
 
 import net.ligreto.exceptions.InvalidTargetException;
+import net.ligreto.exceptions.UnimplementedMethodException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +24,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * This is the implementation of the <code>ReportBuilder</code> to produce
@@ -30,21 +38,30 @@ import org.apache.poi.ss.util.CellReference;
  *
  */
 public class ExcelReportBuilder extends ReportBuilder {
+
+	/** The output file type enumeration. */
+	protected enum OutputFormat {HSSF, XSSF};
 	
+	/** The output file format. */
+	protected OutputFormat outputFormat = OutputFormat.XSSF;
+
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(ExcelReportBuilder.class);
-
+	
 	/** The output stream where the output file will be written to. */
-	FileOutputStream out;
+	protected FileOutputStream out;
 	
 	/** The <code>Workbook</code> object for the output report. */
-	Workbook wb;
+	protected Workbook wb;
 	
 	/** The <code>Sheet</code> object where the result is placed. */
-	Sheet sheet;
+	protected Sheet sheet;
 	
 	/** The actual row where the processed result row is stored. */
-	Row row;
+	protected Row row;
+	
+	/** This is the hash table with all the colors from HSSF color palette. */
+	protected Hashtable<String,HSSFColor> hssfColors = null;
 	
 	@Override
 	public void setTarget(String target, boolean append) throws InvalidTargetException {
@@ -112,7 +129,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	@Override
-	public void setColumn(int i, Object o, String color) {
+	public void setColumn(int i, Object o, short[] rgb) {
 		Cell cell = createCell(row, actCol + i);
 		if (o instanceof Integer)
 			cell.setCellValue(((Integer)o).intValue());
@@ -132,8 +149,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 			cell.setCellValue(((Time)o));
 		else
 			cell.setCellValue(o.toString());
-		if (color != null)
-			setCellColor(cell, color);
+		if (rgb != null)
+			setCellColor(cell, rgb);
 	}
 	
 	/**
@@ -147,28 +164,62 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * cells.
 	 * 
 	 * @param cell The cell where to set the font color.
-	 * @param newColor The new color to set.
+	 * @param rgb The new color to set.
 	 */
-	protected void setCellColor(Cell cell, String newColor) {
+	protected void setCellColor(Cell cell, short[] rgb) {
+		switch (outputFormat) {
+		case HSSF:
+			setHSSFCellColor(cell, rgb);
+			break;
+		case XSSF:
+			setXSSFCellColor((XSSFCell)cell, rgb);
+			break;
+		default:
+			throw new UnimplementedMethodException("Unknown output format for color processing.");
+		}
+	}
+
+	protected void setHSSFCellColor(Cell cell, short[] rgb) {
 		CellStyle style = cell.getCellStyle();
 		CellStyle newStyle = wb.createCellStyle();
 		Font font = wb.getFontAt(style.getFontIndex());
-		// TODO Add the color support for high-lighting
-		HSSFColor color = new HSSFColor.RED();
+
+		HSSFColor closest = new HSSFColor.BLACK();
+		double minDiff = Double.MAX_VALUE;
+		
+		short[] hssfRgb = null;
+		float[] hsb = null, hssfHsb = null;
+		hsb = Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], null);
+		
+		for (HSSFColor color : hssfColors.values()) {
+			hssfRgb = color.getTriplet();
+			hssfHsb = Color.RGBtoHSB(hssfRgb[0], hssfRgb[1], hssfRgb[2], hssfHsb);
+			double diff =
+					3d * Math.abs(hssfHsb[0] - hsb[0]) +
+					Math.abs(hssfHsb[1] - hsb[1]) +
+					Math.abs(hssfHsb[2] - hsb[2]);
+			if (diff < minDiff) {
+				minDiff = diff;
+				closest = color;
+			}
+			if (minDiff == 0)
+				break;
+		}
+		
 		Font newFont = wb.findFont(
 				font.getBoldweight(),
-				color.getIndex(),
+				closest.getIndex(),
 				font.getFontHeight(),
 				font.getFontName(),
 				font.getItalic(),
 				font.getStrikeout(),
 				font.getTypeOffset(),
 				font.getUnderline()
-			);
+		);
 		if (newFont == null) {
 			newFont = wb.createFont();
 			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(color.getIndex());
+			newFont.setColor(closest.getIndex());
 			newFont.setFontHeight(font.getFontHeight());
 			newFont.setFontName(font.getFontName());
 			newFont.setItalic(font.getItalic());
@@ -179,7 +230,46 @@ public class ExcelReportBuilder extends ReportBuilder {
 		newStyle.setFont(newFont);
 		cell.setCellStyle(newStyle);
 	}
-
+	
+	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
+		XSSFWorkbook twb = (XSSFWorkbook) wb;
+		XSSFCellStyle style = cell.getCellStyle();
+		XSSFCellStyle newStyle = twb.createCellStyle();
+		XSSFFont font = style.getFont();
+		XSSFFont newFont = twb.createFont();
+		
+		// Clone the style and font
+		newStyle.cloneStyleFrom(style);
+		newFont.setBoldweight(font.getBoldweight());
+		newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
+		newFont.setFontHeight(font.getFontHeight());
+		newFont.setFontName(font.getFontName());
+		newFont.setItalic(font.getItalic());
+		newFont.setStrikeout(font.getStrikeout());
+		newFont.setTypeOffset(font.getTypeOffset());
+		newFont.setUnderline(font.getUnderline());
+		
+		// Look if the font already exists
+		font = twb.findFont(
+			newFont.getBoldweight(),
+			newFont.getColor(),
+			newFont.getFontHeight(),
+			newFont.getFontName(),
+			newFont.getItalic(),
+			newFont.getStrikeout(),
+			newFont.getTypeOffset(),
+			newFont.getUnderline()
+		);
+		
+		// If we have found the font and the color matches, use the already existing font.
+		if (font == null || !font.getXSSFColor().equals(newFont.getXSSFColor())) {
+			newStyle.setFont(font);
+		} else {
+			newStyle.setFont(newFont);
+		}
+		cell.setCellStyle(newStyle);
+	}
+	
 	@Override
 	public void writeOutput() throws IOException {
 		log.info("Writing the result into the file: " + output);
@@ -190,7 +280,18 @@ public class ExcelReportBuilder extends ReportBuilder {
 	public void start() throws IOException {
 		out = new FileOutputStream(output);
 		log.info("Reading a template file: " + template);
-		wb = new HSSFWorkbook(new FileInputStream(template));
+		if (System.getProperty("excel97") != null) {
+			outputFormat = OutputFormat.HSSF;
+		}
+		switch (outputFormat) {
+		case HSSF:
+			wb = new HSSFWorkbook(new FileInputStream(template));
+			hssfColors = HSSFColor.getTripletHash();
+			break;
+		case XSSF:
+			wb = new XSSFWorkbook(new FileInputStream(template));
+			break;
+		}
 		sheet = wb.getSheetAt(wb.getActiveSheetIndex());
 	}
 }

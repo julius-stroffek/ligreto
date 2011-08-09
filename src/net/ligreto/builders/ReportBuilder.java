@@ -106,7 +106,7 @@ public abstract class ReportBuilder {
 	protected boolean highlight;
 	
 	/** Specifies the highlight text color for highlighted cells. */
-	protected String hlColor;
+	protected short[] rgbHlColor;
 	
 	/** Nobody except child classes could create the instance. */
 	protected ReportBuilder() {
@@ -147,10 +147,10 @@ public abstract class ReportBuilder {
 	 * @param i The column number.
 	 * @return The corresponding highlight color or null.
 	 */
-	protected String getHlColor(int i) {
+	protected short[] getHlColor(int i) {
 		int cmp = highlightArray != null ? highlightArray[i] : 0;
 		if (cmp != 0 && highlight) {
-			return hlColor;
+			return rgbHlColor;
 		}
 		return null;
 	}
@@ -270,7 +270,7 @@ public abstract class ReportBuilder {
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
 	 */
-	public abstract void setColumn(int i, Object o, String color);
+	public abstract void setColumn(int i, Object o, short[] rgb);
 	
 	/**
 	 * This method will setup the 
@@ -354,7 +354,7 @@ public abstract class ReportBuilder {
 	 * 
 	 * @param hlColor The color to set
 	 */
-	public void setHlColor(String hlColor) {
-		this.hlColor = hlColor;
+	public void setHlColor(short[] rgbHlColor) {
+		this.rgbHlColor = rgbHlColor;
 	}
 }

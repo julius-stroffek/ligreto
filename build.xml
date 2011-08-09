@@ -1,4 +1,4 @@
-<project default="package" basedir=".">
+<project default="dist" basedir=".">
 	<property name="lib" location="${basedir}/lib"/>
 	<property name="src" location="${basedir}/src"/>
 	<property name="resources" location="${basedir}/src/resources"/>
@@ -47,7 +47,7 @@
 	</target>
 	<target name="build" depends="clean,compile">
 	</target>
-	<target name="package" depends="compile">
+	<target name="dist" depends="compile">
 		<mkdir dir="${dist}"/>
 		<jar destfile="${dist}/ligreto.jar">
 			<fileset dir="${build}">
@@ -73,7 +73,7 @@
 			<classpath refid="build.classpath"/>
 		</javadoc>
 	</target>
-	<target name="test.prepare" depends="package">
+	<target name="test.prepare" depends="dist">
 		<delete dir="${testing}"/>
 		<mkdir dir="${testing}"/>
 		<copy todir="${testing}" includeEmptyDirs="true">

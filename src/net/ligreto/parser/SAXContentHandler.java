@@ -6,6 +6,7 @@ package net.ligreto.parser;
 import java.util.Stack;
 
 import net.ligreto.exceptions.AssertionException;
+import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
 
@@ -185,238 +186,249 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
-		int entryStackDepth = objectStack.size();
-		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
-		case LIGRETO:
-			if ("param".equals(localName)) {
+		try {
+			int entryStackDepth = objectStack.size();
+			switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
+			case LIGRETO:
+				if ("param".equals(localName)) {
+					objectStack.push(ObjectType.NONE);
+					ligretoNode.addParam(atts.getValue("name"),
+							atts.getValue("value"));
+				} else if ("report".equals(localName)) {
+					objectStack.push(ObjectType.REPORT);
+					try {
+						reportNode = new ReportNode(ligretoNode,
+								atts.getValue("name"), atts.getValue("type"));
+					} catch (ReportException e) {
+						throw new SAXException(e);
+					}
+				} else if ("ptp".equals(localName)) {
+					ptpNode = new PtpNode(ligretoNode);
+					ptpNode.setName(atts.getValue("name"));
+					ligretoNode.addPTP(ptpNode);
+					objectStack.push(ObjectType.PTP);
+				} else {
+					objectStack.push(ObjectType.NONE);
+				}
+				break;
+			case DATA_SOURCE:
+				if ("driver".equals(localName)) {
+					dataSource.setDriverClass(atts.getValue("value"));
+				} else if ("uri".equals(localName)) {
+					dataSource.setUri(atts.getValue("value"));
+				} else if ("param".equals(localName)) {
+					dataSource.setParameter(atts.getValue("name"),
+							atts.getValue("value"));
+				}
 				objectStack.push(ObjectType.NONE);
-				ligretoNode.addParam(atts.getValue("name"), atts.getValue("value"));
-			} else if ("report".equals(localName)) {
-				objectStack.push(ObjectType.REPORT);
-				try {
-					reportNode = new ReportNode(ligretoNode, atts.getValue("name"), atts.getValue("type"));
-				} catch (ReportException e) {
-					throw new SAXException(e);
+				break;
+			case REPORT:
+				if ("template".equals(localName)) {
+					objectStack.push(ObjectType.NONE);
+					reportNode.setTemplate(atts.getValue("file"));
+				} else if ("output".equals(localName)) {
+					objectStack.push(ObjectType.NONE);
+					reportNode.setOutput(atts.getValue("file"));
+				} else if ("data".equals(localName)) {
+					objectStack.push(ObjectType.DATA);
+				} else {
+					objectStack.push(ObjectType.NONE);
 				}
-			} else if ("ptp".equals(localName)) {
-				ptpNode = new PtpNode(ligretoNode);
-				ptpNode.setName(atts.getValue("name"));
-				ligretoNode.addPTP(ptpNode);
-				objectStack.push(ObjectType.PTP);
-			} else {
-				objectStack.push(ObjectType.NONE);
+				break;
+			case DATA:
+				if ("sql".equals(localName)) {
+					objectStack.push(ObjectType.SQL);
+					sql = new SqlNode(ligretoNode);
+					if (atts.getValue("data-source") != null) {
+						sql.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("name") != null) {
+						sql.setQueryName(atts.getValue("name"));
+					}
+					if (atts.getValue("target") != null) {
+						sql.setTarget(atts.getValue("target"));
+					}
+					if (atts.getValue("query") != null) {
+						sql.setQueryName(atts.getValue("query"));
+					}
+					if (atts.getValue("header") != null) {
+						sql.setHeader(atts.getValue("header"));
+					}
+					if (atts.getValue("append") != null) {
+						sql.setAppend(atts.getValue("append"));
+					}
+				} else if ("join".equals(localName)) {
+					objectStack.push(ObjectType.JOIN);
+					join = new JoinNode(ligretoNode);
+					if (atts.getValue("target") != null) {
+						join.setTarget(atts.getValue("target"));
+					}
+					if (atts.getValue("type") != null) {
+						join.setJoinType(atts.getValue("type"));
+					}
+					if (atts.getValue("diffs") != null) {
+						join.setDiffs(atts.getValue("diffs"));
+					}
+					if (atts.getValue("interlaced") != null) {
+						join.setInterlaced(atts.getValue("interlaced"));
+					}
+					if (atts.getValue("highlight") != null) {
+						join.setHighlight(atts.getValue("highlight"));
+					}
+					if (atts.getValue("hlColor") != null) {
+						join.setHlColor(atts.getValue("hlColor"));
+					}
+					if (atts.getValue("on") != null) {
+						join.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("header") != null) {
+						join.setHeader(atts.getValue("header"));
+					}
+					if (atts.getValue("append") != null) {
+						join.setAppend(atts.getValue("append"));
+					}
+				}
+				break;
+			case JOIN:
+				if ("sql".equals(localName)) {
+					if (join.getSqlQueries().size() > 1
+							&& (join.getJoinType() == JoinNode.JoinType.LEFT || join
+									.getJoinType() == JoinNode.JoinType.RIGHT)) {
+						throw new SAXException(
+								new LigretoException(
+										"Left or right join could have only two sql queries specified."));
+					}
+					objectStack.push(ObjectType.JOIN_SQL);
+					sql = new SqlNode(ligretoNode);
+					if (atts.getValue("data-source") != null) {
+						sql.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("name") != null) {
+						sql.setQueryName(atts.getValue("name"));
+					}
+					if (atts.getValue("on") != null) {
+						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("query") != null) {
+						sql.setQueryName(atts.getValue("query"));
+					}
+				}
+				break;
+			case PTP:
+				if ("preprocess".equals(localName)) {
+					objectStack.push(ObjectType.PTP_PREPROCESS);
+					ptpPreprocess = new PreprocessNode(ligretoNode);
+					ptpNode.setPreprocessNode(ptpPreprocess);
+				} else if ("transfer".equals(localName)) {
+					objectStack.push(ObjectType.PTP_TRANSFER);
+					ptpTransfer = new TransferNode(ligretoNode);
+					ptpNode.addTransferNode(ptpTransfer);
+				} else if ("postprocess".equals(localName)) {
+					objectStack.push(ObjectType.PTP_POSTPROCESS);
+					ptpPostprocess = new PostprocessNode(ligretoNode);
+					ptpNode.setPostprocessNode(ptpPostprocess);
+				}
+				break;
+			case PTP_PREPROCESS:
+				if ("sql".equals(localName)) {
+					objectStack.push(ObjectType.PTP_PREPROCESS_SQL);
+					sql = new SqlNode(ligretoNode);
+					if (atts.getValue("data-source") != null) {
+						sql.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("name") != null) {
+						sql.setQueryName(atts.getValue("name"));
+					}
+					if (atts.getValue("on") != null) {
+						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("query") != null) {
+						sql.setQueryName(atts.getValue("query"));
+					}
+				}
+				break;
+			case PTP_TRANSFER:
+				if ("target".equals(localName)) {
+					objectStack.push(ObjectType.NONE);
+					TargetNode ptpTarget = new TargetNode(ligretoNode);
+					if (atts.getValue("table") != null) {
+						ptpTarget.setTable(atts.getValue("table"));
+					}
+					if (atts.getValue("data-source") != null) {
+						ptpTarget.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("create") != null) {
+						ptpTarget.setCreate(atts.getValue("create"));
+					}
+					if (atts.getValue("recreate") != null) {
+						ptpTarget.setRecreate(atts.getValue("recreate"));
+					}
+					if (atts.getValue("truncate") != null) {
+						ptpTarget.setTruncate(atts.getValue("truncate"));
+					}
+					if (atts.getValue("commitInterval") != null) {
+						ptpTarget.setCommitInterval(atts
+								.getValue("commitInterval"));
+					}
+					ptpTransfer.setTargetNode(ptpTarget);
+				} else if ("sql".equals(localName)) {
+					objectStack.push(ObjectType.PTP_TRANSFER_SQL);
+					sql = new SqlNode(ligretoNode);
+					if (atts.getValue("data-source") != null) {
+						sql.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("name") != null) {
+						sql.setQueryName(atts.getValue("name"));
+					}
+					if (atts.getValue("on") != null) {
+						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("query") != null) {
+						sql.setQueryName(atts.getValue("query"));
+					}
+					ptpTransfer.setSqlNode(sql);
+				}
+				break;
+			case PTP_POSTPROCESS:
+				if ("sql".equals(localName)) {
+					objectStack.push(ObjectType.PTP_POSTPROCESS_SQL);
+					sql = new SqlNode(ligretoNode);
+					if (atts.getValue("data-source") != null) {
+						sql.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("name") != null) {
+						sql.setQueryName(atts.getValue("name"));
+					}
+					if (atts.getValue("on") != null) {
+						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("query") != null) {
+						sql.setQueryName(atts.getValue("query"));
+					}
+				}
+				break;
+			default:
+				if ("query".equals(localName)) {
+					query = new Pair<String, StringBuilder>(
+							atts.getValue("name"), new StringBuilder());
+					objectStack.push(ObjectType.QUERY);
+				} else if ("data-source".equals(localName)) {
+					objectStack.push(ObjectType.DATA_SOURCE);
+					dataSource = new DataSourceNode(ligretoNode,
+							atts.getValue("name"));
+				} else if ("ligreto".equals(localName)) {
+					objectStack.push(ObjectType.LIGRETO);
+				} else {
+					objectStack.push(ObjectType.NONE);
+				}
+				break;
 			}
-			break;
-		case DATA_SOURCE:
-			if ("driver".equals(localName)) {
-				dataSource.setDriverClass(atts.getValue("value"));
-			} else if ("uri".equals(localName)) {
-				dataSource.setUri(atts.getValue("value"));
-			} else if ("param".equals(localName)) {
-				dataSource.setParameter(atts.getValue("name"), atts.getValue("value"));
+			if (objectStack.size() != entryStackDepth + 1) {
+				throw new AssertionException(
+						"Fatal error in parser: The parsed node was not added into the object stack.");
 			}
-			objectStack.push(ObjectType.NONE);
-			break;
-		case REPORT:
-			if ("template".equals(localName)) {
-				objectStack.push(ObjectType.NONE);
-				reportNode.setTemplate(atts.getValue("file"));
-			} else if ("output".equals(localName)) {
-				objectStack.push(ObjectType.NONE);
-				reportNode.setOutput(atts.getValue("file"));
-			} else	if ("data".equals(localName)) {
-				objectStack.push(ObjectType.DATA);
-			} else {
-				objectStack.push(ObjectType.NONE);
-			}
-			break;
-		case DATA:
-			if ("sql".equals(localName)) {
-				objectStack.push(ObjectType.SQL);
-				sql = new SqlNode(ligretoNode);
-				if (atts.getValue("data-source") != null) {
-					sql.setDataSource(atts.getValue("data-source"));
-				}
-				if (atts.getValue("name") != null) {
-					sql.setQueryName(atts.getValue("name"));
-				}
-				if (atts.getValue("target") != null) {
-					sql.setTarget(atts.getValue("target"));
-				}
-				if (atts.getValue("query") != null) {
-					sql.setQueryName(atts.getValue("query"));
-				}
-				if (atts.getValue("header") != null) {
-					sql.setHeader(atts.getValue("header"));
-				} 
-				if (atts.getValue("append") != null) {
-					sql.setAppend(atts.getValue("append"));
-				} 
-			} else if ("join".equals(localName)) {
-				objectStack.push(ObjectType.JOIN);
-				join = new JoinNode(ligretoNode);
-				if (atts.getValue("target") != null) {
-					join.setTarget(atts.getValue("target"));
-				}
-				if (atts.getValue("type") != null) {
-					join.setJoinType(atts.getValue("type"));
-				}
-				if (atts.getValue("diffs") != null) {
-					join.setDiffs(atts.getValue("diffs"));
-				}
-				if (atts.getValue("interlaced") != null) {
-					join.setInterlaced(atts.getValue("interlaced"));
-				}
-				if (atts.getValue("highlight") != null) {
-					join.setHighlight(atts.getValue("highlight"));
-				}
-				if (atts.getValue("hlColor") != null) {
-					join.setHlColor(atts.getValue("hlColor"));
-				}
-				if (atts.getValue("on") != null) {
-					join.setOn(atts.getValue("on"));
-				}
-				if (atts.getValue("header") != null) {
-					join.setHeader(atts.getValue("header"));
-				} 
-				if (atts.getValue("append") != null) {
-					join.setAppend(atts.getValue("append"));
-				} 
-			}
-			break;
-		case JOIN:
-			if ("sql".equals(localName)) {
-				if (join.getSqlQueries().size() > 1 
-					&& (join.getJoinType() == JoinNode.JoinType.LEFT
-						|| join.getJoinType() == JoinNode.JoinType.RIGHT) ) {
-					throw new SAXException(
-						new LigretoException("Left or right join could have only two sql queries specified.")
-					);
-				}
-				objectStack.push(ObjectType.JOIN_SQL);
-				sql = new SqlNode(ligretoNode);
-				if (atts.getValue("data-source") != null) {
-					sql.setDataSource(atts.getValue("data-source"));
-				}
-				if (atts.getValue("name") != null) {
-					sql.setQueryName(atts.getValue("name"));
-				}
-				if (atts.getValue("on") != null) {
-					sql.setOn(atts.getValue("on"));
-				} 
-				if (atts.getValue("query") != null) {
-					sql.setQueryName(atts.getValue("query"));
-				}
-			}
-			break;
-		case PTP:
-			if ("preprocess".equals(localName)) {
-				objectStack.push(ObjectType.PTP_PREPROCESS);
-				ptpPreprocess = new PreprocessNode(ligretoNode);
-				ptpNode.setPreprocessNode(ptpPreprocess);
-			} else if ("transfer".equals(localName)) {
-				objectStack.push(ObjectType.PTP_TRANSFER);
-				ptpTransfer = new TransferNode(ligretoNode);
-				ptpNode.addTransferNode(ptpTransfer);
-			} else if ("postprocess".equals(localName)) {
-				objectStack.push(ObjectType.PTP_POSTPROCESS);
-				ptpPostprocess = new PostprocessNode(ligretoNode);
-				ptpNode.setPostprocessNode(ptpPostprocess);
-			}
-			break;
-		case PTP_PREPROCESS:
-			if ("sql".equals(localName)) {
-				objectStack.push(ObjectType.PTP_PREPROCESS_SQL);
-				sql = new SqlNode(ligretoNode);
-				if (atts.getValue("data-source") != null) {
-					sql.setDataSource(atts.getValue("data-source"));
-				}
-				if (atts.getValue("name") != null) {
-					sql.setQueryName(atts.getValue("name"));
-				}
-				if (atts.getValue("on") != null) {
-					sql.setOn(atts.getValue("on"));
-				} 
-				if (atts.getValue("query") != null) {
-					sql.setQueryName(atts.getValue("query"));
-				}
-			}
-			break;
-		case PTP_TRANSFER:
-			if ("target".equals(localName)) {
-				objectStack.push(ObjectType.NONE);
-				TargetNode ptpTarget = new TargetNode(ligretoNode);
-				if (atts.getValue("table") != null) {
-					ptpTarget.setTable(atts.getValue("table"));
-				}
-				if (atts.getValue("data-source") != null) {
-					ptpTarget.setDataSource(atts.getValue("data-source"));
-				}
-				if (atts.getValue("create") != null) {
-					ptpTarget.setCreate(atts.getValue("create"));
-				}
-				if (atts.getValue("recreate") != null) {
-					ptpTarget.setRecreate(atts.getValue("recreate"));
-				}
-				if (atts.getValue("truncate") != null) {
-					ptpTarget.setTruncate(atts.getValue("truncate"));
-				}
-				if (atts.getValue("commitInterval") != null) {
-					ptpTarget.setCommitInterval(atts.getValue("commitInterval"));
-				}
-				ptpTransfer.setTargetNode(ptpTarget);
-			} else if ("sql".equals(localName)) {
-				objectStack.push(ObjectType.PTP_TRANSFER_SQL);
-				sql = new SqlNode(ligretoNode);
-				if (atts.getValue("data-source") != null) {
-					sql.setDataSource(atts.getValue("data-source"));
-				}
-				if (atts.getValue("name") != null) {
-					sql.setQueryName(atts.getValue("name"));
-				}
-				if (atts.getValue("on") != null) {
-					sql.setOn(atts.getValue("on"));
-				} 
-				if (atts.getValue("query") != null) {
-					sql.setQueryName(atts.getValue("query"));
-				}
-				ptpTransfer.setSqlNode(sql);
-			}
-			break;
-		case PTP_POSTPROCESS:
-			if ("sql".equals(localName)) {
-				objectStack.push(ObjectType.PTP_POSTPROCESS_SQL);
-				sql = new SqlNode(ligretoNode);
-				if (atts.getValue("data-source") != null) {
-					sql.setDataSource(atts.getValue("data-source"));
-				}
-				if (atts.getValue("name") != null) {
-					sql.setQueryName(atts.getValue("name"));
-				}
-				if (atts.getValue("on") != null) {
-					sql.setOn(atts.getValue("on"));
-				} 
-				if (atts.getValue("query") != null) {
-					sql.setQueryName(atts.getValue("query"));
-				}
-			}
-			break;
-		default:
-			if ("query".equals(localName)) {
-				query = new Pair<String, StringBuilder>(atts.getValue("name"), new StringBuilder());
-				objectStack.push(ObjectType.QUERY);
-			} else if ("data-source".equals(localName)) {
-				objectStack.push(ObjectType.DATA_SOURCE);
-				dataSource = new DataSourceNode(ligretoNode, atts.getValue("name"));
-			} else if ("ligreto".equals(localName)) {
-				objectStack.push(ObjectType.LIGRETO);
-			} else {
-				objectStack.push(ObjectType.NONE);
-			}
-			break;
-		}
-		if (objectStack.size() != entryStackDepth + 1) {
-			throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack.");
+		} catch (InvalidFormatException e) {
+			throw new SAXException("Error parsing input file.", e);
 		}
 	}
 

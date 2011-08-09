@@ -33,6 +33,7 @@ public class Ligreto {
 
 		Option help = new Option( "help", "print this help message" );
 		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file" );
+		Option excel97 = new Option( "excel97", "uses \"Excel 97\" format instead of default \"Excel 2007\" format" );
 		Option param = new Option(
 			"D",
 			true,
@@ -41,6 +42,7 @@ public class Ligreto {
 		);
 		options.addOption(help);
 		options.addOption(concat);
+		options.addOption(excel97);
 		options.addOption(param);
 		
 		CommandLineParser parser = new PosixParser();
@@ -65,6 +67,12 @@ public class Ligreto {
 			System.exit(1);
 		}
 		
+		// Use Excel97 format if requested
+		if (cmd.hasOption("excel97")) {
+			System.setProperty("excel97", "yes");
+		}
+		
+		// Get the parameter values and store them after reading the file 
 		String[] params = cmd.getOptionValues("D");
 		try {
 			if (cmd.hasOption("concat")) {

@@ -16,6 +16,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	ParserTest.class,
 	SqlReportTest.class,
 	JoinReportTest.class,
+	Excel97ReportTest.class,
 	PtpReportTest.class
 })
 public class AllTests {
