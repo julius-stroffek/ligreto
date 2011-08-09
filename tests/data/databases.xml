@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE data-sources PUBLIC "ligreto.dtd" "ligreto.dtd">
+<data-sources>
+	<data-source name="Source1">
+		<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+		<uri value="jdbc:derby:testdb2"/>
+		<param name="user" value="test"/>
+		<param name="password" value="1234"/>
+	</data-source>
+	<data-source name="Source2">
+		<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+		<uri value="jdbc:derby:testdb"/>
+		<param name="user" value="test"/>
+		<param name="password" value="1234"/>
+	</data-source>
+</data-sources>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<ptp>
+		<preprocess>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</preprocess>
+		<transfer>
+			<target data-source="Source2" table="telt_table" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<postprocess>
+			<sql data-source="Source2">select * from telt_table</sql>
+		</postprocess>
+	</ptp>
+	<ptp>
+		<transfer>
+			<target data-source="Source2" table="double_table" commitInterval="2" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="double_table" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single_table" truncate="true" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single_table" truncate="true" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single2_table" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single2_table" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+	</ptp>
+	<report name="Simple Report">
+		<template file="blank.xlsx"/>
+		<output file="ptpreport.xlsx"/>
+		<data>
+			<sql target="A2" data-source="Source2" header="true">select * from telt_table</sql>
+			<sql target="A7" data-source="Source2" header="true">select * from single_table</sql>
+			<sql target="A12" data-source="Source2" header="true">select * from single2_table</sql>
+			<sql target="A17" data-source="Source2" header="true">select * from double_table</sql>
+		</data>
+	</report>
+</ligreto>

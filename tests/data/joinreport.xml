@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Simple Report">
+		<template file="jointemplate.xlsx"/>
+		<output file="join_report.xlsx"/>
+		<data>
+			<join on="1" target="full!B2" type="full" header="true" highlight="true">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</join>		
+			<join target="left!B2" type="left" header="true">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+			<join target="right!B2" type="right" header="true">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+			<join target="inner!B2" type="inner" header="true">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+			<join target="interlaced!B2" type="full" header="true" interlaced="true">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+			<join target="diffs!B2" type="full" header="true" diffs="true" highlight="true">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+			<join target="append!B2" type="inner" header="true" diffs="true" highlight="true" hlColor="#20d020">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+			<join target="append!B2" type="inner" append="true" diffs="true" highlight="true" hlColor="#2020d0">
+				<sql data-source="Source1" on="1">select * from join_table1</sql>
+				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			</join>		
+		</data>
+	</report>
+</ligreto>
