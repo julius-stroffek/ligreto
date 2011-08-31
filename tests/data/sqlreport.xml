@@ -16,7 +16,7 @@
 		<data>
 			<sql data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="B1" data-source="Source1">select '${startdt}' startdr,'${enddt}' enddt from ${dummy}</sql>
-			<sql target="A2" data-source="Source1" header="true"><![CDATA[ select * from test_table where id < 10]]>`</sql>
+			<sql target="A2" data-source="Source1" header="true"><![CDATA[ select * from test_table where id < 10]]></sql>
 			<sql target="Sheet2!D5" data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="Append Sheet!A1" data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="Append Sheet!A1" data-source="Source1" append="true">select * from test_table</sql>

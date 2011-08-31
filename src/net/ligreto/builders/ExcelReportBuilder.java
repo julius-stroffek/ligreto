@@ -181,7 +181,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 
 	protected void setHSSFCellColor(Cell cell, short[] rgb) {
 		CellStyle style = cell.getCellStyle();
-		CellStyle newStyle = wb.createCellStyle();
+		
 		Font font = wb.getFontAt(style.getFontIndex());
 
 		HSSFColor closest = new HSSFColor.BLACK();
@@ -227,10 +227,74 @@ public class ExcelReportBuilder extends ReportBuilder {
 			newFont.setTypeOffset(font.getTypeOffset());
 			newFont.setUnderline(font.getUnderline());
 		}
-		newStyle.setFont(newFont);
+		style.setFont(newFont);
+		
+		// Go through all the existing styles and re-use it if there is a match
+		for (short i=0; i < wb.getNumCellStyles(); i++) {
+			// Do not compare the style to itself
+			if (style.getIndex() == i)
+				continue;
+			// Compare the styles and use the already existing one instead of creating a new one
+			if (compareStyles(style, wb.getCellStyleAt(i))) {
+				style.setFont(font);
+				cell.setCellStyle(wb.getCellStyleAt(i));
+				return;
+			}
+		}
+		
+		// Create a new style since the same one does not exist
+		CellStyle newStyle = wb.createCellStyle();
+		newStyle.cloneStyleFrom(style);
 		cell.setCellStyle(newStyle);
+		
+		// Revert back the font on the old cell style
+		style.setFont(font);
 	}
 	
+	private boolean compareStyles(CellStyle s1, CellStyle s2) {
+		if (s1.getAlignment() != s2.getAlignment())
+			return false;
+		if (s1.getBorderBottom() != s2.getBorderBottom())
+			return false;
+		if (s1.getBorderLeft() != s2.getBorderLeft())
+			return false;
+		if (s1.getBorderRight() != s2.getBorderRight())
+			return false;
+		if (s1.getBorderTop() != s2.getBorderTop())
+			return false;
+		if (s1.getBottomBorderColor() != s2.getBottomBorderColor())
+			return false;
+		if (s1.getDataFormat() != s2.getDataFormat())
+			return false;
+		if (s1.getDataFormatString() != s2.getDataFormatString())
+			return false;
+		if (s1.getFillBackgroundColor() != s2.getFillBackgroundColor())
+			return false;
+		if (s1.getFillForegroundColor() != s2.getFillForegroundColor())
+			return false;
+		if (s1.getFillPattern() != s2.getFillPattern())
+			return false;
+		if (s1.getFontIndex() != s2.getFontIndex())
+			return false;
+		if (s1.getHidden() != s2.getHidden())
+			return false;
+		if (s1.getIndention() != s2.getIndention())
+			return false;
+		if (s1.getLeftBorderColor() != s2.getLeftBorderColor())
+			return false;
+		if (s1.getRightBorderColor() != s2.getRightBorderColor())
+			return false;
+		if (s1.getRotation() != s2.getRotation())
+			return false;
+		if (s1.getTopBorderColor() != s2.getTopBorderColor())
+			return false;
+		if (s1.getVerticalAlignment() != s2.getVerticalAlignment())
+			return false;
+		if (s1.getWrapText() != s2.getWrapText())
+			return false;
+		return true;
+	}
+
 	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
 		XSSFWorkbook twb = (XSSFWorkbook) wb;
 		XSSFCellStyle style = cell.getCellStyle();
@@ -270,8 +334,14 @@ public class ExcelReportBuilder extends ReportBuilder {
 		cell.setCellStyle(newStyle);
 	}
 	
+	protected void reportExcelStatisctics() {
+		log.debug("The number of workbook styles: " + wb.getNumCellStyles());
+		log.debug("The number of workbook fonts:" + wb.getNumberOfFonts());
+	}
+	
 	@Override
 	public void writeOutput() throws IOException {
+		reportExcelStatisctics();
 		log.info("Writing the result into the file: " + output);
 		wb.write(out);
 	}
@@ -293,5 +363,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 			break;
 		}
 		sheet = wb.getSheetAt(wb.getActiveSheetIndex());
+		reportExcelStatisctics();
 	}
 }

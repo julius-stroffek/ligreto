@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+	</data-sources>
+	<report name="Style Dedup Report">
+		<template file="stylededuptemplate.xls"/>
+		<output file="stylededupreport.xls"/>
+		<data>
+			<join on="1" target="A1" type="full" header="true" highlight="true">
+				<sql data-source="Source1">select * from style_test_t1</sql>
+				<sql data-source="Source1">select * from style_test_t2</sql>
+			</join>		
+		</data>
+	</report>
+</ligreto>

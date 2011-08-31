@@ -27,7 +27,7 @@ public class ResultSetComparator {
 		int ct1 = rs1.getMetaData().getColumnType(on1);
 		int ct2 = rs2.getMetaData().getColumnType(on2);
 		if (ct1 != ct2) {
-			result = rs1.getString(on1).compareTo(rs2.getString(on2));
+			result = compare(rs1.getString(on1), rs2.getString(on2));
 		} else {
 			switch (ct1) {
 			case Types.BOOLEAN:
@@ -50,7 +50,7 @@ public class ResultSetComparator {
 			case Types.NUMERIC:
 				result = compare(rs1.getBigDecimal(on1), rs2.getBigDecimal(on2));
 			default:
-				result = rs1.getString(on1).compareTo(rs2.getString(on2));
+				result = compare(rs1.getString(on1), rs2.getString(on2));
 				break;
 			}
 		}
@@ -62,6 +62,10 @@ public class ResultSetComparator {
 		return 0;
 	}
 	
+	private static int compare(String s1, String s2) {
+		return s1.trim().compareTo(s2.trim());
+	}
+
 	public static int compare(ResultSet rs1, ResultSet rs2) throws SQLException {
 		int colCount1 = rs1.getMetaData().getColumnCount();
 		int colCount2 = rs2.getMetaData().getColumnCount();

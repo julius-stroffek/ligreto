@@ -13,11 +13,15 @@
 	</data-sources>
 	<report name="Simple Report">
 		<template file="jointemplate.xlsx"/>
-		<output file="join_report.xlsx"/>
+		<output file="joinreport.xlsx"/>
 		<data>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true">
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
+			</join>		
+			<join on="1" target="inner!B20" type="full" header="true" highlight="true">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source1">select * from join_table1</sql>
 			</join>		
 			<join target="left!B2" type="left" header="true">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
@@ -47,6 +51,10 @@
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>		
+			<join target="multicols!A1" type="full" header="true" diffs="true" highlight="true" hlColor="#2020d0">
+				<sql data-source="Source1" on="1,2,3">select id, 'ABC' aco, cast('ABCD' as char(6)) bco, first_name, last_name, age from join_table1</sql>
+				<sql data-source="Source2" on="1,2,3">select id, 'ABC' aco, 'ABCD' bco, first_name, last_name, age from join_table2</sql>
+			</join>
 		</data>
 	</report>
 </ligreto>

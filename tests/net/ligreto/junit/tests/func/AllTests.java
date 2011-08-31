@@ -17,7 +17,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	SqlReportTest.class,
 	JoinReportTest.class,
 	Excel97ReportTest.class,
-	PtpReportTest.class
+	PtpReportTest.class,
+	StyleDedupTest.class
 })
 public class AllTests {
 	/**
