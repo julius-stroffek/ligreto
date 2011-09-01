@@ -25,6 +25,7 @@ public class JoinNode extends Node {
 	protected boolean append = false;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected int[] on;
+	protected String[] exclude;
 	
 	public JoinNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
@@ -230,4 +231,19 @@ public class JoinNode extends Node {
 	public int[] getOn() {
 		return on;
 	}
+	
+	/**
+	 * @return the exclude
+	 */
+	public String[] getExclude() {
+		return exclude;
+	}
+	
+	/**
+	 * @param exclude the comma separated list of column names to be ignored in comparison & output
+	 */
+	public void setExclude(String exclude) {
+		this.exclude = exclude.split(",");
+	}
+	
 }

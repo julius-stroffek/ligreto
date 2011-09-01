@@ -257,6 +257,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("append") != null) {
 						sql.setAppend(atts.getValue("append"));
 					}
+					if (atts.getValue("exclude") != null) {
+						sql.setExclude(atts.getValue("exclude"));
+					}
 				} else if ("join".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
@@ -280,6 +283,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (atts.getValue("on") != null) {
 						join.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("exclude") != null) {
+						join.setExclude(atts.getValue("exclude"));
 					}
 					if (atts.getValue("header") != null) {
 						join.setHeader(atts.getValue("header"));
@@ -308,6 +314,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (atts.getValue("on") != null) {
 						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("exclude") != null) {
+						sql.setExclude(atts.getValue("exclude"));
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
@@ -341,6 +350,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (atts.getValue("on") != null) {
 						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("exclude") != null) {
+						sql.setExclude(atts.getValue("exclude"));
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
@@ -383,6 +395,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("on") != null) {
 						sql.setOn(atts.getValue("on"));
 					}
+					if (atts.getValue("exclude") != null) {
+						sql.setExclude(atts.getValue("exclude"));
+					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
 					}
@@ -401,6 +416,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (atts.getValue("on") != null) {
 						sql.setOn(atts.getValue("on"));
+					}
+					if (atts.getValue("exclude") != null) {
+						sql.setExclude(atts.getValue("exclude"));
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));

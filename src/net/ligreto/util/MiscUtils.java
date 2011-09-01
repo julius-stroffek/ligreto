@@ -1,5 +1,9 @@
 package net.ligreto.util;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+
 import net.ligreto.exceptions.InvalidFormatException;
 
 public class MiscUtils {
@@ -52,5 +56,14 @@ public class MiscUtils {
 		result[2] = Short.parseShort(bb, 16);
 		
 		return result;
+	}
+	
+	public static int findColumnIndex(ResultSet rs, String columnName) throws SQLException {
+		ResultSetMetaData rsmd = rs.getMetaData();
+		for (int i=1; i <= rsmd.getColumnCount(); i++) {
+			if (rsmd.getColumnName(i).equalsIgnoreCase(columnName))
+				return i;
+		}
+		throw new SQLException("Column name was not found in the result set: " + columnName);
 	}
 }

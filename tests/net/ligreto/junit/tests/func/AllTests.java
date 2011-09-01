@@ -18,7 +18,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	JoinReportTest.class,
 	Excel97ReportTest.class,
 	PtpReportTest.class,
-	StyleDedupTest.class
+	StyleDedupTest.class,
+	ExcludeColumnsTest.class
 })
 public class AllTests {
 	/**

@@ -15,6 +15,7 @@ public class SqlNode extends Node {
 	protected boolean header;
 	protected boolean append;
 	protected int[] on;
+	protected String[] exclude;
 	
 	/** Constructs SQL node. */
 	public SqlNode(LigretoNode ligretoNode) {
@@ -145,4 +146,18 @@ public class SqlNode extends Node {
 		return on;
 	}
 
+	/**
+	 * @return the exclude
+	 */
+	public String[] getExclude() {
+		return exclude;
+	}
+	
+	/**
+	 * @param exclude the comma separated list of column names to be ignored in comparison & output
+	 */
+	public void setExclude(String exclude) {
+		this.exclude = exclude.split(",");
+	}
+	
 }

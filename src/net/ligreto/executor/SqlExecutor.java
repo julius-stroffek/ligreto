@@ -13,6 +13,7 @@ import net.ligreto.Database;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.SqlNode;
+import net.ligreto.util.MiscUtils;
 
 /**
  * @author Julius Stroffek
@@ -32,15 +33,26 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	/** The <code>ReportBuilder</code> object used to process the results. */
 	protected ReportBuilder reportBuilder;
 	
+	/** The list of column indices to be excluded. */
+	protected int[] excl = new int[0];
+	
 	@Override
 	public boolean prepareProcessing(SqlNode sqlNode, ResultSet rs) throws Exception {
 		// Go to the next SQL query if we do not have the target defined
 		if (sqlNode.getTarget() == null)
 			return false;
 		
+		String[] exclStr = sqlNode.getExclude();
+		if (exclStr != null && exclStr.length > 0) {
+			excl = new int[exclStr.length];
+			for (int i=0; i < exclStr.length; i++) {
+				excl[i] = MiscUtils.findColumnIndex(rs, exclStr[i]);
+			}
+		}
+		
 		reportBuilder.setTarget(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
-			reportBuilder.dumpHeader(rs);
+			reportBuilder.dumpHeader(rs, excl);
 		}
 		return true;
 	}
@@ -50,8 +62,11 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		reportBuilder.nextRow();
 		reportBuilder.setColumnPosition(0);
 		ResultSetMetaData rsmd = rs.getMetaData();				
-		for (int i=1; i <= rsmd.getColumnCount(); i++)
-			reportBuilder.setColumn(i, rs);
+		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
+			if (!MiscUtils.arrayContains(excl, i)) {
+				reportBuilder.setColumn(c++, rs, i);
+			}
+		}
 	}
 
 	@Override

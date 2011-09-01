@@ -142,12 +142,48 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 							+ on2[i] + "\" and should be \"" + rsmd2.getColumnCount() + "\" the largest.");
 			}
 
-			int rs1Length = rs1.getMetaData().getColumnCount();
-			int rs2Length = rs1.getMetaData().getColumnCount();
+			// Process the exclude columns
+			String[] exclStr1 = sqlQueries.get(0).getExclude();
+			String[] exclStr2 = sqlQueries.get(1).getExclude();
+			
+			if (exclStr1 == null)
+				exclStr1 = joinNode.getExclude();
+			
+			if (exclStr2 == null)
+				exclStr2 = joinNode.getExclude();
+			
+			// Initialize exclude arrays to empty arrays
+			int[] excl1 = new int[0];
+			int[] excl2 = new int[0];
+			
+			// Convert the column names into numbers for sql query 1
+			if (exclStr1 != null && exclStr1.length > 0) {
+				excl1 = new int[exclStr1.length];
+				for (int i=0; i < exclStr1.length; i++) {
+					excl1[i] = MiscUtils.findColumnIndex(rs1, exclStr1[i]);
+					if (MiscUtils.arrayContains(on1, excl1[i])) {
+						throw new LigretoException("Column listed in 'exclude' attribute cannot be in used in 'on' clause:" + exclStr1[i]);
+					}
+				}
+			}
+			
+			// Convert the column names into numbers for sql query 2
+			if (exclStr2 != null && exclStr2.length > 0) {
+				excl2 = new int[exclStr2.length];
+				for (int i=0; i < exclStr2.length; i++) {
+					excl2[i] = MiscUtils.findColumnIndex(rs2, exclStr2[i]);
+					if (MiscUtils.arrayContains(on2, excl2[i])) {
+						throw new LigretoException("Column listed in 'exclude' attribute cannot be in used in 'on' clause:" + exclStr2[i]);
+					}
+				}
+			}
+			
+			int rs1ColCount = rs1.getMetaData().getColumnCount() - excl1.length;
+			int rs2ColCount = rs2.getMetaData().getColumnCount() - excl2.length;
 			
 			// Create the arrays to be used to highlight
 			// differences for left, right, outer joins
-			int[] lowerArray = new int[rs1Length > rs2Length ? rs1Length : rs2Length];
+			int[] lowerArray = new int[rs1ColCount > rs2ColCount ? rs1ColCount : rs2ColCount];
 			int[] higherArray = new int[lowerArray.length];
 			for (int i=0; i < lowerArray.length; i++) {
 				lowerArray[i] = -1;
@@ -165,13 +201,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				} else  {
 					reportBuilder.setColumnPosition(onLength, 1, null);							
 				}
-				reportBuilder.dumpOtherHeader(rs1, on1);
+				reportBuilder.dumpOtherHeader(rs1, on1, excl1);
 				if (joinNode.getInterlaced()) {
 					reportBuilder.setColumnPosition(onLength+1, 2, null);
 				} else {
-					reportBuilder.setColumnPosition(rs1Length, 1, null);
+					reportBuilder.setColumnPosition(rs1ColCount, 1, null);
 				}
-				reportBuilder.dumpOtherHeader(rs2, on2);
+				reportBuilder.dumpOtherHeader(rs2, on2, excl2);
 			}
 			
 			boolean hasNext1 = rs1.next();
@@ -189,14 +225,14 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						} else  {
 							reportBuilder.setColumnPosition(onLength, 1, lowerArray);							
 						}
-						reportBuilder.setOtherColumns(rs1, on1);
+						reportBuilder.setOtherColumns(rs1, on1, excl1);
 					}
 					hasNext1 = rs1.next();
 					break;
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = ResultSetComparator.compareOthers(rs1, on1, rs2, on2);
+					int[] cmpArray = ResultSetComparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
 					
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
 						reportBuilder.nextRow();
@@ -207,14 +243,14 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 							reportBuilder.setColumnPosition(onLength, 1, cmpArray);							
 						}
 						
-						reportBuilder.setOtherColumns(rs1, on1);
+						reportBuilder.setOtherColumns(rs1, on1, excl1);
 						
 						if (joinNode.getInterlaced()) {
 							reportBuilder.setColumnPosition(onLength+1, 2, cmpArray);
 						} else {
-							reportBuilder.setColumnPosition(rs1Length, 1, cmpArray);
+							reportBuilder.setColumnPosition(rs1ColCount, 1, cmpArray);
 						}
-						reportBuilder.setOtherColumns(rs2, on2);
+						reportBuilder.setOtherColumns(rs2, on2, excl1);
 					}
 					hasNext1 = rs1.next();
 					hasNext2 = rs2.next();
@@ -227,9 +263,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						if (joinNode.getInterlaced()) {
 							reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
 						} else  {
-							reportBuilder.setColumnPosition(rs1Length, 1, higherArray);							
+							reportBuilder.setColumnPosition(rs1ColCount, 1, higherArray);							
 						}
-						reportBuilder.setOtherColumns(rs2, on2);
+						reportBuilder.setOtherColumns(rs2, on2, excl2);
 					}
 					hasNext2 = rs2.next();
 					break;
@@ -245,7 +281,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					} else  {
 						reportBuilder.setColumnPosition(onLength, 1, lowerArray);							
 					}
-					reportBuilder.setOtherColumns(rs1, on1);
+					reportBuilder.setOtherColumns(rs1, on1, excl1);
 					hasNext1 = rs1.next();
 				}
 			}
@@ -257,9 +293,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (joinNode.getInterlaced()) {
 						reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
 					} else  {
-						reportBuilder.setColumnPosition(rs1Length, 1, higherArray);							
+						reportBuilder.setColumnPosition(rs1ColCount, 1, higherArray);							
 					}
-					reportBuilder.setOtherColumns(rs2, on2);
+					reportBuilder.setOtherColumns(rs2, on2, excl2);
 					hasNext2 = rs2.next();
 				}
 			}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="startdt" value="2010-10-31"/>
+	<param name="enddt" value="2010-11-30"/>
+	<param name="dummy" value="sysibm.sysdummy1"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report>
+		<template file="blank.xlsx"/>
+		<output file="excludecolumnsreport.xlsx"/>
+		<data>
+			<join on="1" target="Sheet1!A1" type="full" header="true" highlight="true" diffs="true" exclude="last_name,age">
+				<sql data-source="Source1">select * from exclude_table1</sql>
+				<sql data-source="Source2">select * from exclude_table2</sql>
+			</join>		
+			<sql data-source="Source1" target="Sheet2!A1" header="true" exclude="first_name">select * from exclude_table1</sql>
+		</data>
+	</report>
+</ligreto>

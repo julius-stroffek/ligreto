@@ -34,7 +34,7 @@
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>
-			<join target="Sheet2!C3" type="full" interlaced="true" highlight="true" hlColor="#040506" >
+			<join target="Sheet2!C3" type="full" interlaced="true" highlight="true" hlColor="#040506" exclude="last_cnhg_user,modified_date">
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>

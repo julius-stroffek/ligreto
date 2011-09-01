@@ -92,7 +92,7 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	public static int[] compareOthers(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException, LigretoException {
+	public static int[] compareOthers(ResultSet rs1, int[] on1, int[] excl1, ResultSet rs2, int[] on2, int[] excl2) throws SQLException, LigretoException {
 		Assert.assertTrue(on1.length == on2.length);
 		
 		int colCount1 = rs1.getMetaData().getColumnCount();
@@ -108,16 +108,32 @@ public class ResultSetComparator {
 		}
 		int cmpCount = colCount1 > colCount2 ? colCount1 : colCount2;
 		int[] result = new int[cmpCount];
-		int i=0;
-		for (int i1=1, i2=1; i1 <= colCount1 && i2 <= colCount2; i1++, i2++, i++) {
-			while (MiscUtils.arrayContains(on1, i1))
+		int i=0, i1=1, i2=1;
+		for (; i1 <= colCount1 && i2 <= colCount2; i1++, i2++, i++) {
+			while (MiscUtils.arrayContains(on1, i1) || MiscUtils.arrayContains(excl1, i1))
 				i1++;
-			while (MiscUtils.arrayContains(on2, i2))
+			while (MiscUtils.arrayContains(on2, i2) || MiscUtils.arrayContains(excl2, i2))
 				i2++;
-			result[i] = compare(rs1, i1, rs2, i2);
+			if (i1 <= colCount1 && i2 <= colCount2)
+				result[i] = compare(rs1, i1, rs2, i2);
 		}
-		for (int j=i+1; j < cmpCount; j++)
-			result[j] = colCount1 > colCount2 ? 1 : -1;
+		for (int j=i+1; j < cmpCount; j++, i1++, i2++) {
+			if (colCount1 > colCount2) {
+				rs1.getString(i1);
+				if (rs1.wasNull())
+					result[j] = 0;
+				else
+					result[j] = 1;
+			} else if (colCount1 < colCount2) {
+				rs2.getString(i1);
+				if (rs2.wasNull())
+					result[j] = 0;
+				else
+					result[j] = -1;
+			} else {
+				result[j] = 0;
+			}
+		}
 		return result;
 	}
 

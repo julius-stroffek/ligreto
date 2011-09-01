@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import net.ligreto.exceptions.InvalidTargetException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.parser.nodes.*;
+import net.ligreto.util.MiscUtils;
 
 /**
  * This class defines the interface between the various report executors
@@ -282,11 +283,13 @@ public abstract class ReportBuilder {
 	public abstract void start() throws IOException;
 	public abstract void writeOutput() throws IOException;
 
-	public void dumpHeader(ResultSet rs) throws SQLException {
+	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		nextRow();
-		for (int i=1; i <= rsmd.getColumnCount(); i++) {
-			setColumn(columnStep*(i-1), rsmd.getColumnLabel(i));
+		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
+			if (!MiscUtils.arrayContains(excl, i)) {
+				setColumn(columnStep*c++, rsmd.getColumnLabel(i));
+			}
 		}
 	}
 
@@ -297,19 +300,20 @@ public abstract class ReportBuilder {
 		}
 	}
 
-	public void dumpOtherHeader(ResultSet rs, int[] on) throws SQLException {
+	public void dumpOtherHeader(ResultSet rs, int[] on, int[] excl) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int rsLength = rsmd.getColumnCount();
 		int idx = 0;
 		for (int i=0; i < rsLength; i++) {
-			boolean onPresent = false;
-			for (int j=0; j < on.length; j++) {
-				if (i+1 == on[j]) {
-					onPresent = true;
-					break;
-				}
+			boolean skip = false;
+			if (MiscUtils.arrayContains(on, i+1)) {
+				skip = true;
 			}
-			if (!onPresent) {
+			if (MiscUtils.arrayContains(excl, i+1)) {
+				skip = true;
+			}
+			
+			if (!skip) {
 				setColumn(columnStep*idx, rsmd.getColumnLabel(i+1));
 				idx++;
 			}
@@ -322,18 +326,19 @@ public abstract class ReportBuilder {
 		}
 	}
 
-	public void setOtherColumns(ResultSet rs, int[] on) throws SQLException {
+	public void setOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException {
 		int rsLength = rs.getMetaData().getColumnCount();
 		int idx = 0;
 		for (int i=0; i < rsLength; i++) {
-			boolean onPresent = false;
-			for (int j=0; j < on.length; j++) {
-				if (i+1 == on[j]) {
-					onPresent = true;
-					break;
-				}
+			boolean skip = false;
+			if (MiscUtils.arrayContains(on, i+1)) {
+				skip = true;
 			}
-			if (!onPresent) {
+			if (MiscUtils.arrayContains(excl, i+1)) {
+				skip = true;
+			}
+			
+			if (!skip) {
 				setColumn(idx, rs, i+1);
 				idx++;
 			}
