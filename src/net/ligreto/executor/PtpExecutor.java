@@ -242,8 +242,10 @@ public class PtpExecutor extends Executor {
 			case Types.DECIMAL: 
 				sb.append("decimal(");
 				sb.append(rsmd.getPrecision(i));
-				sb.append(",");
-				sb.append(rsmd.getScale(i));
+				if (rsmd.getScale(i) >= 0) {
+					sb.append(",");
+					sb.append(rsmd.getScale(i));
+				}
 				sb.append(")");
 				break;
 			case Types.DOUBLE: 
@@ -273,8 +275,10 @@ public class PtpExecutor extends Executor {
 			case Types.NUMERIC: 
 				sb.append("numeric(");
 				sb.append(rsmd.getPrecision(i));
-				sb.append(",");
-				sb.append(rsmd.getScale(i));
+				if (rsmd.getScale(i) >= 0) {
+					sb.append(",");
+					sb.append(rsmd.getScale(i));
+				}
 				sb.append(")");
 				break;
 			case Types.NVARCHAR: 
