@@ -42,11 +42,12 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		if (sqlNode.getTarget() == null)
 			return false;
 		
-		String[] exclStr = sqlNode.getExclude();
+		String[] exclStr = sqlNode.getExcludeColumns();
 		if (exclStr != null && exclStr.length > 0) {
 			excl = new int[exclStr.length];
 			for (int i=0; i < exclStr.length; i++) {
 				excl[i] = MiscUtils.findColumnIndex(rs, exclStr[i]);
+				log.info("Excluding column \"" + exclStr[i] + "\" from sql query which has the index: " + excl[i]);
 			}
 		}
 		

@@ -4,6 +4,7 @@
 package net.ligreto.junit.tests.func;
 
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,11 +13,14 @@ import java.sql.Statement;
 
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
+import net.ligreto.junit.util.HSSFWorkbookComparator;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -90,5 +94,9 @@ public class Excel97ReportTest {
 		LigretoNode ligreto = Parser.parse("excel97report.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		executor.execute();
+		Assert.assertTrue(new HSSFWorkbookComparator(
+				new HSSFWorkbook(new FileInputStream("excel97report.xls")),
+				new HSSFWorkbook(new FileInputStream("desired/excel97report.xls"))
+		).areSame());
 	}
 }

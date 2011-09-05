@@ -4,6 +4,7 @@
 package net.ligreto.junit.tests.func;
 
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,10 +13,13 @@ import java.sql.Statement;
 
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
+import net.ligreto.junit.util.XSSFWorkbookComparator;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -78,5 +82,10 @@ public class JoinReportTest {
 		LigretoNode ligreto = Parser.parse("joinreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		executor.execute();
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/joinreport.xlsx"))
+		).areSame());
+
 	}
 }

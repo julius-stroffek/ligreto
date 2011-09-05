@@ -143,14 +143,14 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 
 			// Process the exclude columns
-			String[] exclStr1 = sqlQueries.get(0).getExclude();
-			String[] exclStr2 = sqlQueries.get(1).getExclude();
+			String[] exclStr1 = sqlQueries.get(0).getExcludeColumns();
+			String[] exclStr2 = sqlQueries.get(1).getExcludeColumns();
 			
 			if (exclStr1 == null)
-				exclStr1 = joinNode.getExclude();
+				exclStr1 = joinNode.getExcludeColumns();
 			
 			if (exclStr2 == null)
-				exclStr2 = joinNode.getExclude();
+				exclStr2 = joinNode.getExcludeColumns();
 			
 			// Initialize exclude arrays to empty arrays
 			int[] excl1 = new int[0];
@@ -164,6 +164,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (MiscUtils.arrayContains(on1, excl1[i])) {
 						throw new LigretoException("Column listed in 'exclude' attribute cannot be in used in 'on' clause:" + exclStr1[i]);
 					}
+					log.info("Excluding column \"" + exclStr1[i] + "\" from 1st sql query which has the index: " + excl1[i]);
 				}
 			}
 			
@@ -175,6 +176,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (MiscUtils.arrayContains(on2, excl2[i])) {
 						throw new LigretoException("Column listed in 'exclude' attribute cannot be in used in 'on' clause:" + exclStr2[i]);
 					}
+					log.info("Excluding column \"" + exclStr2[i] + "\" from 2nd sql query which has the index: " + excl2[i]);
 				}
 			}
 			

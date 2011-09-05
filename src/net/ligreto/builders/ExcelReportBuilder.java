@@ -1,6 +1,5 @@
 package net.ligreto.builders;
 
-import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -180,35 +179,16 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	protected void setHSSFCellColor(Cell cell, short[] rgb) {
+		HSSFWorkbook hwb = (HSSFWorkbook) wb;
 		CellStyle style = cell.getCellStyle();
 		
 		Font font = wb.getFontAt(style.getFontIndex());
 
-		HSSFColor closest = new HSSFColor.BLACK();
-		double minDiff = Double.MAX_VALUE;
-		
-		short[] hssfRgb = null;
-		float[] hsb = null, hssfHsb = null;
-		hsb = Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], null);
-		
-		for (HSSFColor color : hssfColors.values()) {
-			hssfRgb = color.getTriplet();
-			hssfHsb = Color.RGBtoHSB(hssfRgb[0], hssfRgb[1], hssfRgb[2], hssfHsb);
-			double diff =
-					3d * Math.abs(hssfHsb[0] - hsb[0]) +
-					Math.abs(hssfHsb[1] - hsb[1]) +
-					Math.abs(hssfHsb[2] - hsb[2]);
-			if (diff < minDiff) {
-				minDiff = diff;
-				closest = color;
-			}
-			if (minDiff == 0)
-				break;
-		}
+		HSSFColor newColor = hwb.getCustomPalette().findSimilarColor(rgb[0], rgb[1], rgb[2]);
 		
 		Font newFont = wb.findFont(
 				font.getBoldweight(),
-				closest.getIndex(),
+				newColor.getIndex(),
 				font.getFontHeight(),
 				font.getFontName(),
 				font.getItalic(),
@@ -219,7 +199,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 		if (newFont == null) {
 			newFont = wb.createFont();
 			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(closest.getIndex());
+			newFont.setColor(newColor.getIndex());
 			newFont.setFontHeight(font.getFontHeight());
 			newFont.setFontName(font.getFontName());
 			newFont.setItalic(font.getItalic());
@@ -244,6 +224,63 @@ public class ExcelReportBuilder extends ReportBuilder {
 		
 		// Create a new style since the same one does not exist
 		CellStyle newStyle = wb.createCellStyle();
+		newStyle.cloneStyleFrom(style);
+		cell.setCellStyle(newStyle);
+		
+		// Revert back the font on the old cell style
+		style.setFont(font);
+	}
+	
+	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
+		XSSFWorkbook twb = (XSSFWorkbook) wb;
+		XSSFCellStyle style = cell.getCellStyle();
+		XSSFFont font = style.getFont();
+		XSSFFont newFont = null;
+		XSSFColor newColor = new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2]));
+		
+		log.debug("Setting color of cell c: " + cell.getColumnIndex() + " r: " + cell.getRowIndex() + " color: " + newColor.getIndexed());
+				
+		// Look if the font already exists
+		newFont = twb.findFont(
+			font.getBoldweight(),
+			newColor.getIndexed(),
+			font.getFontHeight(),
+			font.getFontName(),
+			font.getItalic(),
+			font.getStrikeout(),
+			font.getTypeOffset(),
+			font.getUnderline()
+		);
+		
+		// Clone the font if it does not exist yet
+		if (newFont == null || !newFont.getXSSFColor().equals(newColor)) {
+		    newFont = twb.createFont();
+			newFont.setBoldweight(font.getBoldweight());
+			newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
+			newFont.setFontHeight(font.getFontHeight());
+			newFont.setFontName(font.getFontName());
+			newFont.setItalic(font.getItalic());
+			newFont.setStrikeout(font.getStrikeout());
+			newFont.setTypeOffset(font.getTypeOffset());
+			newFont.setUnderline(font.getUnderline());
+		}
+		style.setFont(newFont);
+
+		// Go through all the existing styles and re-use it if there is a match
+		for (short i=0; i < wb.getNumCellStyles(); i++) {
+			// Do not compare the style to itself
+			if (style.getIndex() == i)
+				continue;
+			// Compare the styles and use the already existing one instead of creating a new one
+			if (compareStyles(style, wb.getCellStyleAt(i))) {
+				style.setFont(font);
+				cell.setCellStyle(wb.getCellStyleAt(i));
+				return;
+			}
+		}
+		
+		// Create a new style since the same one does not exist
+		XSSFCellStyle newStyle = twb.createCellStyle();
 		newStyle.cloneStyleFrom(style);
 		cell.setCellStyle(newStyle);
 		
@@ -295,45 +332,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 		return true;
 	}
 
-	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
-		XSSFWorkbook twb = (XSSFWorkbook) wb;
-		XSSFCellStyle style = cell.getCellStyle();
-		XSSFCellStyle newStyle = twb.createCellStyle();
-		XSSFFont font = style.getFont();
-		XSSFFont newFont = twb.createFont();
-		
-		// Clone the style and font
-		newStyle.cloneStyleFrom(style);
-		newFont.setBoldweight(font.getBoldweight());
-		newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
-		newFont.setFontHeight(font.getFontHeight());
-		newFont.setFontName(font.getFontName());
-		newFont.setItalic(font.getItalic());
-		newFont.setStrikeout(font.getStrikeout());
-		newFont.setTypeOffset(font.getTypeOffset());
-		newFont.setUnderline(font.getUnderline());
-		
-		// Look if the font already exists
-		font = twb.findFont(
-			newFont.getBoldweight(),
-			newFont.getColor(),
-			newFont.getFontHeight(),
-			newFont.getFontName(),
-			newFont.getItalic(),
-			newFont.getStrikeout(),
-			newFont.getTypeOffset(),
-			newFont.getUnderline()
-		);
-		
-		// If we have found the font and the color matches, use the already existing font.
-		if (font == null || !font.getXSSFColor().equals(newFont.getXSSFColor())) {
-			newStyle.setFont(font);
-		} else {
-			newStyle.setFont(newFont);
-		}
-		cell.setCellStyle(newStyle);
-	}
-	
 	protected void reportExcelStatisctics() {
 		log.debug("The number of workbook styles: " + wb.getNumCellStyles());
 		log.debug("The number of workbook fonts:" + wb.getNumberOfFonts());
