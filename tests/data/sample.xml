@@ -2,6 +2,7 @@
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
 	<param name="sys_dt" value="2010-10-10"/>
+	<param name="enddt">2010-11-30</param>
 	<queries>
 		<query name="query1">select * from test</query>
 		<query name="query2">select * from test2</query>

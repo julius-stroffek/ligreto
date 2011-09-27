@@ -42,6 +42,7 @@ enum ObjectType {
 	SQL,
 	JOIN,
 	JOIN_SQL,
+	PARAM,
 	PTP,
 	PTP_PREPROCESS,
 	PTP_PREPROCESS_SQL,
@@ -90,6 +91,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	/** The Transfer of PTP transfer */
 	TransferNode ptpTransfer;
 	
+	/** The name of the parameter being parsed. */
+	String paramName;
+	
+	/** The value of the parameter being parsed. */
+	StringBuilder paramValue;
+	
 	/** Constructs the report configuration content handler. */
 	public SAXContentHandler(LigretoNode ligretoNode) {
 		this.ligretoNode = ligretoNode;
@@ -107,6 +114,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case PTP_PREPROCESS_SQL:
 		case PTP_POSTPROCESS_SQL:
 			sql.getQueryBuilder().append(chars, start, length);
+			break;
+		case PARAM:
+			paramValue.append(chars, start, length);
 			break;
 		}
 	}
@@ -148,6 +158,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case JOIN:
 			reportNode.addJoin(join);
 			join = null;
+			break;
+		case PARAM:
+			ligretoNode.addParam(paramName, paramValue.toString());
 			break;
 		}
 	}
@@ -191,9 +204,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
 			case LIGRETO:
 				if ("param".equals(localName)) {
-					objectStack.push(ObjectType.NONE);
-					ligretoNode.addParam(atts.getValue("name"),
-							atts.getValue("value"));
+					objectStack.push(ObjectType.PARAM);
+					paramValue = new StringBuilder();
+					paramName = atts.getValue("name");
+					if (atts.getValue("value") != null) {
+						paramValue.append(atts.getValue("value"));
+					}
 				} else if ("report".equals(localName)) {
 					objectStack.push(ObjectType.REPORT);
 					try {

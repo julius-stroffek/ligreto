@@ -2,7 +2,7 @@
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
 	<param name="startdt" value="2010-10-31"/>
-	<param name="enddt" value="2010-11-30"/>
+	<param name="enddt">2010-11-30</param>
 	<param name="dummy" value="sysibm.sysdummy1"/>
 	<data-sources>
 		<data-source name="Source1">

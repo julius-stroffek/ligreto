@@ -241,7 +241,7 @@ public class PtpExecutor extends Executor {
 				break;
 			case Types.DECIMAL: 
 				sb.append("decimal(");
-				sb.append(rsmd.getPrecision(i));
+				sb.append(rsmd.getPrecision(i) <= 31 ? rsmd.getPrecision(i) : 31);
 				if (rsmd.getScale(i) >= 0) {
 					sb.append(",");
 					sb.append(rsmd.getScale(i));
@@ -274,7 +274,7 @@ public class PtpExecutor extends Executor {
 				break;
 			case Types.NUMERIC: 
 				sb.append("numeric(");
-				sb.append(rsmd.getPrecision(i));
+				sb.append(rsmd.getPrecision(i) <= 31 ? rsmd.getPrecision(i) : 31);
 				if (rsmd.getScale(i) >= 0) {
 					sb.append(",");
 					sb.append(rsmd.getScale(i));

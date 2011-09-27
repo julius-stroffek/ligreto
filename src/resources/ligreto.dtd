@@ -8,9 +8,9 @@
   encoding  CDATA       #IMPLIED
 >
 
-<!ELEMENT param EMPTY>
+<!ELEMENT param (#PCDATA)>
 <!ATTLIST param name CDATA #REQUIRED>
-<!ATTLIST param value CDATA #REQUIRED>
+<!ATTLIST param value CDATA #IMPLIED>
 
 <!ELEMENT report (template,output,data)>
 <!ATTLIST report name CDATA #IMPLIED>
