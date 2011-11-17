@@ -35,6 +35,8 @@ enum ObjectType {
 	NONE,
 	LIGRETO,
 	DATA_SOURCE,
+	INIT,
+	INIT_SQL,
 	QUERY,
 	REPORT,
 	DATA,
@@ -110,6 +112,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case SQL:
 		case JOIN_SQL:
+		case INIT_SQL:
 		case PTP_TRANSFER_SQL:
 		case PTP_PREPROCESS_SQL:
 		case PTP_POSTPROCESS_SQL:
@@ -123,7 +126,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	@Override
 	public void endDocument() throws SAXException {
-		// Auto-generated method stub
 	}
 
 	@Override
@@ -131,8 +133,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			throws SAXException {
 		switch (objectStack.pop()) {
 		case DATA_SOURCE:
-				ligretoNode.addDataSource(dataSource);
-				break;
+			ligretoNode.addDataSource(dataSource);
+			break;
 		case QUERY:
 			ligretoNode.addQuery(query.getFirst(), query.getSecond().toString());
 			query = null;
@@ -147,6 +149,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case JOIN_SQL:
 			join.addSql(sql);
+			sql = null;
+			break;
+		case INIT_SQL:
+			dataSource.addSql(sql);
 			sql = null;
 			break;
 		case PTP_PREPROCESS_SQL:
@@ -230,13 +236,30 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			case DATA_SOURCE:
 				if ("driver".equals(localName)) {
 					dataSource.setDriverClass(atts.getValue("value"));
+					objectStack.push(ObjectType.NONE);
 				} else if ("uri".equals(localName)) {
 					dataSource.setUri(atts.getValue("value"));
+					objectStack.push(ObjectType.NONE);
 				} else if ("param".equals(localName)) {
-					dataSource.setParameter(atts.getValue("name"),
-							atts.getValue("value"));
+					dataSource.setParameter(atts.getValue("name"), atts.getValue("value"));
+					objectStack.push(ObjectType.NONE);
+				} else if ("init".equals(localName)) {
+					objectStack.push(ObjectType.INIT);
+				} else {
+					objectStack.push(ObjectType.NONE);
 				}
-				objectStack.push(ObjectType.NONE);
+				break;
+			case INIT:
+				if ("sql".equals(localName)) {
+					objectStack.push(ObjectType.INIT_SQL);
+					sql = new SqlNode(ligretoNode);
+					if (atts.getValue("data-source") != null) {
+						sql.setDataSource(atts.getValue("data-source"));
+					}
+					if (atts.getValue("query") != null) {
+						sql.setQueryName(atts.getValue("query"));
+					}
+				}
 				break;
 			case REPORT:
 				if ("template".equals(localName)) {
@@ -257,9 +280,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					sql = new SqlNode(ligretoNode);
 					if (atts.getValue("data-source") != null) {
 						sql.setDataSource(atts.getValue("data-source"));
-					}
-					if (atts.getValue("name") != null) {
-						sql.setQueryName(atts.getValue("name"));
 					}
 					if (atts.getValue("target") != null) {
 						sql.setTarget(atts.getValue("target"));
@@ -325,9 +345,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("data-source") != null) {
 						sql.setDataSource(atts.getValue("data-source"));
 					}
-					if (atts.getValue("name") != null) {
-						sql.setQueryName(atts.getValue("name"));
-					}
 					if (atts.getValue("on") != null) {
 						sql.setOn(atts.getValue("on"));
 					}
@@ -360,15 +377,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					sql = new SqlNode(ligretoNode);
 					if (atts.getValue("data-source") != null) {
 						sql.setDataSource(atts.getValue("data-source"));
-					}
-					if (atts.getValue("name") != null) {
-						sql.setQueryName(atts.getValue("name"));
-					}
-					if (atts.getValue("on") != null) {
-						sql.setOn(atts.getValue("on"));
-					}
-					if (atts.getValue("exclude") != null) {
-						sql.setExclude(atts.getValue("exclude"));
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
@@ -405,15 +413,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("data-source") != null) {
 						sql.setDataSource(atts.getValue("data-source"));
 					}
-					if (atts.getValue("name") != null) {
-						sql.setQueryName(atts.getValue("name"));
-					}
-					if (atts.getValue("on") != null) {
-						sql.setOn(atts.getValue("on"));
-					}
-					if (atts.getValue("exclude") != null) {
-						sql.setExclude(atts.getValue("exclude"));
-					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
 					}
@@ -426,15 +425,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					sql = new SqlNode(ligretoNode);
 					if (atts.getValue("data-source") != null) {
 						sql.setDataSource(atts.getValue("data-source"));
-					}
-					if (atts.getValue("name") != null) {
-						sql.setQueryName(atts.getValue("name"));
-					}
-					if (atts.getValue("on") != null) {
-						sql.setOn(atts.getValue("on"));
-					}
-					if (atts.getValue("exclude") != null) {
-						sql.setExclude(atts.getValue("exclude"));
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));

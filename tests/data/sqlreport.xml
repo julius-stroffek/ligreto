@@ -4,10 +4,14 @@
 	<param name="startdt" value="2010-10-31"/>
 	<param name="enddt">2010-11-30</param>
 	<param name="dummy" value="sysibm.sysdummy1"/>
+	<param name="refdummy" value="${dummy}"/> 
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
 			<uri value="jdbc:derby:db1"/>
+			<init>
+				<sql>select * from ${refdummy}</sql>
+			</init>
 		</data-source>
 	</data-sources>
 	<report>

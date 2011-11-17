@@ -45,10 +45,17 @@ public class LigretoNode extends Node {
 	}
 	
 	public String substituteParams(String string) {
+		String oResult;
 		String result = new String(string);
-		for (String name : paramMap.keySet()) {
-			result = result.replaceFirst("\\u0024\\u007B"+name+"\\u007D", paramMap.get(name));
-		}
+		do {
+			oResult = result;
+			for (String name : paramMap.keySet()) {
+				result = result.replaceAll(
+					"\\u0024\\u007B" + name + "\\u007D",
+					paramMap.get(name).replaceAll("\\$", "\\\\\\$")
+				);
+			}
+		} while (!result.equals(oResult));
 		return result;
 	}
 	

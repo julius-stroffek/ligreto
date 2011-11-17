@@ -9,6 +9,7 @@ import java.sql.Statement;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.parser.nodes.SqlNode;
 
 public class Database {
 	protected static Database instance;
@@ -43,7 +44,17 @@ public class Database {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
 		}
 		Class.forName(node.getDriverClass());
-		return DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
+		
+		// Create the connection
+		Connection cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
+		
+		// Initialize the connection with the given SQL queries
+		Statement stm = cnn.createStatement();
+		for (SqlNode sqlNode : node.sqlQueries()) {
+			stm.execute(sqlNode.getQuery());
+		}
+		
+		return cnn;
 	}
 
 	public static void close(Connection cnn, Statement stm, ResultSet rs) throws SQLException {

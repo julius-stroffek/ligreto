@@ -14,6 +14,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	ParserTest.class,
+	InitFailureTest.class,
 	SqlReportTest.class,
 	JoinReportTest.class,
 	Excel97ReportTest.class,

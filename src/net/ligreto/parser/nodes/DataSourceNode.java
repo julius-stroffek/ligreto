@@ -1,5 +1,7 @@
 package net.ligreto.parser.nodes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -10,10 +12,11 @@ import java.util.Properties;
  */
 public class DataSourceNode extends Node {
 	
-	private String name;
-	private String driverClass;
-	private String uri;
-	private Properties parameters;
+	protected String name;
+	protected String driverClass;
+	protected String uri;
+	protected Properties parameters;
+	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	
 	/**
 	 * Creates the instance of DataSourceNode class.
@@ -89,5 +92,13 @@ public class DataSourceNode extends Node {
 	 */	 
 	public String toString() {
 		return "Data Source: name=\"" + name + "\"; driver=\"" + driverClass + "\"; uri=\"" + uri + "\"";
+	}
+	
+	public void addSql(SqlNode sql) {
+		sqlQueries.add(sql);
+	}
+	
+	public Iterable<SqlNode> sqlQueries() {
+		return sqlQueries;
 	}
 }

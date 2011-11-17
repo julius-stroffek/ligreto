@@ -68,9 +68,10 @@
 <!ATTLIST query name CDATA #REQUIRED>
 
 <!ELEMENT data-sources (data-source*)>
-<!ELEMENT data-source (driver,uri,param*)>
+<!ELEMENT data-source (driver,uri,param*,init?)>
 <!ATTLIST data-source name CDATA #REQUIRED>
 <!ELEMENT driver EMPTY>
 <!ATTLIST driver value CDATA #REQUIRED>
 <!ELEMENT uri EMPTY>
 <!ATTLIST uri value CDATA #REQUIRED>
+<!ELEMENT init (sql*)>

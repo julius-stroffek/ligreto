@@ -47,14 +47,8 @@ public class SqlNode extends Node {
 	 * @return The query with all the substitutions already done.
 	 */
 	public String getQuery() {
-		String result = queryName != null ? ligretoNode.getQuery(queryName) : query.toString();
-		String oResult;
-		do {
-			oResult = result;			
-			result = ligretoNode.substituteParams(oResult);
-		} while (!result.equals(oResult)); 
-		
-		return result;
+		String result = queryName != null ? ligretoNode.getQuery(queryName) : query.toString();		
+		return ligretoNode.substituteParams(result);
 	}
 	
 	/**

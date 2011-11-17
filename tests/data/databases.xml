@@ -6,6 +6,11 @@
 		<uri value="jdbc:derby:testdb2"/>
 		<param name="user" value="test"/>
 		<param name="password" value="1234"/>
+		<init>
+			<sql>select * from src(0)</sql>
+			<sql>select * from src(1)</sql>
+			<sql>select * from src(2)</sql>
+		</init>
 	</data-source>
 	<data-source name="Source2">
 		<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
