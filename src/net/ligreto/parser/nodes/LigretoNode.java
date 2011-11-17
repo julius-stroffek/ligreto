@@ -74,5 +74,4 @@ public class LigretoNode extends Node {
 	public String getQuery(String name) {
 		return substituteParams(queryMap.get(name));
 	}
-
 }
