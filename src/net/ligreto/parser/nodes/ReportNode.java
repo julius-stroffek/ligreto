@@ -18,6 +18,7 @@ public class ReportNode extends Node {
 	protected ReportType reportType;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<JoinNode> joins = new ArrayList<JoinNode>();
+	protected List<String> options = new ArrayList<String>();
 	
 	public ReportNode(LigretoNode ligretoNode, String reportName, String reportType) throws ReportException {
 		super(ligretoNode);
@@ -25,7 +26,7 @@ public class ReportNode extends Node {
 		if ("excel".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.EXCEL;
 		} else if ("tex".equalsIgnoreCase(reportType)) {
-				this.reportType = ReportType.TEX;
+			this.reportType = ReportType.TEX;
 		} else if ("xml".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.XML;
 		} else {
@@ -91,17 +92,23 @@ public class ReportNode extends Node {
 		return joins;
 	}
 
-	/**
-	 * @return the output
-	 */
 	public String getOutput() {
 		return output;
 	}
 
-	/**
-	 * @param output the output to set
-	 */
 	public void setOutput(String output) {
 		this.output = output;
+	}
+	
+	public Iterable<String> getOptions() {
+		return options;
+	}
+	
+	public void setOptions(String optionString) {
+		options = new ArrayList<String>();
+		String[] opts = optionString.split(",");
+		for (String o : opts) {
+			options.add(o.trim());
+		}
 	}
 }

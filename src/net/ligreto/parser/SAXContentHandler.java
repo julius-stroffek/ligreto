@@ -32,78 +32,62 @@ import org.xml.sax.SAXParseException;
 
 /** Object types being parsed by the parser. */
 enum ObjectType {
-	NONE,
-	LIGRETO,
-	DATA_SOURCE,
-	INIT,
-	INIT_SQL,
-	QUERY,
-	REPORT,
-	DATA,
-	TEMPLATE,
-	SQL,
-	JOIN,
-	JOIN_SQL,
-	PARAM,
-	PTP,
-	PTP_PREPROCESS,
-	PTP_PREPROCESS_SQL,
-	PTP_TRANSFER,
-	PTP_TRANSFER_SQL,
-	PTP_POSTPROCESS,
-	PTP_POSTPROCESS_SQL
+	NONE, LIGRETO, DATA_SOURCE, INIT, INIT_SQL, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, JOIN_SQL, PARAM, PTP, PTP_PREPROCESS, PTP_PREPROCESS_SQL, PTP_TRANSFER, PTP_TRANSFER_SQL, PTP_POSTPROCESS, PTP_POSTPROCESS_SQL
 };
 
 /**
  * @author Julius Stroffek
- *
+ * 
  */
 public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandler {
 
 	/** The configuration where the results are stored. */
 	LigretoNode ligretoNode;
-	
-	/** The report configuration where the actual report configuration data are stored to. */
+
+	/**
+	 * The report configuration where the actual report configuration data are
+	 * stored to.
+	 */
 	ReportNode reportNode;
-	
+
 	/** The parsed data source object. */
 	DataSourceNode dataSource;
-	
+
 	/** The stack of object types being parsed. */
 	Stack<ObjectType> objectStack = new Stack<ObjectType>();
-	
+
 	/** The name, query pair. */
 	Pair<String, StringBuilder> query;
-	
+
 	/** The SQL query. */
 	SqlNode sql;
-	
+
 	/** The join node. */
 	JoinNode join;
-	
+
 	/** The Pre-Process/Transfer/Post-Process node - PTP */
 	PtpNode ptpNode;
-	
+
 	/** The Pre-Processing of PTP transfer */
 	PreprocessNode ptpPreprocess;
-	
+
 	/** The Post-Processing of PTP transfer */
 	PostprocessNode ptpPostprocess;
-	
+
 	/** The Transfer of PTP transfer */
 	TransferNode ptpTransfer;
-	
+
 	/** The name of the parameter being parsed. */
 	String paramName;
-	
+
 	/** The value of the parameter being parsed. */
 	StringBuilder paramValue;
-	
+
 	/** Constructs the report configuration content handler. */
 	public SAXContentHandler(LigretoNode ligretoNode) {
 		this.ligretoNode = ligretoNode;
 	}
-	
+
 	@Override
 	public void characters(char[] chars, int start, int length) throws SAXException {
 		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
@@ -129,8 +113,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	}
 
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName)
-			throws SAXException {
+	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 		switch (objectStack.pop()) {
 		case DATA_SOURCE:
 			ligretoNode.addDataSource(dataSource);
@@ -177,14 +160,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	}
 
 	@Override
-	public void ignorableWhitespace(char[] arg0, int arg1, int arg2)
-			throws SAXException {
+	public void ignorableWhitespace(char[] arg0, int arg1, int arg2) throws SAXException {
 		// Auto-generated method stub
 	}
 
 	@Override
-	public void processingInstruction(String arg0, String arg1)
-			throws SAXException {
+	public void processingInstruction(String arg0, String arg1) throws SAXException {
 		// Auto-generated method stub
 	}
 
@@ -219,8 +200,11 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("report".equals(localName)) {
 					objectStack.push(ObjectType.REPORT);
 					try {
-						reportNode = new ReportNode(ligretoNode,
-								atts.getValue("name"), atts.getValue("type"));
+						reportNode = new ReportNode(ligretoNode, atts.getValue("name"), atts.getValue("type"));
+						String options = atts.getValue("options");
+						if (options != null) {
+							reportNode.setOptions(options);
+						}
 					} catch (ReportException e) {
 						throw new SAXException(e);
 					}
@@ -334,11 +318,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			case JOIN:
 				if ("sql".equals(localName)) {
 					if (join.getSqlQueries().size() > 1
-							&& (join.getJoinType() == JoinNode.JoinType.LEFT || join
-									.getJoinType() == JoinNode.JoinType.RIGHT)) {
-						throw new SAXException(
-								new LigretoException(
-										"Left or right join could have only two sql queries specified."));
+							&& (join.getJoinType() == JoinNode.JoinType.LEFT || join.getJoinType() == JoinNode.JoinType.RIGHT)) {
+						throw new SAXException(new LigretoException(
+								"Left or right join could have only two sql queries specified."));
 					}
 					objectStack.push(ObjectType.JOIN_SQL);
 					sql = new SqlNode(ligretoNode);
@@ -403,8 +385,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						ptpTarget.setTruncate(atts.getValue("truncate"));
 					}
 					if (atts.getValue("commitInterval") != null) {
-						ptpTarget.setCommitInterval(atts
-								.getValue("commitInterval"));
+						ptpTarget.setCommitInterval(atts.getValue("commitInterval"));
 					}
 					ptpTransfer.setTargetNode(ptpTarget);
 				} else if ("sql".equals(localName)) {
@@ -433,13 +414,11 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 			default:
 				if ("query".equals(localName)) {
-					query = new Pair<String, StringBuilder>(
-							atts.getValue("name"), new StringBuilder());
+					query = new Pair<String, StringBuilder>(atts.getValue("name"), new StringBuilder());
 					objectStack.push(ObjectType.QUERY);
 				} else if ("data-source".equals(localName)) {
 					objectStack.push(ObjectType.DATA_SOURCE);
-					dataSource = new DataSourceNode(ligretoNode,
-							atts.getValue("name"));
+					dataSource = new DataSourceNode(ligretoNode, atts.getValue("name"));
 				} else if ("ligreto".equals(localName)) {
 					objectStack.push(ObjectType.LIGRETO);
 				} else {
@@ -448,8 +427,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 			}
 			if (objectStack.size() != entryStackDepth + 1) {
-				throw new AssertionException(
-						"Fatal error in parser: The parsed node was not added into the object stack.");
+				throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack.");
 			}
 		} catch (InvalidFormatException e) {
 			throw new SAXException("Error parsing input file.", e);
@@ -457,36 +435,31 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	}
 
 	@Override
-	public void startPrefixMapping(String arg0, String arg1)
-			throws SAXException {
+	public void startPrefixMapping(String arg0, String arg1) throws SAXException {
 		// Auto-generated method stub
 	}
 
 	@Override
 	public void error(SAXParseException e) throws SAXException {
-		throw e;		
+		throw e;
 	}
 
 	@Override
 	public void fatalError(SAXParseException e) throws SAXException {
-		throw e;		
+		throw e;
 	}
 
 	@Override
 	public void warning(SAXParseException e) throws SAXException {
-		throw e;		
+		throw e;
 	}
 
 	@Override
-	public void notationDecl(String arg0, String arg1, String arg2)
-			throws SAXException {
-		// Auto-generated method stub		
+	public void notationDecl(String arg0, String arg1, String arg2) throws SAXException {
 	}
 
 	@Override
-	public void unparsedEntityDecl(String arg0, String arg1, String arg2,
-			String arg3) throws SAXException {
-		// Auto-generated method stub		
+	public void unparsedEntityDecl(String arg0, String arg1, String arg2, String arg3) throws SAXException {
 	}
 
 }

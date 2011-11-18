@@ -66,6 +66,7 @@ public class LigretoExecutor extends Executor {
 			ReportBuilder reportBuilder = ReportBuilder.createInstance(ligretoNode, reportNode.getReportType());
 			reportBuilder.setTemplate(reportNode.getTemplate());
 			reportBuilder.setOutput(reportNode.getOutput());
+			reportBuilder.setOptions(reportNode.getOptions());
 			reportBuilder.start();
 		
 			SqlExecutor sqlExecutor = new SqlExecutor();

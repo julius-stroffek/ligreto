@@ -12,9 +12,10 @@
 <!ATTLIST param name CDATA #REQUIRED>
 <!ATTLIST param value CDATA #IMPLIED>
 
-<!ELEMENT report (template,output,data)>
+<!ELEMENT report (template?,output,data)>
 <!ATTLIST report name CDATA #IMPLIED>
 <!ATTLIST report type CDATA "excel">
+<!ATTLIST report options CDATA #IMPLIED>
 
 <!ELEMENT output EMPTY>
 <!ATTLIST output file CDATA #REQUIRED>

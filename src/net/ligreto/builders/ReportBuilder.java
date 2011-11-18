@@ -6,6 +6,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import net.ligreto.exceptions.InvalidTargetException;
+import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.parser.nodes.*;
 import net.ligreto.util.MiscUtils;
@@ -29,17 +30,18 @@ import net.ligreto.util.MiscUtils;
  *   		nextRow();
  *   		// Dump the i-th column from the ResultSet
  *   		setColumn(i, rs); 
- *   		// Could dump more columns here
+ *   		// Could dump more columns here using setColumn method call
  *   		setColumnPosition(10);
- *   		// Could dump more columns here to shifted location
+ *   		// Could dump more columns here to shifted location using setColumn method call
  *   	}
  *   }
  *   
  * </pre>
  *
- * The report builder could be automatically highlighting the differences
- * or based on the other reason by invoking <code>setHighlightArray</code>
- * before the call to any <code>setCell</code> methods.
+ * The report builder could automatically highlight the differences
+ * or otherwise highlight certain column values as specified
+ * by invoking <code>setHighlightArray</code> before the call
+ * to any <code>setCell</code> methods.
  *  
  * @author Julius Stroffek
  *
@@ -198,7 +200,11 @@ public abstract class ReportBuilder {
 
 	/** Set up the template file. */
 	public void setTemplate(String template) {
-		this.template = ligretoNode.substituteParams(template);
+		if (template != null) {
+			this.template = ligretoNode.substituteParams(template);
+		} else {
+			this.template = null;
+		}
 	}
 	
 	/** Set up the output file name. */
@@ -266,17 +272,35 @@ public abstract class ReportBuilder {
 	}
 
 	/**
+	 * Sets up the report type specific options. 
+	 *
+	 * @throws LigretoException
+	 */
+	public abstract void setOptions(Iterable<String> options) throws LigretoException;
+
+	/**
 	 * Store the specified object into the result column of the current row.
 	 * 
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
+	 * @param rgb The text color to use.
 	 */
 	public abstract void setColumn(int i, Object o, short[] rgb);
 	
 	/**
+	 * Store the specified object into the result column of the header row.
+	 * 
+	 * @param i The column index relative to <code>actColumn</code> position.
+	 * @param o The object which value should be stored.
+	 */
+	public void setHeaderColumn(int i, Object o) {
+		setColumn(i, o, getHlColor(i));
+	}
+	
+	/**
 	 * This method will setup the 
-	 * @param target
-	 * @param append
+	 * @param target The target location to set.
+	 * @param append Indicates whether the data should be appended.
 	 * @throws InvalidTargetException
 	 */
 	public abstract void setTarget(String target, boolean append) throws InvalidTargetException;
@@ -288,7 +312,7 @@ public abstract class ReportBuilder {
 		nextRow();
 		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				setColumn(columnStep*c++, rsmd.getColumnLabel(i));
+				setHeaderColumn(columnStep*c++, rsmd.getColumnLabel(i));
 			}
 		}
 	}
@@ -296,7 +320,7 @@ public abstract class ReportBuilder {
 	public void dumpJoinOnHeader(ResultSet rs, int[] on) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=0; i < on.length; i++) {
-			setColumn(columnStep*i, rsmd.getColumnLabel(on[i]));
+			setHeaderColumn(columnStep*i, rsmd.getColumnLabel(on[i]));
 		}
 	}
 
@@ -314,7 +338,7 @@ public abstract class ReportBuilder {
 			}
 			
 			if (!skip) {
-				setColumn(columnStep*idx, rsmd.getColumnLabel(i+1));
+				setHeaderColumn(columnStep*idx, rsmd.getColumnLabel(i+1));
 				idx++;
 			}
 		}

@@ -86,6 +86,5 @@ public class JoinReportTest {
 				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),
 				new XSSFWorkbook(new FileInputStream("desired/joinreport.xlsx"))
 		).areSame());
-
 	}
 }
