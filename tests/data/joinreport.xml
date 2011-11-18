@@ -11,7 +11,7 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report name="Simple Report" options="autoFilter,autoSize,headerStyle">
+	<report name="Simple Report" options="autoFilter, autoSize,headerStyle">
 		<output file="joinreport.xlsx"/>
 		<data>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true">

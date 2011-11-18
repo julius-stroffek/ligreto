@@ -14,7 +14,7 @@
 			</init>
 		</data-source>
 	</data-sources>
-	<report options="autoFilter,autoSize,headerStyle">
+	<report options="autoFilter,autoSize ,headerStyle">
 		<template file="blank.xlsx"/>
 		<output file="sqlreport.xlsx"/>
 		<data>
