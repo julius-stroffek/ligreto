@@ -16,6 +16,7 @@ public class ReportNode extends Node {
 	protected String template;
 	protected String output;
 	protected ReportType reportType;
+	protected String locale;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<JoinNode> joins = new ArrayList<JoinNode>();
 	protected List<String> options = new ArrayList<String>();
@@ -110,5 +111,13 @@ public class ReportNode extends Node {
 		for (String o : opts) {
 			options.add(o.trim());
 		}
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
 	}
 }

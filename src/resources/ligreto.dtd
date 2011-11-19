@@ -15,6 +15,7 @@
 <!ELEMENT report (template?,output,data)>
 <!ATTLIST report name CDATA #IMPLIED>
 <!ATTLIST report type CDATA "excel">
+<!ATTLIST report locale CDATA #IMPLIED>
 <!ATTLIST report options CDATA #IMPLIED>
 
 <!ELEMENT output EMPTY>
@@ -46,6 +47,7 @@
 <!ATTLIST join hlColor CDATA "#d02020">
 <!ATTLIST join on CDATA #IMPLIED>
 <!ATTLIST join exclude CDATA #IMPLIED>
+<!ATTLIST join locale CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>

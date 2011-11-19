@@ -5,7 +5,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.Collator;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +23,9 @@ import net.ligreto.util.ResultSetComparator;
 
 public class JoinExecutor extends Executor implements JoinResultCallBack {
 
+	/** The collation error message used in multiple places. */
+	private static final String collationError = "The order of rows received from database does not match the used locale; set locale attribute in the <report> or <join> nodes; data source: ";
+	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(JoinExecutor.class);
 
@@ -32,11 +37,16 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	
 	/** The <code>ReportBuilder</code> object used to process the results. */
 	protected ReportBuilder reportBuilder;
+	
+	/** The locale to be used for join processing. */
+	protected Locale locale;
+	
+	/** The collator to be used for join processing based on the specified locale. */
+	protected Collator collator;
 
 	@Override
-	public boolean prepareProcessing(JoinNode joinNode, ResultSet rs1, ResultSet rs2)
-			throws Exception {
-		return true;
+	public boolean prepareProcessing(JoinNode joinNode, ResultSet rs1, ResultSet rs2) throws Exception {
+		throw new UnimplementedMethodException("Callback implementation is not done for join execution");
 	}
 
 	@Override
@@ -59,6 +69,16 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	public void execute() throws LigretoException {
 		try {
 			for (JoinNode joinNode : joinNodes) {
+				String loc = joinNode.getLocale();
+				if (loc == null) {
+					loc = joinNode.getReportNode().getLocale();
+				}
+				if (loc != null) {
+					locale = new Locale(loc);
+				} else {
+					locale = Locale.getDefault();
+				}
+				collator = Collator.getInstance(locale);
 				executeJoin(joinNode);
 			}
 		} catch (Exception e) {
@@ -214,8 +234,29 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
+			ResultSetComparator comparator = new ResultSetComparator(collator);
+			ResultSetComparator.Column[] pCol1 = comparator.duplicate(rs1, on1);
+			ResultSetComparator.Column[] pCol2 = comparator.duplicate(rs2, on2);
+			ResultSetComparator.Column[] col1 = null;
+			ResultSetComparator.Column[] col2 = null;
 			while (hasNext1 && hasNext2) {
-				int cResult = ResultSetComparator.compare(rs1, on1, rs2, on2); 
+				// Compare the subsequent rows in each result set and see whether they match
+				// the collation we are using here for processing
+				col1 = comparator.duplicate(rs1, on1);
+				col2 = comparator.duplicate(rs2, on2);
+				int dResult1 = comparator.compare(pCol1, col1);
+				int dResult2 = comparator.compare(pCol2, col2);
+				pCol1 = col1;
+				pCol2 = col2;
+
+				if (dResult1 > 0) {
+					throw new LigretoException(collationError + joinNode.getSqlQueries().get(0).getDataSource());
+				}
+				if (dResult2 > 0) {
+					throw new LigretoException(collationError + joinNode.getSqlQueries().get(1).getDataSource());
+				}
+				
+				int cResult = comparator.compare(rs1, on1, rs2, on2);
 				switch (cResult) {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
@@ -234,7 +275,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = ResultSetComparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
+					int[] cmpArray = comparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
 					
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
 						reportBuilder.nextRow();
@@ -275,6 +316,16 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 			if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 				while (hasNext1) {
+					// Compare the subsequent rows in each result set and see whether they match
+					// the collation we are using here for processing
+					col1 = comparator.duplicate(rs1, on1);
+					int dResult1 = comparator.compare(pCol1, col1);
+					pCol1 = col1;
+
+					if (dResult1 > 0) {
+						throw new LigretoException(collationError + joinNode.getSqlQueries().get(0).getDataSource());
+					}
+
 					reportBuilder.nextRow();
 					reportBuilder.setHighlightArray(higherArray);
 					reportBuilder.setJoinOnColumns(rs1, on1);
@@ -289,13 +340,23 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 			if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 				while (hasNext2) {
+					// Compare the subsequent rows in each result set and see whether they match
+					// the collation we are using here for processing
+					col2 = comparator.duplicate(rs2, on2);
+					int dResult2 = comparator.compare(pCol2, col2);
+					pCol2 = col2;
+
+					if (dResult2 > 0) {
+						throw new LigretoException(collationError + joinNode.getSqlQueries().get(1).getDataSource());
+					}
+					
 					reportBuilder.nextRow();
 					reportBuilder.setHighlightArray(lowerArray);
 					reportBuilder.setJoinOnColumns(rs2, on2);
 					if (joinNode.getInterlaced()) {
 						reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
 					} else  {
-						reportBuilder.setColumnPosition(rs1ColCount, 1, higherArray);							
+						reportBuilder.setColumnPosition(rs1ColCount, 1, higherArray);
 					}
 					reportBuilder.setOtherColumns(rs2, on2, excl2);
 					hasNext2 = rs2.next();

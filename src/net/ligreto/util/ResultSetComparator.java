@@ -5,11 +5,66 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.Collator;
 
 import net.ligreto.exceptions.LigretoException;
 
 public class ResultSetComparator {
-	public static int compare(ResultSet rs1, int on1, ResultSet rs2, int on2) throws SQLException {
+	
+	/** This class holds the information about duplicate column from the result set. */
+	public class Column {
+		/**
+		 * Creates the instance from the result set. 
+		 * @throws SQLException
+		 */
+		private Column(ResultSet rs, int index) throws SQLException {
+			columnType = rs.getMetaData().getColumnType(index);
+			switch (columnType) {
+			case Types.BOOLEAN:
+				columnValue = new Boolean(rs.getBoolean(index));
+				break;
+			case Types.BIGINT:
+			case Types.INTEGER:
+				columnValue = new Long(rs.getLong(index));
+				break;
+			case Types.DOUBLE:
+			case Types.FLOAT:
+				columnValue = new Double(rs.getDouble(index));
+				break;
+			case Types.DATE:
+			case Types.TIMESTAMP:
+			case Types.TIME:
+				columnValue = new Timestamp(rs.getTimestamp(index).getTime());
+				break;
+			case Types.DECIMAL:
+			case Types.NUMERIC:
+				BigDecimal bd = rs.getBigDecimal(index);
+				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale()); 
+			default:
+				columnValue = new String(rs.getString(index));
+				break;			
+			}
+		}
+		
+		/** The column type that correspond to java.sql.Types definitions. */
+		public int columnType;
+		
+		/** The column value. */
+		public Object columnValue;
+	}
+	
+	/** The collator object used for comparisons. */
+	protected Collator collator;
+	
+	public ResultSetComparator() {
+		collator = Collator.getInstance();
+	}
+	
+	public ResultSetComparator(Collator collator) {
+		this.collator = collator;
+	}
+
+	public int compare(ResultSet rs1, int on1, ResultSet rs2, int on2) throws SQLException {
 		int result = 0;
 		// Deal with the case when at least one of the values is null.
 		rs1.getString(on1);
@@ -62,11 +117,11 @@ public class ResultSetComparator {
 		return 0;
 	}
 	
-	private static int compare(String s1, String s2) {
-		return s1.trim().compareTo(s2.trim());
+	public int compare(String s1, String s2) {
+		return collator.compare(s1.trim(), s2.trim());
 	}
 
-	public static int compare(ResultSet rs1, ResultSet rs2) throws SQLException {
+	public int compare(ResultSet rs1, ResultSet rs2) throws SQLException {
 		int colCount1 = rs1.getMetaData().getColumnCount();
 		int colCount2 = rs2.getMetaData().getColumnCount();
 		int cmpCount = colCount1 < colCount2 ? colCount1 : colCount2;
@@ -80,11 +135,11 @@ public class ResultSetComparator {
 		return 0;
 	}
 	
-	public static int compare(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException {
+	public int compare(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException {
 		Assert.assertTrue(on1.length == on2.length);
 		
 		int cResult;
-		for (int i=0; i < on1.length; i++) {			
+		for (int i=0; i < on1.length; i++) {
 			cResult = compare(rs1, on1[i], rs2, on2[i]);
 			if (cResult != 0)
 				return cResult;
@@ -92,7 +147,57 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	public static int[] compareOthers(ResultSet rs1, int[] on1, int[] excl1, ResultSet rs2, int[] on2, int[] excl2) throws SQLException, LigretoException {
+	public Column[] duplicate(ResultSet rs, int[] on) throws SQLException {
+		Column[] result = new Column[on.length];
+		for (int i=0; i < on.length; i++) {
+			result[i] = new Column(rs, on[i]);
+		}
+		return result;
+	}
+
+	public int compare(Column[] cols1, Column[] cols2) throws LigretoException {
+		int result = 0;
+		if (cols1.length != cols2.length) {
+			throw new LigretoException("The column arrays to compare have different lengths.");
+		}
+		for (int i=0; i < cols1.length; i++) {
+			if (cols1[i].columnType != cols2[i].columnType) {
+				throw new LigretoException("The columns to compare have different types.");
+			}
+			switch (cols1[i].columnType) {
+			case Types.BOOLEAN:
+				result = compare((Boolean)cols1[i].columnValue, (Boolean)cols2[i].columnValue);
+				break;
+			case Types.BIGINT:
+			case Types.INTEGER:
+				result = compare((Long)cols1[i].columnValue, (Long)cols2[i].columnValue);
+				break;
+			case Types.DOUBLE:
+			case Types.FLOAT:
+				result = compare((Double)cols1[i].columnValue, (Double)cols2[i].columnValue);
+				break;
+			case Types.DATE:
+			case Types.TIMESTAMP:
+			case Types.TIME:
+				result = compare((Timestamp)cols1[i].columnValue, (Timestamp)cols2[i].columnValue);
+				break;
+			case Types.DECIMAL:
+			case Types.NUMERIC:
+				result = compare((BigDecimal)cols1[i].columnValue, (BigDecimal)cols2[i].columnValue);
+			default:
+				result = compare((String)cols1[i].columnValue, (String)cols2[i].columnValue);
+				break;
+			}
+		}
+		
+		if (result < 0)
+			result = -1;
+		if (result > 0)
+			result = 1;
+		return result;
+	}
+
+	public int[] compareOthers(ResultSet rs1, int[] on1, int[] excl1, ResultSet rs2, int[] on2, int[] excl2) throws SQLException, LigretoException {
 		Assert.assertTrue(on1.length == on2.length);
 		
 		int colCount1 = rs1.getMetaData().getColumnCount();
@@ -137,15 +242,15 @@ public class ResultSetComparator {
 		return result;
 	}
 
-	private static int compare(boolean b1, boolean b2) {
+	public int compare(boolean b1, boolean b2) {
 		return new Boolean(b1).compareTo(b2);
 	}
 
-	private static int compare(BigDecimal bd1, BigDecimal bd2) {
+	public int compare(BigDecimal bd1, BigDecimal bd2) {
 		return (bd1.compareTo(bd2));
 	}
 
-	private static int compare(Timestamp t1, Timestamp t2) {
+	public int compare(Timestamp t1, Timestamp t2) {
 		if (t1.before(t2))
 			return -1;
 		if (t1.after(t2))
@@ -153,7 +258,7 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	private static int compare(double n1, double n2) {
+	public int compare(double n1, double n2) {
 		if (n1 < n2)
 			return -1;
 		if (n1 > n2)
@@ -161,7 +266,7 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	private static int compare(long n1, long n2) {
+	public int compare(long n1, long n2) {
 		if (n1 < n2)
 			return -1;
 		if (n1 > n2)

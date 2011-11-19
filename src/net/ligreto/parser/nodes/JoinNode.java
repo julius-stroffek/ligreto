@@ -26,11 +26,13 @@ public class JoinNode extends Node {
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected int[] on;
 	protected String exclude;
+	protected String locale;
+	protected ReportNode reportNode;
 	
 	public JoinNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
-
 	}
+
 	public void addSql(SqlNode sql) {
 		sqlQueries.add(sql);
 	}
@@ -257,5 +259,21 @@ public class JoinNode extends Node {
 		} else {
 			return null;
 		}
+	}
+	
+	public String getLocale() {
+		return locale;
+	}
+	
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public ReportNode getReportNode() {
+		return reportNode;
+	}
+
+	public void setReportNode(ReportNode reportNode) {
+		this.reportNode = reportNode;
 	}
 }

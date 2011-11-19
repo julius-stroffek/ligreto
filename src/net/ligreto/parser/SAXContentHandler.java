@@ -146,6 +146,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case JOIN:
 			reportNode.addJoin(join);
+			join.setReportNode(reportNode);
 			join = null;
 			break;
 		case PARAM:
@@ -205,6 +206,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						if (options != null) {
 							reportNode.setOptions(options);
 						}
+						reportNode.setLocale(atts.getValue("locale"));
 					} catch (ReportException e) {
 						throw new SAXException(e);
 					}
@@ -313,6 +315,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("append") != null) {
 						join.setAppend(atts.getValue("append"));
 					}
+					join.setLocale(atts.getValue("locale"));
 				}
 				break;
 			case JOIN:
