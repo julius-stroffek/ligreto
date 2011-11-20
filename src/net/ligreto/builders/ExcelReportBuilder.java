@@ -29,7 +29,6 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -603,6 +602,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 				autoSize = true;
 			} else if ("headerStyle".equals(o)) {
 				headerStyle = true;
+			} else if ("noDateTimeFormat".equals(o)) {
+				noDateTimeFormat = true;
 			} else {
 				throw new LigretoException("Unsupported option specified: '" + o + "'");
 			}

@@ -71,4 +71,15 @@ public class DateTimeReportTest {
 				new XSSFWorkbook(new FileInputStream("desired/datetimereport.xlsx"))
 		).areSame());
 	}
+	
+	@Test
+	public void testNoDateTimeFormatReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("nodatetimeformatreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		executor.execute();
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("nodatetimeformatreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/nodatetimeformatreport.xlsx"))
+		).areSame());
+	}
 }
