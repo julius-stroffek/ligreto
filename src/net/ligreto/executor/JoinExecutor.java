@@ -24,7 +24,10 @@ import net.ligreto.util.ResultSetComparator;
 public class JoinExecutor extends Executor implements JoinResultCallBack {
 
 	/** The collation error message used in multiple places. */
-	private static final String collationError = "The order of rows received from database does not match the used locale; set locale attribute in the <report> or <join> nodes; data source: ";
+	private static final String collationError = "The order of rows received from database does not match the used locale; set locale attribute in the <report> or <join> nodes; affected data source: ";
+
+	/** The collation error message used in multiple places. */
+	private static final String nonuniqueError = "The rows received are duplicate in columns specified as 'on' columns; use 'on' columns that are unnique; affected data source: ";
 	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(JoinExecutor.class);
@@ -235,8 +238,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
 			ResultSetComparator comparator = new ResultSetComparator(collator);
-			ResultSetComparator.Column[] pCol1 = comparator.duplicate(rs1, on1);
-			ResultSetComparator.Column[] pCol2 = comparator.duplicate(rs2, on2);
+			ResultSetComparator.Column[] pCol1 = null;
+			ResultSetComparator.Column[] pCol2 = null;
 			ResultSetComparator.Column[] col1 = null;
 			ResultSetComparator.Column[] col2 = null;
 			while (hasNext1 && hasNext2) {
@@ -244,11 +247,15 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// the collation we are using here for processing
 				col1 = comparator.duplicate(rs1, on1);
 				col2 = comparator.duplicate(rs2, on2);
-				int dResult1 = comparator.compare(pCol1, col1);
-				int dResult2 = comparator.compare(pCol2, col2);
-				pCol1 = col1;
-				pCol2 = col2;
+				int dResult1 = pCol1 != null ? comparator.compare(pCol1, col1) : -1;
+				int dResult2 = pCol2 != null ? comparator.compare(pCol2, col2) : -1;
 
+				if (dResult1 == 0) {
+					throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(0).getDataSource());
+				}
+				if (dResult2 == 0) {
+					throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(1).getDataSource());
+				}
 				if (dResult1 > 0) {
 					throw new LigretoException(collationError + joinNode.getSqlQueries().get(0).getDataSource());
 				}
@@ -270,6 +277,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 						reportBuilder.setOtherColumns(rs1, on1, excl1);
 					}
+					pCol1 = col1;
 					hasNext1 = rs1.next();
 					break;
 				case 0:
@@ -295,6 +303,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 						reportBuilder.setOtherColumns(rs2, on2, excl1);
 					}
+					pCol1 = col1;
+					pCol2 = col2;
 					hasNext1 = rs1.next();
 					hasNext2 = rs2.next();
 					break;
@@ -310,6 +320,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 						reportBuilder.setOtherColumns(rs2, on2, excl2);
 					}
+					pCol2 = col2;
 					hasNext2 = rs2.next();
 					break;
 				}				
@@ -319,9 +330,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
 					col1 = comparator.duplicate(rs1, on1);
-					int dResult1 = comparator.compare(pCol1, col1);
+					int dResult1 = pCol1 != null ? comparator.compare(pCol1, col1) : -1;
 					pCol1 = col1;
 
+					if (dResult1 == 0) {
+						throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(0).getDataSource());
+					}
 					if (dResult1 > 0) {
 						throw new LigretoException(collationError + joinNode.getSqlQueries().get(0).getDataSource());
 					}
@@ -343,9 +357,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
 					col2 = comparator.duplicate(rs2, on2);
-					int dResult2 = comparator.compare(pCol2, col2);
+					int dResult2 = pCol2 != null ? comparator.compare(pCol2, col2) : -1;
 					pCol2 = col2;
 
+					if (dResult2 == 0) {
+						throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(1).getDataSource());
+					}
 					if (dResult2 > 0) {
 						throw new LigretoException(collationError + joinNode.getSqlQueries().get(1).getDataSource());
 					}
