@@ -38,4 +38,9 @@ public class TestUtils {
 	public static void storePerfResults(String operation, long amount, long millis) {
 		log.info("Operation: " + operation + " on " + amount + " records took " + millis/1000 + " seconds.");
 	}
+	
+	/** Log the performance results into the log file. */
+	public static void logPerfResults(String operation, long amount, long millis) {
+		log.info("Operation: " + operation + " on " + amount + " records took " + millis/1000 + " seconds.");
+	}
 }

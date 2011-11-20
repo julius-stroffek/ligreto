@@ -30,6 +30,7 @@ public class PtpPerformance {
 	
 	/** The number of rows to be tested. */
 	public static final long commitInterval = 10000;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */

@@ -16,11 +16,13 @@ import org.junit.runners.Suite.SuiteClasses;
 	ParserTest.class,
 	InitFailureTest.class,
 	SqlReportTest.class,
+	DateTimeReportTest.class,
 	JoinReportTest.class,
 	Excel97ReportTest.class,
 	PtpReportTest.class,
 	StyleDedupTest.class,
-	ExcludeColumnsTest.class
+	ExcludeColumnsTest.class,
+	ExcelStreamReportTest.class
 })
 public class AllTests {
 	/**

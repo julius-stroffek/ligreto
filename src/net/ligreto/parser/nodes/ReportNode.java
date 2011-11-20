@@ -10,7 +10,7 @@ import net.ligreto.exceptions.ReportException;
  *
  */
 public class ReportNode extends Node {
-	public enum ReportType {EXCEL, TEX, XML};
+	public enum ReportType {EXCEL, EXCELSTREAM, TEX, XML};
 	
 	protected String name;
 	protected String template;
@@ -26,6 +26,8 @@ public class ReportNode extends Node {
 		name = reportName;
 		if ("excel".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.EXCEL;
+		} else if ("excel.stream".equalsIgnoreCase(reportType)) {
+			this.reportType = ReportType.EXCELSTREAM;
 		} else if ("tex".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.TEX;
 		} else if ("xml".equalsIgnoreCase(reportType)) {

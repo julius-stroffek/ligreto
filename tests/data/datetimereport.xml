@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="dummy" value="sysibm.sysdummy1"/>
+	<param name="refdummy" value="${dummy}"/> 
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+			<init>
+				<sql>select * from ${refdummy}</sql>
+			</init>
+		</data-source>
+	</data-sources>
+	<report options="autoFilter,autoSize ,headerStyle">
+		<output file="datetimereport.xlsx"/>
+		<data>
+			<sql data-source="Source1" target="A1" header="true">select * from date_time_test</sql>
+		</data>
+	</report>
+</ligreto>

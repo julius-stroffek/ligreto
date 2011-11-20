@@ -19,6 +19,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -28,6 +29,7 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -41,6 +43,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  *   <li>autoFilter</li>
  *   <li>autoSize</li>
  *   <li>formatHeader</li>
+ *   <li>noDateTimeFormat</li>
  * </ul>
  * 
  * @author Julius Stroffek
@@ -63,6 +66,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 	/** The <code>Workbook</code> object for the output report. */
 	protected Workbook wb;
 	
+	/** The workbook data format instance. */
+	protected DataFormat dataFormat;
+	
 	/** The <code>Sheet</code> object where the result is placed. */
 	protected Sheet sheet;
 	
@@ -80,6 +86,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 	
 	/** Indicates that the header row should have style adjustments (background color; bold fond). */
 	protected boolean headerStyle = false;
+	
+	/** Indicates whether the date/time cells should be auto formatted. */
+	protected boolean noDateTimeFormat = false;
 	
 	/** Holds the highest column index used for actual target. */
 	int lastColumnIndex = -1;
@@ -165,28 +174,55 @@ public class ExcelReportBuilder extends ReportBuilder {
 	@Override
 	public void setColumn(int i, Object o, short[] rgb) {
 		Cell cell = createCell(row, actCol + i);
-		if (o instanceof Integer)
+		if (o instanceof Integer) {
 			cell.setCellValue(((Integer)o).intValue());
-		else if (o instanceof Long)
+		} else if (o instanceof Long) {
 			cell.setCellValue(((Long)o).longValue());
-		else if (o instanceof Double)
+		} else if (o instanceof Double) {
 			cell.setCellValue(((Double)o).doubleValue());
-		else if (o instanceof Float)
+		} else if (o instanceof Float) {
 			cell.setCellValue(((Float)o).floatValue());
-		else if (o instanceof BigDecimal)
+		} else if (o instanceof BigDecimal) {
 			cell.setCellValue(((BigDecimal)o).toString());
-		else if (o instanceof Date)
+		} else if (o instanceof Date) {
 			cell.setCellValue(((Date)o));
-		else if (o instanceof Timestamp)
+			if (!noDateTimeFormat) {
+				setDataFormat(cell, "yyyy-mm-dd");
+			}
+		} else if (o instanceof Timestamp) {
 			cell.setCellValue(((Timestamp)o));
-		else if (o instanceof Time)
+			if (!noDateTimeFormat) {
+				setDataFormat(cell, "yyyy-mm-dd hh:mm:ss");
+			}
+		} else if (o instanceof Time) {
 			cell.setCellValue(((Time)o));
-		else
+			if (!noDateTimeFormat) {
+				setDataFormat(cell, "hh:mm:ss");
+			}
+		} else {
 			cell.setCellValue(o.toString());
-		if (rgb != null)
+		}
+		if (rgb != null) {
 			setCellColor(cell, rgb);
+		}
 	}
 	
+	/**
+	 * Assigns the specified format to the specified cell and makes sure that the style
+	 * is not duplicated if the same style already exists.
+	 * 
+	 * @param cell Cell where the format should be assigned
+	 * @param formatString Format string to be used
+	 */
+	private void setDataFormat(Cell cell, String formatString) {
+		CellStyle cellStyle = cell.getCellStyle();
+		short oldFormat = cellStyle.getDataFormat();
+		cellStyle.setDataFormat(dataFormat.getFormat(formatString));
+		CellStyle newStyle = cloneStyle(cellStyle);
+		cellStyle.setDataFormat(oldFormat);
+		cell.setCellStyle(newStyle);
+	}
+
 	public void setHeaderColumn(int i, Object o) {
 		setColumn(i, o);
 		// Format the header column
@@ -495,7 +531,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	@Override
-	public void start() throws IOException {
+	public void start() throws IOException, LigretoException {
 		out = new FileOutputStream(output);
 
 		// Alter the output format if necessary
@@ -527,6 +563,10 @@ public class ExcelReportBuilder extends ReportBuilder {
 				break;
 			}
 		}
+		
+		// Create the data format object
+		dataFormat = wb.createDataFormat();
+		
 		if (wb.getNumberOfSheets() > 0) {
 			sheet = wb.getSheetAt(wb.getActiveSheetIndex());
 		} else {

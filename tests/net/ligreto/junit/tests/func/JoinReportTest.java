@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import net.ligreto.exceptions.CollationException;
-import net.ligreto.exceptions.DataSourceInitException;
 import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;

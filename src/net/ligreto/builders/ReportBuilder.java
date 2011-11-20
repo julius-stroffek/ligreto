@@ -130,6 +130,9 @@ public abstract class ReportBuilder {
 		case EXCEL:
 			builder = new ExcelReportBuilder();
 			break;
+		case EXCELSTREAM:
+			builder = new ExcelStreamReportBuilder();
+			break;
 		case TEX:
 			throw new UnimplementedMethodException();
 		case XML:
@@ -304,7 +307,7 @@ public abstract class ReportBuilder {
 	 * @throws InvalidTargetException
 	 */
 	public abstract void setTarget(String target, boolean append) throws InvalidTargetException;
-	public abstract void start() throws IOException;
+	public abstract void start() throws IOException, LigretoException;
 	public abstract void writeOutput() throws IOException;
 
 	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException {
