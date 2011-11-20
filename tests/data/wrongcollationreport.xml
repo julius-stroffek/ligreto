@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source3">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db3"/>
+		</data-source>
+	</data-sources>
+	<report name="Collation Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
+		<output file="collationreport.xlsx"/>
+		<data>
+			<join on="1" target="A1" type="full" header="true" append="true" highlight="true" locale="en">
+				<sql data-source="Source3">select * from coll_table</sql>
+				<sql data-source="Source3">select * from coll_table</sql>
+			</join>
+			<join on="1" target="A1" type="full" header="true" append="true" highlight="true" locale="sk">
+				<sql data-source="Source3">select * from coll_table</sql>
+				<sql data-source="Source3">select * from coll_table</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

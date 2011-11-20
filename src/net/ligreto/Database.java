@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import net.ligreto.exceptions.DataSourceException;
+import net.ligreto.exceptions.DataSourceInitException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.LigretoNode;
@@ -38,7 +40,7 @@ public class Database {
 		ligretoNode = aLigretoNode;
 	}
 	
-	public Connection getConnection(String name) throws DataSourceNotDefinedException, ClassNotFoundException, SQLException {
+	public Connection getConnection(String name) throws DataSourceException, ClassNotFoundException, SQLException {
 		DataSourceNode node = ligretoNode.getDataSourceNode(name);
 		if (node == null) {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
@@ -49,9 +51,13 @@ public class Database {
 		Connection cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
 		
 		// Initialize the connection with the given SQL queries
-		Statement stm = cnn.createStatement();
-		for (SqlNode sqlNode : node.sqlQueries()) {
-			stm.execute(sqlNode.getQuery());
+		try {
+			Statement stm = cnn.createStatement();
+			for (SqlNode sqlNode : node.sqlQueries()) {
+				stm.execute(sqlNode.getQuery());
+			}
+		} catch (SQLException e) {
+			throw new DataSourceInitException("Failed to initialize the connection by custom SQL statements.", e);
 		}
 		
 		return cnn;

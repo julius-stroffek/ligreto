@@ -11,6 +11,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import net.ligreto.exceptions.CollationException;
+import net.ligreto.exceptions.DataSourceInitException;
+import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
@@ -38,10 +41,12 @@ public class JoinReportTest {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		Connection cnn1 = DriverManager.getConnection("jdbc:derby:db1");
 		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2");
+		Connection cnn3 = DriverManager.getConnection("jdbc:derby:db3");
 		cnn1.setAutoCommit(true);
 		cnn2.setAutoCommit(true);
 		Statement stm1 = cnn1.createStatement();
 		Statement stm2 = cnn2.createStatement();
+		Statement stm3 = cnn3.createStatement();
 		try {
 			stm1.execute("drop table join_table1");
 		} catch (SQLException e) {
@@ -49,6 +54,11 @@ public class JoinReportTest {
 		}
 		try {
 			stm2.execute("drop table join_table2");
+		} catch (SQLException e) {
+			// do nothing
+		}
+		try {
+			stm3.execute("drop table coll_table");
 		} catch (SQLException e) {
 			// do nothing
 		}
@@ -66,6 +76,18 @@ public class JoinReportTest {
 		stm2.execute("insert into join_table2 values (7, 'Martin7', 'Velky7', 77)");
 		stm1.execute("insert into join_table1 values (8, 'Bruce8', 'Abone8', 15)");
 		stm2.execute("insert into join_table2 values (8, 'Bruce8', 'Abone8', 88)");
+		
+		stm3.execute("create table coll_table (Id varchar(32), first_name varchar(32), last_name varchar(32), age int)");
+		stm3.execute("insert into coll_table values ('abcd', '1Martin1', '1Velky1', 11)");
+		stm3.execute("insert into coll_table values ('bcde', '1Martin2', '1Velky2', 12)");
+		stm3.execute("insert into coll_table values ('cdef', '1Martin3', '1Velky3', 13)");
+		stm3.execute("insert into coll_table values ('defg', '1Martin4', '1Velky4', 14)");
+		stm3.execute("insert into coll_table values ('efgh', '1Martin5', '1Velky5', 15)");
+		stm3.execute("insert into coll_table values ('fghc', '1Martin6', '1Velky6', 16)");
+		stm3.execute("insert into coll_table values ('ghch', '1Martin7', '1Velky7', 17)");
+		stm3.execute("insert into coll_table values ('hchi', '1Martin8', '1Velky8', 18)");
+		stm3.execute("insert into coll_table values ('chij', '1Martin9', '1Velky9', 19)");
+
 		cnn1.close();
 		cnn2.close();
 	}
@@ -86,5 +108,49 @@ public class JoinReportTest {
 				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),
 				new XSSFWorkbook(new FileInputStream("desired/joinreport.xlsx"))
 		).areSame());
+	}
+	
+	@Test
+	public void testDuplicateJoinColumns() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("duplicatejoincolumnsreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		
+		boolean exceptionThrown = false;
+		try {
+			executor.execute();
+		} catch (LigretoException e) {
+			Throwable c1 = e.getCause();
+			Throwable c2 = c1.getCause();
+			
+			// Check that we got the right exception with the proper cause
+			if (c2 instanceof DuplicateJoinColumnsException) {
+				exceptionThrown = true;
+			} else {
+				throw e;
+			}
+		}
+		Assert.assertTrue(exceptionThrown);
+	}
+	
+	@Test
+	public void testWrongCollation() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("wrongcollationreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		
+		boolean exceptionThrown = false;
+		try {
+			executor.execute();
+		} catch (LigretoException e) {
+			Throwable c1 = e.getCause();
+			Throwable c2 = c1.getCause();
+			
+			// Check that we got the right exception with the proper cause
+			if (c2 instanceof CollationException) {
+				exceptionThrown = true;
+			} else {
+				throw e;
+			}
+		}
+		Assert.assertTrue(exceptionThrown);
 	}
 }

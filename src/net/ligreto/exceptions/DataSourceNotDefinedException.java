@@ -1,8 +1,9 @@
 package net.ligreto.exceptions;
 
-public class DataSourceNotDefinedException extends LigretoException {
+public class DataSourceNotDefinedException extends DataSourceException {
+
 	/**
-	 * Auto-generated stuff.
+	 * The default serial version ID.
 	 */
 	private static final long serialVersionUID = 1L;
 

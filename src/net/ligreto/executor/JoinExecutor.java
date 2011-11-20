@@ -14,6 +14,8 @@ import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
 import net.ligreto.builders.ReportBuilder;
+import net.ligreto.exceptions.CollationException;
+import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.parser.nodes.JoinNode;
@@ -24,10 +26,10 @@ import net.ligreto.util.ResultSetComparator;
 public class JoinExecutor extends Executor implements JoinResultCallBack {
 
 	/** The collation error message used in multiple places. */
-	private static final String collationError = "The order of rows received from database does not match the used locale; set locale attribute in the <report> or <join> nodes; affected data source: ";
+	private static final String collationError = "The order of rows received from database does not match the used locale; set locale attribute in the <report> or <join> nodes; data source: %s; target: %s";
 
 	/** The collation error message used in multiple places. */
-	private static final String nonuniqueError = "The rows received are duplicate in columns specified as 'on' columns; use 'on' columns that are unnique; affected data source: ";
+	private static final String duplicateJoinColumnsError = "The rows received are duplicate in columns specified as 'on' columns; use 'on' columns that are unique; data source: %s; target: %s";
 	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(JoinExecutor.class);
@@ -85,10 +87,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				executeJoin(joinNode);
 			}
 		} catch (Exception e) {
-			LigretoException ne = new LigretoException("Could not process the join.");
-			ne.initCause(e);
-			throw ne;
-
+			throw new LigretoException("Could not process the join.", e);
 		}
 	}
 
@@ -251,16 +250,16 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				int dResult2 = pCol2 != null ? comparator.compare(pCol2, col2) : -1;
 
 				if (dResult1 == 0) {
-					throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(0).getDataSource());
+					throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult2 == 0) {
-					throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(1).getDataSource());
+					throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult1 > 0) {
-					throw new LigretoException(collationError + joinNode.getSqlQueries().get(0).getDataSource());
+					throw new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult2 > 0) {
-					throw new LigretoException(collationError + joinNode.getSqlQueries().get(1).getDataSource());
+					throw new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 				}
 				
 				int cResult = comparator.compare(rs1, on1, rs2, on2);
@@ -334,10 +333,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol1 = col1;
 
 					if (dResult1 == 0) {
-						throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(0).getDataSource());
+						throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult1 > 0) {
-						throw new LigretoException(collationError + joinNode.getSqlQueries().get(0).getDataSource());
+						throw new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 					}
 
 					reportBuilder.nextRow();
@@ -361,10 +360,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol2 = col2;
 
 					if (dResult2 == 0) {
-						throw new LigretoException(nonuniqueError + joinNode.getSqlQueries().get(1).getDataSource());
+						throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult2 > 0) {
-						throw new LigretoException(collationError + joinNode.getSqlQueries().get(1).getDataSource());
+						throw new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 					}
 					
 					reportBuilder.nextRow();

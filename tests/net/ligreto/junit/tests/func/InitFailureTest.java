@@ -3,6 +3,7 @@ package net.ligreto.junit.tests.func;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import net.ligreto.exceptions.DataSourceInitException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
@@ -33,7 +34,15 @@ public class InitFailureTest {
 		try {
 			executor.execute();
 		} catch (LigretoException e) {
-			exceptionThrown = true;
+			Throwable c1 = e.getCause();
+			Throwable c2 = c1.getCause();
+			
+			// Check that we got the right exception with the proper cause
+			if (c2 instanceof DataSourceInitException) {
+				exceptionThrown = true;
+			} else {
+				throw e;
+			}
 		}
 		Assert.assertTrue(exceptionThrown);
 	}

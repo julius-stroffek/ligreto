@@ -188,6 +188,8 @@ public class ResultSetComparator {
 				result = compare((String)cols1[i].columnValue, (String)cols2[i].columnValue);
 				break;
 			}
+			if (result != 0)
+				break;
 		}
 		
 		if (result < 0)
