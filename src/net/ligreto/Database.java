@@ -6,14 +6,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.exceptions.DataSourceException;
 import net.ligreto.exceptions.DataSourceInitException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
+import net.ligreto.executor.SqlExecutor;
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.SqlNode;
 
 public class Database {
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(Database.class);
+
 	protected static Database instance;
 	
 	public static Database getInstance() {
@@ -54,7 +61,19 @@ public class Database {
 		try {
 			Statement stm = cnn.createStatement();
 			for (SqlNode sqlNode : node.sqlQueries()) {
-				stm.execute(sqlNode.getQuery());
+				try {
+					stm.execute(sqlNode.getQuery());
+				} catch (SQLException e) {
+					switch (sqlNode.getExceptions()) {
+					case IGNORE:
+						break;
+					case DUMP:
+						log.error("Exception while executing query", e);
+						break;
+					case FAIL:
+						throw e;
+					}
+				}
 			}
 		} catch (SQLException e) {
 			throw new DataSourceInitException("Failed to initialize the connection by custom SQL statements.", e);

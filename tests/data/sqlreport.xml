@@ -10,6 +10,7 @@
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
 			<uri value="jdbc:derby:db1"/>
 			<init>
+				<sql exceptions="ignore">Failed statement!</sql>
 				<sql>select * from ${refdummy}</sql>
 			</init>
 		</data-source>
@@ -18,6 +19,7 @@
 		<template file="blank.xlsx"/>
 		<output file="sqlreport.xlsx"/>
 		<data>
+			<sql data-source="Source1" exceptions="dump">Failed statement!</sql>
 			<sql data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="B1" data-source="Source1">select '${startdt}' startdr,'${enddt}' enddt from ${dummy}</sql>
 			<sql target="A2" data-source="Source1" header="true"><![CDATA[ select * from test_table where id < 10]]></sql>

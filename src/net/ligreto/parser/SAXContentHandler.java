@@ -245,6 +245,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
 					}
+					if (atts.getValue("exceptions") != null) {
+						sql.setExceptions(atts.getValue("exceptions"));
+					}
+					if (atts.getValue("type") != null) {
+						sql.setQueryType(atts.getValue("type"));
+					}
 				}
 				break;
 			case REPORT:
