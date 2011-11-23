@@ -19,6 +19,7 @@ import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetComparator;

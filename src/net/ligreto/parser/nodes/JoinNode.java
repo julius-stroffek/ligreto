@@ -24,7 +24,7 @@ public class JoinNode extends Node {
 	protected boolean header = false;
 	protected boolean append = false;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
-	protected int[] on;
+	protected String on;
 	protected String exclude;
 	protected String locale;
 	protected ReportNode reportNode;
@@ -220,18 +220,21 @@ public class JoinNode extends Node {
 	 * @param on the comma separated list of column indices to be used for join condition
 	 */
 	public void setOn(String on) {
-		String[] ons = on.split(",");
-		this.on = new int[ons.length];
-		for (int i=0; i < ons.length; i++) {
-			this.on[i] = Integer.parseInt(ons[i]);
-		}
+		this.on = on;
 	}
 
 	/**
 	 * @return the array of column indices to be used for join condition
 	 */
 	public int[] getOn() {
-		return on;
+		if (on == null)
+			return null;
+		String[] ons = ligretoNode.substituteParams(on).split(",");
+		int onn[] = new int[ons.length];
+		for (int i=0; i < onn.length; i++) {
+			onn[i] = Integer.parseInt(ons[i]);
+		}
+		return onn;
 	}
 	
 	/**

@@ -15,7 +15,7 @@
 		<template file="blank.xlsx"/>
 		<output file="initfailure.xlsx"/>
 		<data>
-			<sql data-source="Source1" header="true">select 'Col1' Column1, 'Col2' Column2 from ${dummy}</sql>
+			<sql data-source="Source1" header="true">This statement fails due to connection init failure!</sql>
 		</data>
 	</report>
 </ligreto>

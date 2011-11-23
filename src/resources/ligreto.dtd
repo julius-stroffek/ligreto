@@ -33,6 +33,8 @@
 <!ATTLIST sql target CDATA #IMPLIED>
 <!ATTLIST sql header (true|false) "false">
 <!ATTLIST sql append (true|false) "false">
+<!ATTLIST sql type (statement|call) "statement">
+<!ATTLIST sql exceptions (ignore|dump|fail) "fail">
 <!ATTLIST sql exclude CDATA #IMPLIED>
 
 <!ELEMENT join (sql,sql+)>

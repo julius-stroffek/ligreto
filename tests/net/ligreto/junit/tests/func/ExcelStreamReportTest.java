@@ -48,7 +48,11 @@ public class ExcelStreamReportTest {
 		long startStamp = System.currentTimeMillis();
 		for (long l=0; l < rowCount; l++) {
 			pstm.setLong(1, l);
-			pstm.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+			
+			@SuppressWarnings("deprecation")
+			Timestamp stamp = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
+			
+			pstm.setTimestamp(2, stamp);
 			pstm.setString(3, "FirstName" + l);
 			pstm.setString(4, "LastName" + l);
 			pstm.setInt(5, (int) (l % 120));

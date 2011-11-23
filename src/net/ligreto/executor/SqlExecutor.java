@@ -87,12 +87,24 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 					stm = cnn.createStatement();
 					log.info("Executing the SQL query on \"" + sqlNode.getDataSource() + "\" data source:");
 					log.info(qry);
-					rs = stm.executeQuery(qry);
-					if (callBack != null) {
-						if (callBack.prepareProcessing(sqlNode, rs)) {
-							while (rs.next()) {
-								callBack.processResultSetRow(rs);
+					try {
+						rs = stm.executeQuery(qry);
+						if (callBack != null) {
+							if (callBack.prepareProcessing(sqlNode, rs)) {
+								while (rs.next()) {
+									callBack.processResultSetRow(rs);
+								}
 							}
+						}
+					} catch (SQLException e) {
+						switch (sqlNode.getExceptions()) {
+						case IGNORE:
+							break;
+						case DUMP:
+							log.error("Exception while executing query", e);
+							break;
+						case FAIL:
+							throw e;
 						}
 					}
 				} finally {

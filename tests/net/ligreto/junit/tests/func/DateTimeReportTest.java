@@ -46,7 +46,9 @@ public class DateTimeReportTest {
 			Timestamp stamp = new Timestamp(111, 11, 20, 11, s, s, s);
 			pstm.setTimestamp(2, stamp);
 			
-			pstm.setDate(3, new Date(System.currentTimeMillis()));
+			@SuppressWarnings("deprecation")
+			Date date = new Date(111, 10, s+1);
+			pstm.setDate(3, date);
 			
 			@SuppressWarnings("deprecation")
 			Time time = new Time(s,s,s);

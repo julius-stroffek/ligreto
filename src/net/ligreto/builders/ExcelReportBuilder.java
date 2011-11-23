@@ -89,6 +89,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 	/** Indicates whether the date/time cells should be auto formatted. */
 	protected boolean noDateTimeFormat = false;
 	
+	/** Maximal column width for auto sized columns. */
+	protected int maxColumnWidth = 20480; 
+	
 	/** Holds the highest column index used for actual target. */
 	int lastColumnIndex = -1;
 	
@@ -585,7 +588,11 @@ public class ExcelReportBuilder extends ReportBuilder {
 		if (autoSize && lastColumnIndex > baseCol) {
 			for (int i=baseCol; i <= lastColumnIndex; i++) {
 				sheet.autoSizeColumn(i);
-				sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+				int columnWidth = sheet.getColumnWidth(i) + 1024;
+				if (columnWidth > maxColumnWidth) {
+					columnWidth = maxColumnWidth;
+				}
+				sheet.setColumnWidth(i, columnWidth);
 			}
 		}
 		

@@ -14,8 +14,16 @@ public class SqlNode extends Node {
 	protected String target;
 	protected boolean header;
 	protected boolean append;
-	protected int[] on;
+	protected String on;
 	protected String exclude;
+	protected Attitude exceptions = Attitude.FAIL;
+	protected QueryType queryType = QueryType.STATEMENT;
+	
+	/** The actions that should be taken in certain situations. */
+	public enum Attitude {IGNORE, DUMP, FAIL};
+	
+	/** The type of the query which determines the way it is executed. */
+	public enum QueryType {STATEMENT, CALL};
 	
 	/** Constructs SQL node. */
 	public SqlNode(LigretoNode ligretoNode) {
@@ -64,7 +72,7 @@ public class SqlNode extends Node {
 	public void setDataSource(String dataSource) {
 		this.dataSource = dataSource;
 	}
-
+	
 	/**
 	 * @return the target
 	 */
@@ -126,18 +134,21 @@ public class SqlNode extends Node {
 	 * @param on the comma separated list of column indices to be used for join condition
 	 */
 	public void setOn(String on) {
-		String[] ons = on.split(",");
-		this.on = new int[ons.length];
-		for (int i=0; i < ons.length; i++) {
-			this.on[i] = Integer.parseInt(ons[i]);
-		}
+		this.on = on;
 	}
 
 	/**
 	 * @return the array of column indices to be used for join condition
 	 */
 	public int[] getOn() {
-		return on;
+		if (on == null)
+			return null;
+		String[] ons = ligretoNode.substituteParams(on).split(",");
+		int onn[] = new int[ons.length];
+		for (int i=0; i < onn.length; i++) {
+			onn[i] = Integer.parseInt(ons[i]);
+		}
+		return onn;
 	}
 
 	/**
@@ -164,6 +175,44 @@ public class SqlNode extends Node {
 			return retValue;
 		} else {
 			return null;
+		}
+	}
+
+	public Attitude getExceptions() {
+		return exceptions;
+	}
+
+	public void setExceptions(Attitude exceptions) {
+		this.exceptions = exceptions;
+	}
+	
+	public void setExceptions(String exceptions) {
+		if ("ignore".equals(exceptions)) {
+			this.exceptions = Attitude.IGNORE;
+		} else if ("dump".equals(exceptions)) {
+			this.exceptions = Attitude.DUMP;
+		} else if ("fail".equals(exceptions)) {
+			this.exceptions = Attitude.FAIL;
+		} else {
+			throw new IllegalArgumentException("Wrong value specified as attitude in case of SQL errors: " + exceptions);
+		}
+	}
+
+	public QueryType getQueryType() {
+		return queryType;
+	}
+
+	public void setQueryType(QueryType queryType) {
+		this.queryType = queryType;
+	}
+
+	public void setQueryType(String queryType) {
+		if ("statement".equals(queryType)) {
+			this.queryType = QueryType.STATEMENT;			
+		} else if ("call".equals(queryType)) {
+			this.queryType = QueryType.CALL;
+		} else {
+			throw new IllegalArgumentException("Wrong value specified as query type: " + queryType);
 		}
 	}
 }

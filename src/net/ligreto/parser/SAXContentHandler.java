@@ -282,6 +282,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("exclude") != null) {
 						sql.setExclude(atts.getValue("exclude"));
 					}
+					if (atts.getValue("exceptions") != null) {
+						sql.setExceptions(atts.getValue("exceptions"));
+					}
+					if (atts.getValue("type") != null) {
+						sql.setQueryType(atts.getValue("type"));
+					}
 				} else if ("join".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
@@ -339,6 +345,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
 					}
+					if (atts.getValue("exceptions") != null) {
+						sql.setExceptions(atts.getValue("exceptions"));
+					}
+					if (atts.getValue("type") != null) {
+						sql.setQueryType(atts.getValue("type"));
+					}
 				}
 				break;
 			case PTP:
@@ -365,6 +377,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
+					}
+					if (atts.getValue("exceptions") != null) {
+						sql.setExceptions(atts.getValue("exceptions"));
+					}
+					if (atts.getValue("type") != null) {
+						sql.setQueryType(atts.getValue("type"));
 					}
 				}
 				break;
@@ -400,6 +418,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
 					}
+					if (atts.getValue("exceptions") != null) {
+						sql.setExceptions(atts.getValue("exceptions"));
+					}
+					if (atts.getValue("type") != null) {
+						sql.setQueryType(atts.getValue("type"));
+					}
 					ptpTransfer.setSqlNode(sql);
 				}
 				break;
@@ -412,6 +436,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (atts.getValue("query") != null) {
 						sql.setQueryName(atts.getValue("query"));
+					}
+					if (atts.getValue("exceptions") != null) {
+						sql.setExceptions(atts.getValue("exceptions"));
+					}
+					if (atts.getValue("type") != null) {
+						sql.setQueryType(atts.getValue("type"));
 					}
 				}
 				break;
