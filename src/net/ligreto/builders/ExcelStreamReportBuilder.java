@@ -21,7 +21,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 	public void start() throws IOException, LigretoException {
 		out = new FileOutputStream(output);
 
-		outputFormat = OutputFormat.XSSF;
+		outputFormat = OutputFormat.SXSSF;
 		
 		// Read the template file if the template was specified
 		if (template != null) {

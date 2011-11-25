@@ -7,6 +7,8 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.Collator;
 
+import org.apache.commons.logging.Log;
+
 import net.ligreto.exceptions.LigretoException;
 
 public class ResultSetComparator {
@@ -274,5 +276,12 @@ public class ResultSetComparator {
 		if (n1 > n2)
 			return 1;
 		return 0;
+	}
+
+	public void error(Log log, Column[] col) {
+		log.error("Key columns:");
+		for (int c=0; c < col.length; c++) {
+			log.error(col[c].columnValue.toString());
+		}
 	}
 }

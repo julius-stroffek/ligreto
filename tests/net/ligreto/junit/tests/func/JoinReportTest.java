@@ -107,6 +107,10 @@ public class JoinReportTest {
 				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),
 				new XSSFWorkbook(new FileInputStream("desired/joinreport.xlsx"))
 		).areSame());
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("streamjoinreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/streamjoinreport.xlsx"))
+		).areSame());
 	}
 	
 	@Test
@@ -151,5 +155,18 @@ public class JoinReportTest {
 			}
 		}
 		Assert.assertTrue(exceptionThrown);
+	}
+	
+	@Test
+	public void testWrongCollationDump() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("wrongcollationdumpreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		
+		executor.execute();
+		
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("wrongcollationdumpreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/wrongcollationdumpreport.xlsx"))
+		).areSame());
 	}
 }

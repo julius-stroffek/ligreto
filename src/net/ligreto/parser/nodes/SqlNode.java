@@ -19,9 +19,6 @@ public class SqlNode extends Node {
 	protected Attitude exceptions = Attitude.FAIL;
 	protected QueryType queryType = QueryType.STATEMENT;
 	
-	/** The actions that should be taken in certain situations. */
-	public enum Attitude {IGNORE, DUMP, FAIL};
-	
 	/** The type of the query which determines the way it is executed. */
 	public enum QueryType {STATEMENT, CALL};
 	

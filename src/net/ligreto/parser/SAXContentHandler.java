@@ -328,6 +328,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						join.setAppend(atts.getValue("append"));
 					}
 					join.setLocale(atts.getValue("locale"));
+					if (atts.getValue("collation") != null) {
+						join.setCollation(atts.getValue("collation"));
+					}
 				}
 				break;
 			case JOIN:

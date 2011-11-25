@@ -3,6 +3,9 @@ package net.ligreto.parser.nodes;
 public class Node {	
 	protected LigretoNode ligretoNode;
 	
+	/** The actions that should be taken in certain situations. */
+	public enum Attitude {IGNORE, DUMP, FAIL};
+	
 	protected Node(LigretoNode aLigretoNode) {
 		ligretoNode = aLigretoNode;
 	}

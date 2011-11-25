@@ -28,6 +28,7 @@ public class JoinNode extends Node {
 	protected String exclude;
 	protected String locale;
 	protected ReportNode reportNode;
+	protected Attitude collation = Attitude.FAIL;
 	
 	public JoinNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
@@ -278,5 +279,25 @@ public class JoinNode extends Node {
 
 	public void setReportNode(ReportNode reportNode) {
 		this.reportNode = reportNode;
+	}
+	
+	public Attitude getCollation() {
+		return collation;
+	}
+
+	public void setCollation(Attitude collation) {
+		this.collation = collation;
+	}
+	
+	public void setCollation(String collation) {
+		if ("ignore".equals(collation)) {
+			this.collation = Attitude.IGNORE;
+		} else if ("dump".equals(collation)) {
+			this.collation = Attitude.DUMP;
+		} else if ("fail".equals(collation)) {
+			this.collation = Attitude.FAIL;
+		} else {
+			throw new IllegalArgumentException("Wrong value specified as attitude in case of collation errors: " + collation);
+		}
 	}
 }

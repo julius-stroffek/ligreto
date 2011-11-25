@@ -26,6 +26,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.streaming.SXSSFCell;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -51,7 +53,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class ExcelReportBuilder extends ReportBuilder {
 
 	/** The output file type enumeration. */
-	protected enum OutputFormat {HSSF, XSSF};
+	protected enum OutputFormat {HSSF, XSSF, SXSSF};
 	
 	/** The output file format. */
 	protected OutputFormat outputFormat = OutputFormat.XSSF;
@@ -254,6 +256,10 @@ public class ExcelReportBuilder extends ReportBuilder {
 			// HSSF approach should work anyway
 			setHSSFHeaderStyle(cell);
 			break;
+		case SXSSF:
+			// HSSF approach should work anyway
+			setHSSFHeaderStyle(cell);
+			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for format processing.");
 		}
@@ -353,6 +359,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 		case XSSF:
 			setXSSFCellColor((XSSFCell)cell, rgb);
 			break;
+		case SXSSF:
+			setSXSSFCellColor((SXSSFCell)cell, rgb);
+			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for color processing.");
 		}
@@ -436,6 +445,47 @@ public class ExcelReportBuilder extends ReportBuilder {
 		style.setFont(font);
 	}
 	
+	protected void setSXSSFCellColor(Cell cell, short[] rgb) {
+		CellStyle style = cell.getCellStyle();
+			
+		Font font = wb.getFontAt(style.getFontIndex());
+
+		// Just a temporary hard coding until SXSSF will implement
+		// the proper color setup.
+		short newColor = HSSFColor.BLACK.index;
+		if (rgb[0] > rgb[1] && rgb[0] > rgb[2]) {
+			newColor = HSSFColor.RED.index;
+		}
+			
+		Font newFont = wb.findFont(
+				font.getBoldweight(),
+				newColor,
+				font.getFontHeight(),
+				font.getFontName(),
+				font.getItalic(),
+				font.getStrikeout(),
+				font.getTypeOffset(),
+				font.getUnderline()
+		);
+		if (newFont == null) {
+			newFont = wb.createFont();
+			newFont.setBoldweight(font.getBoldweight());
+			newFont.setColor(newColor);
+			newFont.setFontHeight(font.getFontHeight());
+			newFont.setFontName(font.getFontName());
+			newFont.setItalic(font.getItalic());
+			newFont.setStrikeout(font.getStrikeout());
+			newFont.setTypeOffset(font.getTypeOffset());
+			newFont.setUnderline(font.getUnderline());
+		}
+		style.setFont(newFont);
+		CellStyle newStyle = cloneStyle(style);
+		cell.setCellStyle(newStyle);
+		
+		// Revert back the font on the old cell style
+		style.setFont(font);
+	}
+
 	/**
 	 *  Clones the specified style. First all existing styles are scanned and if the
 	 *  same style already exists it is re-used. Otherwise new style is created. This

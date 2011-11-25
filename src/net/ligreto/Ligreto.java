@@ -82,8 +82,11 @@ public class Ligreto {
 				}
 				if (params != null) {
 					for (int j=0; j < params.length; j++) {
-						String p[] = params[j].split("=");
-						ligretoNode.addParam(p[0], p[1]);
+						if (params[j].indexOf('=') >=0) {
+							String paramName = params[j].substring(0, params[j].indexOf('='));
+							String paramValue = params[j].substring(params[j].indexOf('=') + 1);
+							ligretoNode.addParam(paramName, paramValue);
+						}
 					}
 				}
 				LigretoExecutor executor = new LigretoExecutor(ligretoNode);
@@ -94,8 +97,11 @@ public class Ligreto {
 					LigretoExecutor executor = new LigretoExecutor(ligretoNode);
 					if (params != null) {
 						for (int j=0; j < params.length; j++) {
-							String p[] = params[j].split("=");
-							ligretoNode.addParam(p[0], p[1]);
+							if (params[j].indexOf('=') >=0) {
+								String paramName = params[j].substring(0, params[j].indexOf('='));
+								String paramValue = params[j].substring(params[j].indexOf('=') + 1);
+								ligretoNode.addParam(paramName, paramValue);
+							}
 						}
 					}
 					executor.execute();

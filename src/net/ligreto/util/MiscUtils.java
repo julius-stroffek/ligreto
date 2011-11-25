@@ -64,6 +64,6 @@ public class MiscUtils {
 			if (rsmd.getColumnName(i).equalsIgnoreCase(columnName))
 				return i;
 		}
-		throw new SQLException("Column name was not found in the result set: " + columnName);
+		return -1;
 	}
 }

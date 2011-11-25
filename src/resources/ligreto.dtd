@@ -50,6 +50,7 @@
 <!ATTLIST join on CDATA #IMPLIED>
 <!ATTLIST join exclude CDATA #IMPLIED>
 <!ATTLIST join locale CDATA #IMPLIED>
+<!ATTLIST join collation (ignore|dump|fail) "fail">
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>
