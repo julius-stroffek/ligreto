@@ -1,0 +1,132 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename ligreto.texi
+@settitle Ligreto User Manual 1.0
+@c %**end of header
+
+@copying
+This manual is for Ligreto (version 1.0), a lightweight reporting toolkit that can
+produce reports from SQL queries, compare SQL query results between different SQL 
+databases and transfer data between different SQL databases.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title Ligreto Users Manual
+@subtitle Lightweight Reporting Toolkit
+@author Julius Stroffek
+
+@c  The following two commands
+@c  start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+     
+This manual is not yet published.
+@end titlepage
+     
+@c So the toc is printed at the start.
+@contents
+
+@ifnottex
+@node Top
+@top Ligreto User Manual
+     
+@insertcopying
+@end ifnottex
+     
+@menu
+Main Menu
+
+* Overview::                        Brief overview of the toolkit.
+* Installation::                    Ligreto installation steps.
+* Configuration Files::             Description of configuration file definitions.
+* Execution::                       Execution steps and possibilities.
+* Troubleshooting (aka FAQ)::       Troubleshooting hints written as "Frequently
+                                    Asked Questions".
+* ligreto.dtd::                     Definition of configuration XML file structure. 
+* Licenses::                        Detailed text of related licenses.
+* Index::                           Complete index.
+@end menu
+
+@node Overview
+@chapter Overview
+
+Ligreto is the simple report generation toolkit written in Java that can produce reports in Excel format (or excel like).
+
+@node Installation
+@chapter Installation
+
+@menu
+Installation Instructions
+
+* Windows Installation::     Installation steps for Windows based OS
+* Linux/Unix Installation::  Installation steps for any Unix/Linux based OS.
+
+@end menu
+
+@node Windows Installation
+@section Windows Installation
+
+@node Linux/Unix Installation
+@section Linux/Unix Installation
+
+@node Configuration Files
+@chapter Configuration Files
+
+@section Connections
+
+@section Reports
+
+@subsection Query Result
+
+@subsection Query Comparison (Join)
+
+@section PTP (Preprocess-Transfer-Postprocess)
+
+@node Execution
+@chapter Execution
+
+@node Troubleshooting (aka FAQ)
+@chapter Troubleshooting (aka FAQ)
+
+@heading Why am I getting CollationException exception?
+
+@node ligreto.dtd
+@appendix @code{ligreto.dtd}
+
+@include ligreto.dtd.texi
+
+@node Licenses
+@appendix Licenses
+
+@menu
+Related Licenses
+
+* GNU Free Documentation License::  The free documentation license.
+* GNU General Public License::      The ligreto software license.
+@end menu
+
+@node GNU Free Documentation License
+@appendixsec GNU Free Documentation License
+@include fdl-1.3.texi
+
+@node GNU General Public License
+@appendixsec GNU General Public License
+@include gpl-3.0.texi
+
+@node Index
+@unnumbered Index
+     
+@printindex cp
+
+@bye
+

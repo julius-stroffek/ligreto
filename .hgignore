@@ -13,3 +13,25 @@ syntax: regexp
 ^dist$
 syntax: regexp
 ^javadoc$
+syntax: regexp
+^manual/ligreto\.aux$
+syntax: regexp
+^manual/ligreto\.aux$
+syntax: regexp
+^manual/ligreto\.cp$
+syntax: regexp
+^manual/ligreto\.fn$
+syntax: regexp
+^manual/ligreto\.html$
+syntax: regexp
+^manual/ligreto\.ky$
+syntax: regexp
+^manual/ligreto\.pdf$
+syntax: regexp
+^manual/ligreto\.pg$
+syntax: regexp
+^manual/ligreto\.toc$
+syntax: regexp
+^manual/ligreto\.tp$
+syntax: regexp
+^manual/ligreto\.vr$
