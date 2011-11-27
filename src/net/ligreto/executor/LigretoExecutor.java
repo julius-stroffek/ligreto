@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.Database;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.DataSourceException;
@@ -21,6 +24,10 @@ import net.ligreto.parser.nodes.SqlNode;
  *
  */
 public class LigretoExecutor extends Executor {
+	
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(LigretoExecutor.class);
+	
 	LigretoNode ligretoNode;
 	
 	public LigretoExecutor(LigretoNode aLigretoNode) {
@@ -43,25 +50,31 @@ public class LigretoExecutor extends Executor {
 		}
 	}
 	
-	public void execute() throws LigretoException {
+	public int execute() throws LigretoException {
+		int result = 0;
 		Database.getInstance(ligretoNode);
-		executePTPs();
-		executeReports();
+		result += executePTPs();
+		result += executeReports();
+		return result;
 	}
 	
-	public void executePTPs() throws LigretoException {
+	public int executePTPs() throws LigretoException {
 		PtpExecutor ptpExecutor = new PtpExecutor();
 		ptpExecutor.setPtpNodes(ligretoNode.ptps());
-		ptpExecutor.execute();
+		return ptpExecutor.execute();
 	}
 	
-	public void executeReports() throws LigretoException {	
+	public int executeReports() throws LigretoException {
+		int result = 0;
 		for (ReportNode reportNode : ligretoNode.reports()) {
-			executeReport(reportNode);
+			result += executeReport(reportNode);
 		}
+		log.info("LIGRETO result row count: " + result);
+		return result;
 	}
 	
-	public void executeReport(ReportNode reportNode) throws LigretoException {
+	public int executeReport(ReportNode reportNode) throws LigretoException {
+		int result = 0;
 		try {
 			ReportBuilder reportBuilder = ReportBuilder.createInstance(ligretoNode, reportNode.getReportType());
 			reportBuilder.setTemplate(reportNode.getTemplate());
@@ -73,18 +86,25 @@ public class LigretoExecutor extends Executor {
 			sqlExecutor.setReportBuilder(reportBuilder);
 			sqlExecutor.setSqlNodes(reportNode.sqlQueries());
 			sqlExecutor.setCallBack(sqlExecutor);
-			sqlExecutor.execute();
+			int sqlResult = sqlExecutor.execute();
+			log.info("REPORT/SQLs result row count: " + result);
+			if (reportNode.getResult())
+				result += sqlResult;
 		
 			JoinExecutor joinExecutor = new JoinExecutor();
 			joinExecutor.setReportBuilder(reportBuilder);
 			joinExecutor.setJoinNodes(reportNode.joins());
 			joinExecutor.setCallBack(joinExecutor);
-			joinExecutor.execute();
+			int joinResult = joinExecutor.execute();
+			log.info("REPORT/JOINs result row count: " + result);
+			if (reportNode.getResult())
+				result += joinResult;
 			
 			reportBuilder.writeOutput();
 		} catch (Exception e) {
 			throw new LigretoException("Error creating the report: " + reportNode.getName(), e);
 		}
-		
+		log.info("REPORT result row count: " + result);
+		return result;
 	}
 }

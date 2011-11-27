@@ -14,6 +14,7 @@ public class SqlNode extends Node {
 	protected String target;
 	protected boolean header;
 	protected boolean append;
+	protected boolean result;
 	protected String on;
 	protected String exclude;
 	protected Attitude exceptions = Attitude.FAIL;
@@ -119,11 +120,24 @@ public class SqlNode extends Node {
 		this.append = append;
 	}
 
-	/**
-	 * @param append the append to set
-	 */
 	public void setAppend(String append) {
 		this.append = Boolean.parseBoolean(append);
+	}
+
+	public boolean getResult() {
+		return result;
+	}
+
+	public void setResult(boolean result) {
+		this.result = result;
+	}
+
+	public void setResult(String result) {
+		if (result != null) {
+			this.result = Boolean.parseBoolean(result);
+		} else {
+			this.result = false;
+		}
 	}
 
 	/**

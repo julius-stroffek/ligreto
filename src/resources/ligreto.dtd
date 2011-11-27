@@ -17,6 +17,7 @@
 <!ATTLIST report type CDATA "excel">
 <!ATTLIST report locale CDATA #IMPLIED>
 <!ATTLIST report options CDATA #IMPLIED>
+<!ATTLIST report result (true|false) "true">
 
 <!ELEMENT output EMPTY>
 <!ATTLIST output file CDATA #REQUIRED>
@@ -31,19 +32,20 @@
 <!ATTLIST sql on CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
-<!ATTLIST sql header (true|false) "false">
+<!ATTLIST sql header (true|false) "true">
 <!ATTLIST sql append (true|false) "false">
 <!ATTLIST sql type (statement|call) "statement">
 <!ATTLIST sql exceptions (ignore|dump|fail) "fail">
 <!ATTLIST sql exclude CDATA #IMPLIED>
+<!ATTLIST sql result (true|false) "true">
 
 <!ELEMENT join (sql,sql+)>
 <!ATTLIST join target CDATA #IMPLIED>
 <!ATTLIST join type (full|left|right|inner) "inner">
 <!ATTLIST join diffs (true|false) "false">
-<!ATTLIST join interlaced (true|false) "false">
-<!ATTLIST join highlight (true|false) "false">
-<!ATTLIST join header (true|false) "false">
+<!ATTLIST join interlaced (true|false) "true">
+<!ATTLIST join highlight (true|false) "true">
+<!ATTLIST join header (true|false) "true">
 <!ATTLIST join append (true|false) "false">
 <!-- Color string is in a form of #RRGGBB -->
 <!ATTLIST join hlColor CDATA "#d02020">
@@ -51,6 +53,7 @@
 <!ATTLIST join exclude CDATA #IMPLIED>
 <!ATTLIST join locale CDATA #IMPLIED>
 <!ATTLIST join collation (ignore|dump|fail) "fail">
+<!ATTLIST join result (true|false) "true">
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>
@@ -60,6 +63,7 @@
 <!ELEMENT postprocess (sql+)>
 
 <!ELEMENT transfer (target,sql)>
+<!ATTLIST transfer result (true|false) "true">
 
 <!ELEMENT target EMPTY>
 <!ATTLIST target data-source CDATA #IMPLIED>

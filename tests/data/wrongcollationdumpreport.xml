@@ -10,11 +10,11 @@
 	<report name="Collation Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
 		<output file="wrongcollationdumpreport.xlsx"/>
 		<data>
-			<join on="1" target="A1" type="full" header="true" append="true" highlight="true" locale="en" collation="dump">
+			<join on="1" target="A1" type="full" header="true" append="true" highlight="true" interlaced="false" locale="en" collation="dump">
 				<sql data-source="Source3">select * from coll_table</sql>
 				<sql data-source="Source3">select * from coll_table</sql>
 			</join>
-			<join on="1" target="A1" type="full" header="true" append="true" highlight="true" locale="sk" collation="dump">
+			<join on="1" target="A1" type="full" header="true" append="true" highlight="true" interlaced="false" locale="sk" collation="dump">
 				<sql data-source="Source3">select * from coll_table</sql>
 				<sql data-source="Source3">select * from coll_table</sql>
 			</join>

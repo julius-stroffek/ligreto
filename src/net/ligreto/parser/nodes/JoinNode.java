@@ -23,6 +23,7 @@ public class JoinNode extends Node {
 	protected boolean highlight = false;
 	protected boolean header = false;
 	protected boolean append = false;
+	protected boolean result = true;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected String on;
 	protected String exclude;
@@ -216,12 +217,38 @@ public class JoinNode extends Node {
 		this.append = Boolean.parseBoolean(append);
 	}
 
+	
 	/**
 	 * 
 	 * @param on the comma separated list of column indices to be used for join condition
 	 */
 	public void setOn(String on) {
 		this.on = on;
+	}
+
+	/**
+	 * @return the result
+	 */
+	public boolean getResult() {
+		return result;
+	}
+
+	/**
+	 * @param result the result to set
+	 */
+	public void setResult(boolean result) {
+		this.result = result;
+	}
+
+	/**
+	 * @param result the result to set parsed to boolean
+	 */
+	public void setResult(String result) {
+		if (result != null) {
+			this.result = Boolean.parseBoolean(result);
+		} else {
+			this.result = false;
+		}
 	}
 
 	/**

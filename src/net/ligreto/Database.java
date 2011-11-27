@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
 import net.ligreto.exceptions.DataSourceException;
 import net.ligreto.exceptions.DataSourceInitException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
-import net.ligreto.executor.SqlExecutor;
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.SqlNode;

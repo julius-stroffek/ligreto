@@ -71,10 +71,12 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	}
 
 	@Override
-	public void execute() throws LigretoException {
+	public int execute() throws LigretoException {
+		int result = 0;
+		
 		// Do nothing if there is nothing to process.
 		if (sqlNodes == null)
-			return;
+			return 0;
 		
 		for (SqlNode sqlNode : sqlNodes) {
 			try {
@@ -92,6 +94,9 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 						if (callBack != null) {
 							if (callBack.prepareProcessing(sqlNode, rs)) {
 								while (rs.next()) {
+									if (sqlNode.getResult()) {
+										result++;
+									}
 									callBack.processResultSetRow(rs);
 								}
 							}
@@ -110,6 +115,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 				} finally {
 					Database.close(cnn, stm, rs);
 				}
+			log.info("SQL result row count: " + result);
 			} catch (SQLException e) {
 				String msg = "Database error on data source: " + sqlNode.getQuery().toString();
 				log.error(msg);
@@ -124,6 +130,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 				throw new LigretoException(msg, e);
 			}
 		}
+		return result;
 	}
 
 	/**

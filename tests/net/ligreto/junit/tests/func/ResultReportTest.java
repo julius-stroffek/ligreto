@@ -11,8 +11,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.ligreto.exceptions.CollationException;
-import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
@@ -30,7 +28,7 @@ import org.xml.sax.SAXException;
  * @author Julius Stroffek
  *
  */
-public class JoinReportTest {
+public class ResultReportTest {
 
 	/**
 	 * @throws java.lang.Exception
@@ -99,77 +97,16 @@ public class JoinReportTest {
 	}
 
 	@Test
-	public void testJoinReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("joinreport.xml");
+	public void testResultReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("resultreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
 		int result = executor.execute();
-		Assert.assertEquals(66, result); // 66 is the expected number of rows in the result
+		Assert.assertEquals(43, result); // 43 is the expected number of rows in the result  
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/joinreport.xlsx"))
-		).areSame());
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("streamjoinreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/streamjoinreport.xlsx"))
-		).areSame());
-	}
-	
-	@Test
-	public void testDuplicateJoinColumns() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("duplicatejoincolumnsreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		boolean exceptionThrown = false;
-		try {
-			executor.execute();
-		} catch (LigretoException e) {
-			Throwable c1 = e.getCause();
-			Throwable c2 = c1.getCause();
-			
-			// Check that we got the right exception with the proper cause
-			if (c2 instanceof DuplicateJoinColumnsException) {
-				exceptionThrown = true;
-			} else {
-				throw e;
-			}
-		}
-		Assert.assertTrue(exceptionThrown);
-	}
-	
-	@Test
-	public void testWrongCollation() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("wrongcollationreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		boolean exceptionThrown = false;
-		try {
-			executor.execute();
-		} catch (LigretoException e) {
-			Throwable c1 = e.getCause();
-			Throwable c2 = c1.getCause();
-			
-			// Check that we got the right exception with the proper cause
-			if (c2 instanceof CollationException) {
-				exceptionThrown = true;
-			} else {
-				throw e;
-			}
-		}
-		Assert.assertTrue(exceptionThrown);
-	}
-	
-	@Test
-	public void testWrongCollationDump() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("wrongcollationdumpreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		executor.execute();
-		
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("wrongcollationdumpreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/wrongcollationdumpreport.xlsx"))
+				new XSSFWorkbook(new FileInputStream("resultreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/resultreport.xlsx"))
 		).areSame());
 	}
 }

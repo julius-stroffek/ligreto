@@ -11,7 +11,7 @@
 		<template file="stylededuptemplate.xls"/>
 		<output file="stylededupreport.xls"/>
 		<data>
-			<join on="1" target="A1" type="full" header="true" highlight="true">
+			<join on="1" target="A1" type="full" header="true" highlight="true" interlaced="false">
 				<sql data-source="Source1">select * from style_test_t1</sql>
 				<sql data-source="Source1">select * from style_test_t2</sql>
 			</join>		

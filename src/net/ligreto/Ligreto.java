@@ -25,10 +25,17 @@ import org.xml.sax.SAXException;
  */
 public class Ligreto {
 
+	/** The maximal exit status returned as result of ligreto operations. */
+	public static final int MAX_RESULT_EXIT_STATUS = 250;
+
+	/** The exit status returned when the exception have occurred. */
+	public static final int EXCEPTION_EXIT_STATUS = 255;
+	
 	/**
 	 * @param args The command-line arguments
 	 */
 	public static void main(String[] args) {
+		int result = 0;
 		Options options = new Options();
 
 		Option help = new Option( "help", "print this help message" );
@@ -90,7 +97,7 @@ public class Ligreto {
 					}
 				}
 				LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-				executor.execute();
+				result = executor.execute();
 			} else {
 				for (int i=0; i < files.length; i++) {
 					LigretoNode ligretoNode = Parser.parse(files[i]);
@@ -104,16 +111,22 @@ public class Ligreto {
 							}
 						}
 					}
-					executor.execute();
+					result = executor.execute();
 				}
 			}
 		} catch (SAXException e) {
 			e.printStackTrace();
+			System.exit(EXCEPTION_EXIT_STATUS);
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(EXCEPTION_EXIT_STATUS);
 		} catch (LigretoException e) {
 			e.printStackTrace();
+			System.exit(EXCEPTION_EXIT_STATUS);
 		}
+		if (result > MAX_RESULT_EXIT_STATUS)
+			System.exit(MAX_RESULT_EXIT_STATUS);
+		else
+			System.exit(result);
 	}
-
 }

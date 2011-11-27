@@ -39,10 +39,12 @@ public class PtpExecutor extends Executor {
 	protected Connection tgtCnn;
 	
 	@Override
-	public void execute() throws LigretoException {
+	public int execute() throws LigretoException {
+		int result = 0;
 		for(PtpNode ptpNode: ptpNodes) {
-			executePTP(ptpNode);
+			result += executePTP(ptpNode);
 		}
+		return result;
 	}
 
 	/**
@@ -51,7 +53,8 @@ public class PtpExecutor extends Executor {
 	 * @param ptpNode The node to be processed.
 	 * @throws LigretoException On any failure with the chained exception.
 	 */
-	protected void executePTP(PtpNode ptpNode) throws LigretoException {
+	protected int executePTP(PtpNode ptpNode) throws LigretoException {
+		int result = 0;
 		try {
 			// Do pre-processing
 			SqlExecutor sqlExecutor = new SqlExecutor();
@@ -64,9 +67,7 @@ public class PtpExecutor extends Executor {
 			// Do the transfer of data
 			for (TransferNode transferNode : ptpNode.transferNodes()) {
 				log.info("Running transfer process.");
-				SqlNode sqlNode = transferNode.getSqlNode();
-				TargetNode targetNode = transferNode.getTargetNode();
-				transferData(sqlNode, targetNode);
+				result += transferData(transferNode);
 			}
 			
 			// Do post-processing
@@ -79,10 +80,13 @@ public class PtpExecutor extends Executor {
 			log.error("Error processing the PTP transfer.", e);
 			throw new LigretoException("Error processing the PTP transfer: " + ptpNode.getName(), e);
 		}
-		
+		return result;
 	}
 
-	protected void transferData(SqlNode sqlNode, TargetNode targetNode) throws LigretoException {
+	protected int transferData(TransferNode transferNode) throws LigretoException {
+		int result = 0;
+		SqlNode sqlNode = transferNode.getSqlNode();
+		TargetNode targetNode = transferNode.getTargetNode();
 		try {
 			Connection cnn = null;
 			Statement stm = null;
@@ -103,6 +107,8 @@ public class PtpExecutor extends Executor {
 					tgtCnn.setAutoCommit(false);
 					int insCnt = 0;
 					while (rs.next()) {
+						if (transferNode.getResult())
+							result++;
 						transferRow(rs);
 						if (++insCnt == targetNode.getCommitInterval()) {
 							tgtCnn.commit();
@@ -119,6 +125,7 @@ public class PtpExecutor extends Executor {
 			} finally {
 				Database.close(cnn, stm, rs);
 			}
+			log.info("TRANSFER result row count: " + result);
 		} catch (SQLException e) {
 			String msg = "Database error on data source: " + sqlNode.getDataSource();
 			log.error(msg, e);
@@ -128,6 +135,7 @@ public class PtpExecutor extends Executor {
 			log.error(msg, e);
 			throw new LigretoException(msg, e);			
 		}
+		return result;
 	}
 
 	protected void transferRow(ResultSet rs) throws SQLException, LigretoException {

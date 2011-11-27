@@ -20,6 +20,7 @@ public class ReportNode extends Node {
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<JoinNode> joins = new ArrayList<JoinNode>();
 	protected List<String> options = new ArrayList<String>();
+	protected boolean result;
 	
 	public ReportNode(LigretoNode ligretoNode, String reportName, String reportType) throws ReportException {
 		super(ligretoNode);
@@ -121,5 +122,21 @@ public class ReportNode extends Node {
 
 	public void setLocale(String locale) {
 		this.locale = locale;
+	}
+	
+	public boolean getResult() {
+		return result;
+	}
+
+	public void setResult(boolean result) {
+		this.result = result;
+	}
+
+	public void setResult(String result) {
+		if (result != null) {
+			this.result = Boolean.parseBoolean(result);
+		} else {
+			this.result = false;
+		}
 	}
 }

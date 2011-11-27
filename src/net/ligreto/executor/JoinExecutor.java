@@ -72,7 +72,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	}
 
 	@Override
-	public void execute() throws LigretoException {
+	public int execute() throws LigretoException {
+		int result = 0;
 		try {
 			for (JoinNode joinNode : joinNodes) {
 				String loc = joinNode.getLocale();
@@ -86,14 +87,16 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 				collator = Collator.getInstance(locale);
 				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
-				executeJoin(joinNode);
+				result += executeJoin(joinNode);
 			}
 		} catch (Exception e) {
 			throw new LigretoException("Could not process the join.", e);
 		}
+		return result;
 	}
 
-	protected void executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
+	protected int executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
+		int result = 0;
 		reportBuilder.setTarget(joinNode.getTarget(), joinNode.isAppend());
 		JoinNode.JoinType joinType = joinNode.getJoinType();
 		List<SqlNode> sqlQueries = joinNode.getSqlQueries();
@@ -300,6 +303,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				switch (cResult) {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
+						if (joinNode.getResult())
+							result++;
 						reportBuilder.nextRow();
 						reportBuilder.setHighlightArray(higherArray);
 						reportBuilder.setJoinOnColumns(rs1, on1);
@@ -319,6 +324,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					int[] cmpArray = comparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
 					
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
+						if (joinNode.getResult())
+							result++;
 						reportBuilder.nextRow();
 						reportBuilder.setJoinOnColumns(rs1, on1);
 						if (joinNode.getInterlaced()) {
@@ -343,6 +350,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				case 1:
 					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
+						if (joinNode.getResult())
+							result++;
 						reportBuilder.nextRow();							
 						reportBuilder.setHighlightArray(lowerArray);
 						reportBuilder.setJoinOnColumns(rs2, on2);
@@ -385,6 +394,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 					}
 
+					if (joinNode.getResult())
+						result++;
+
 					reportBuilder.nextRow();
 					reportBuilder.setHighlightArray(higherArray);
 					reportBuilder.setJoinOnColumns(rs1, on1);
@@ -424,6 +436,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 					}
 					
+					if (joinNode.getResult())
+						result++;
+
 					reportBuilder.nextRow();
 					reportBuilder.setHighlightArray(lowerArray);
 					reportBuilder.setJoinOnColumns(rs2, on2);
@@ -440,6 +455,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			Database.close(cnn1, stm1, rs1);
 			Database.close(cnn2, stm2, rs2);
 		}
+		log.info("JOIN result row count: " + result);
+		return result;
 	}
 
 	/**

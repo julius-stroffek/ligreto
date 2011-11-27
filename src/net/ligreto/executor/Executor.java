@@ -3,5 +3,12 @@ package net.ligreto.executor;
 import net.ligreto.exceptions.LigretoException;
 
 public abstract class Executor {
-	public abstract void execute() throws LigretoException;
+	
+	/**
+	 * Execute the operation.
+	 * 
+	 * @return The number of rows returned.
+	 * @throws LigretoException
+	 */
+	public abstract int execute() throws LigretoException;
 }

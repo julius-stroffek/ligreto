@@ -207,6 +207,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 							reportNode.setOptions(options);
 						}
 						reportNode.setLocale(atts.getValue("locale"));
+						reportNode.setResult(atts.getValue("result"));
 					} catch (ReportException e) {
 						throw new SAXException(e);
 					}
@@ -294,6 +295,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("type") != null) {
 						sql.setQueryType(atts.getValue("type"));
 					}
+					sql.setResult(atts.getValue("result"));
 				} else if ("join".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
@@ -331,6 +333,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("collation") != null) {
 						join.setCollation(atts.getValue("collation"));
 					}
+					join.setResult(atts.getValue("result"));
 				}
 				break;
 			case JOIN:
@@ -370,6 +373,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("transfer".equals(localName)) {
 					objectStack.push(ObjectType.PTP_TRANSFER);
 					ptpTransfer = new TransferNode(ligretoNode);
+					ptpTransfer.setResult(atts.getValue("result"));
 					ptpNode.addTransferNode(ptpTransfer);
 				} else if ("postprocess".equals(localName)) {
 					objectStack.push(ObjectType.PTP_POSTPROCESS);
