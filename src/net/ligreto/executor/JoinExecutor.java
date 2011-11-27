@@ -1,5 +1,6 @@
 package net.ligreto.executor;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -109,6 +110,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		
 		Connection cnn1 = null, cnn2 = null;
 		Statement stm1 = null, stm2 = null;
+		CallableStatement cstm1 = null, cstm2 = null;
 		ResultSet rs1 = null, rs2 = null;
 		try {
 			cnn1 = Database.getInstance().getConnection(sqlQueries.get(0).getDataSource());
@@ -146,13 +148,39 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			qry1.deleteCharAt(qry1.length() - 1);
 			qry2.deleteCharAt(qry2.length() - 1);
 			
-			log.info("Executing the SQL query on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
-			log.info(qry1);
-			rs1 = stm1.executeQuery(qry1.toString());
+			switch (sqlQueries.get(0).getQueryType()) {
+			case STATEMENT:
+				log.info("Executing the SQL statement on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
+				log.info(qry1);
+				stm1 = cnn1.createStatement();
+				rs1 = stm1.executeQuery(qry1.toString());
+				break;
+			case CALL:
+				log.info("Executing the SQL callable statement on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
+				log.info(qry1);
+				cstm1 = cnn1.prepareCall(qry1.toString());
+				rs1 = cstm1.executeQuery();
+				break;
+			default:
+				throw new LigretoException("Unknown query type.");
+			}
 			
-			log.info("Executing the SQL query on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
-			log.info(qry2);
-			rs2 = stm2.executeQuery(qry2.toString());
+			switch (sqlQueries.get(1).getQueryType()) {
+			case STATEMENT:
+				log.info("Executing the SQL statement on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
+				log.info(qry2);
+				stm2 = cnn2.createStatement();
+				rs2 = stm2.executeQuery(qry2.toString());
+				break;
+			case CALL:
+				log.info("Executing the SQL callable statement on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
+				log.info(qry2);
+				cstm2 = cnn2.prepareCall(qry2.toString());
+				rs2 = cstm2.executeQuery();
+				break;
+			default:
+				throw new LigretoException("Unknown query type.");
+			}
 			
 			ResultSetMetaData rsmd1 = rs1.getMetaData();
 			ResultSetMetaData rsmd2 = rs2.getMetaData();
@@ -452,8 +480,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 			}
 		} finally {
-			Database.close(cnn1, stm1, rs1);
-			Database.close(cnn2, stm2, rs2);
+			Database.close(cnn1, stm1, cstm1, rs1);
+			Database.close(cnn2, stm2, cstm2, rs2);
 		}
 		log.info("JOIN result row count: " + result);
 		return result;

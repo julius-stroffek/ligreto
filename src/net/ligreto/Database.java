@@ -1,5 +1,6 @@
 package net.ligreto;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -58,10 +59,26 @@ public class Database {
 		
 		// Initialize the connection with the given SQL queries
 		try {
-			Statement stm = cnn.createStatement();
+			Statement stm = null;
+			CallableStatement cstm = null;
 			for (SqlNode sqlNode : node.sqlQueries()) {
 				try {
-					stm.execute(sqlNode.getQuery());
+					switch (sqlNode.getQueryType()) {
+					case STATEMENT:
+						log.info("Executing the SQL statement on \"" + name + "\" data source:");
+						log.info(sqlNode.getQuery());
+						stm = cnn.createStatement();
+						stm.executeQuery(sqlNode.getQuery());
+						break;
+					case CALL:
+						log.info("Executing the SQL callable statement on \"" + name + "\" data source:");
+						log.info(sqlNode.getQuery());
+						cstm = cnn.prepareCall(sqlNode.getQuery());
+						cstm.executeQuery();
+						break;
+					default:
+						throw new DataSourceInitException("Unknown query type.");
+					}
 				} catch (SQLException e) {
 					switch (sqlNode.getExceptions()) {
 					case IGNORE:
@@ -72,6 +89,11 @@ public class Database {
 					case FAIL:
 						throw e;
 					}
+				} finally {
+					if (stm != null)
+						stm.close();
+					if (cstm != null)
+						cstm.close();
 				}
 			}
 		} catch (SQLException e) {
@@ -86,6 +108,17 @@ public class Database {
 			rs.close();
 		if (stm != null)
 			stm.close();
+		if (cnn != null)
+			cnn.close();
+	}
+	
+	public static void close(Connection cnn, Statement stm, CallableStatement cstm, ResultSet rs) throws SQLException {
+		if (rs != null)
+			rs.close();
+		if (stm != null)
+			stm.close();
+		if (cstm != null)
+			cstm.close();
 		if (cnn != null)
 			cnn.close();
 	}

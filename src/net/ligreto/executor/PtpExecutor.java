@@ -1,5 +1,6 @@
 package net.ligreto.executor;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -90,15 +91,29 @@ public class PtpExecutor extends Executor {
 		try {
 			Connection cnn = null;
 			Statement stm = null;
+			CallableStatement cstm = null;
 			ResultSet rs = null;
 			try {
 				cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
 				String qry = sqlNode.getQuery().toString();
 				stm = cnn.createStatement();
 				
-				log.info("Executing the SQL query on \"" + sqlNode.getDataSource() + "\" data source:");
-				log.info(qry);
-				rs = stm.executeQuery(qry);
+				switch (sqlNode.getQueryType()) {
+				case STATEMENT:
+					log.info("Executing the SQL statement on \"" + sqlNode.getDataSource() + "\" data source:");
+					log.info(qry);
+					stm = cnn.createStatement();
+					rs = stm.executeQuery(qry);
+					break;
+				case CALL:
+					log.info("Executing the SQL callable statement on \"" + sqlNode.getDataSource() + "\" data source:");
+					log.info(qry);
+					cstm = cnn.prepareCall(qry);
+					rs = cstm.executeQuery();
+					break;
+				default:
+					throw new LigretoException("Unknown query type.");
+				}
 				
 				prepareTarget(targetNode, rs);
 				
@@ -123,7 +138,7 @@ public class PtpExecutor extends Executor {
 					}
 				}
 			} finally {
-				Database.close(cnn, stm, rs);
+				Database.close(cnn, stm, cstm, rs);
 			}
 			log.info("TRANSFER result row count: " + result);
 		} catch (SQLException e) {
