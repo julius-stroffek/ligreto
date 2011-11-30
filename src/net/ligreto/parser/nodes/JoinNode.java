@@ -281,11 +281,24 @@ public class JoinNode extends Node {
 	
 	/** @return the split column names to be ignored. */
 	public String[] getExcludeColumns() {
-		String[] retValue;
+		String[] result;
 		if (exclude != null) {
-			retValue = ligretoNode.substituteParams(exclude).split(",");
-			for (int i=0; i < retValue.length; i++)
-				retValue[i] = retValue[i].trim();
+			result = ligretoNode.substituteParams(exclude).split(",");
+			int c = 0;
+			for (int i=0; i < result.length; i++) {
+				result[i] = result[i].trim();
+				if (! "".equals(result[i])) {
+					c++;
+				}
+			}
+			String[] retValue = new String[c];
+			int i2 = 0;
+			for (int i=0; i < retValue.length; i++) {
+				if (! "".equals(result[i])) {
+					retValue[i2] = result[i];
+					i2++;
+				}
+			}
 			return retValue;
 		} else {
 			return null;

@@ -98,7 +98,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						/* The local variable below is only due to @SuppressWarnings annotation. */
 						@SuppressWarnings("unchecked")
 						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, locale);
-						this.comparator = comparator;						
+						this.comparator = comparator;
+						log.info("Using collator class: " + collatorClass + "; locale: " + localeName);
 					} else {
 						Method method = collatorClass.getMethod("getInstance", String.class);
 						String collationName = joinNode.getLigretoNode().getParam("ligreto.collationName");
@@ -107,6 +108,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						@SuppressWarnings("unchecked")
 						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
 						this.comparator = comparator;
+						log.info("Using collator class: " + collatorClass + "; collation: " + collationName);
 					}
 				} else if (collatorName == null) {
 					Collator collator = Collator.getInstance(locale);

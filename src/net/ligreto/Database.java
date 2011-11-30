@@ -105,6 +105,7 @@ public class Database {
 			throw new DataSourceInitException("Failed to initialize the connection by custom SQL statements.", e);
 		}
 		
+		log.info("Connected to " + name + " data source with uri: " + node.getUri());
 		return cnn;
 	}
 

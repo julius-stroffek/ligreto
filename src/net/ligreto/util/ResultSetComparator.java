@@ -42,8 +42,10 @@ public class ResultSetComparator {
 			case Types.DECIMAL:
 			case Types.NUMERIC:
 				BigDecimal bd = rs.getBigDecimal(index);
-				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale()); 
+				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
+				break;
 			default:
+				columnType = Types.VARCHAR;
 				columnValue = new String(rs.getString(index));
 				break;			
 			}
@@ -187,6 +189,7 @@ public class ResultSetComparator {
 			case Types.DECIMAL:
 			case Types.NUMERIC:
 				result = compare((BigDecimal)cols1[i].columnValue, (BigDecimal)cols2[i].columnValue);
+				break;
 			default:
 				result = compare((String)cols1[i].columnValue, (String)cols2[i].columnValue);
 				break;
