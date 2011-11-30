@@ -1,5 +1,6 @@
 package net.ligreto.executor;
 
+import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -7,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.Collator;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,7 +51,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	protected Locale locale;
 	
 	/** The collator to be used for join processing based on the specified locale. */
-	protected Collator collator;
+	protected Comparator<Object> comparator;
 
 	@Override
 	public boolean prepareProcessing(JoinNode joinNode, ResultSet rs1, ResultSet rs2) throws Exception {
@@ -77,17 +79,42 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		int result = 0;
 		try {
 			for (JoinNode joinNode : joinNodes) {
-				String loc = joinNode.getLocale();
-				if (loc == null) {
-					loc = joinNode.getReportNode().getLocale();
+				String localeName = joinNode.getLocale();
+				if (localeName == null) {
+					localeName = joinNode.getReportNode().getLocale();
 				}
-				if (loc != null) {
-					locale = new Locale(loc);
+				if (localeName != null) {
+					locale = new Locale(localeName);
 				} else {
 					locale = Locale.getDefault();
 				}
-				collator = Collator.getInstance(locale);
-				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+				String collatorName = joinNode.getLigretoNode().getParam("ligreto.collatorClass");
+				if ("oracle.i18n.text.OraCollator".equals(collatorName)) {
+					Class<?> collatorClass = Class.forName(collatorName);
+					
+					if (localeName != null) {
+						Method method = collatorClass.getMethod("getInstance", Locale.class);
+					
+						/* The local variable below is only due to @SuppressWarnings annotation. */
+						@SuppressWarnings("unchecked")
+						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, locale);
+						this.comparator = comparator;						
+					} else {
+						Method method = collatorClass.getMethod("getInstance", String.class);
+						String collationName = joinNode.getLigretoNode().getParam("ligreto.collationName");
+					
+						/* The local variable below is only due to @SuppressWarnings annotation. */
+						@SuppressWarnings("unchecked")
+						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
+						this.comparator = comparator;
+					}
+				} else if (collatorName == null) {
+					Collator collator = Collator.getInstance(locale);
+					collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+					comparator = collator;
+				} else {
+					throw new LigretoException("Unsupported collator: " + collatorName);
+				}
 				result += executeJoin(joinNode);
 			}
 		} catch (Exception e) {
@@ -208,19 +235,21 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				exclStr2 = joinNode.getExcludeColumns();
 			
 			// Initialize exclude arrays to empty arrays
-			int[] excl1 = new int[0];
-			int[] excl2 = new int[0];
+			int[] excl1Tmp = new int[0];
+			int[] excl2Tmp = new int[0];
+			int excl1Count = 0, excl2Count = 0;
 			
 			// Convert the column names into numbers for sql query 1
 			if (exclStr1 != null && exclStr1.length > 0) {
-				excl1 = new int[exclStr1.length];
+				excl1Tmp = new int[exclStr1.length];
 				for (int i=0; i < exclStr1.length; i++) {
-					excl1[i] = MiscUtils.findColumnIndex(rs1, exclStr1[i]);
-					if (excl1[i] >= 0) {
-						if (MiscUtils.arrayContains(on1, excl1[i])) {
+					excl1Tmp[i] = MiscUtils.findColumnIndex(rs1, exclStr1[i]);
+					if (excl1Tmp[i] >= 0) {
+						if (MiscUtils.arrayContains(on1, excl1Tmp[i])) {
 							throw new LigretoException("Column listed in 'exclude' attribute cannot be used in 'on' clause:" + exclStr1[i]);
 						}
-						log.info("Excluding column \"" + exclStr1[i] + "\" from 1st sql query which has the index: " + excl1[i]);
+						excl1Count++;
+						log.info("Excluding column \"" + exclStr1[i] + "\" from 1st sql query which has the index: " + excl1Tmp[i]);
 					} else {
 						log.info("Column to be exculded \"" + exclStr1[i] + "\" from 1st sql query was not found in the result set.");												
 					}
@@ -229,22 +258,43 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			// Convert the column names into numbers for sql query 2
 			if (exclStr2 != null && exclStr2.length > 0) {
-				excl2 = new int[exclStr2.length];
+				excl2Tmp = new int[exclStr2.length];
 				for (int i=0; i < exclStr2.length; i++) {
-					excl2[i] = MiscUtils.findColumnIndex(rs2, exclStr2[i]);
-					if (excl2[i] >= 0) {
-						if (MiscUtils.arrayContains(on2, excl2[i])) {
+					excl2Tmp[i] = MiscUtils.findColumnIndex(rs2, exclStr2[i]);
+					if (excl2Tmp[i] >= 0) {
+						if (MiscUtils.arrayContains(on2, excl2Tmp[i])) {
 							throw new LigretoException("Column listed in 'exclude' attribute cannot be used in 'on' clause:" + exclStr2[i]);
 						}
-						log.info("Excluding column \"" + exclStr2[i] + "\" from 2nd sql query which has the index: " + excl2[i]);
+						excl2Count++;
+						log.info("Excluding column \"" + exclStr2[i] + "\" from 2nd sql query which has the index: " + excl2Tmp[i]);
 					} else {
 						log.info("Column to be exculded \"" + exclStr2[i] + "\" from 2nd sql query was not found in the result set.");						
 					}
 				}
 			}
 			
+			int[] excl1 = new int[excl1Count];
+			int[] excl2 = new int[excl2Count];
+			
+			for (int i=0, ti=0; i < excl1Tmp.length; i++) {
+				if (excl1Tmp[i] >= 0) {
+					excl1[ti] = excl1Tmp[i];
+					ti++;
+				}
+			}
+			for (int i=0, ti=0; i < excl2Tmp.length; i++) {
+				if (excl2Tmp[i] >= 0) {
+					excl2[ti] = excl2Tmp[i];
+					ti++;
+				}
+			}
+			
 			int rs1ColCount = rs1.getMetaData().getColumnCount() - excl1.length;
 			int rs2ColCount = rs2.getMetaData().getColumnCount() - excl2.length;
+			
+			if (rs1ColCount != rs2ColCount) {
+				throw new LigretoException("Result set column counts differs: " + rs1ColCount + " and " + rs2ColCount);
+			}
 			
 			// Create the arrays to be used to highlight
 			// differences for left, right, outer joins
@@ -277,7 +327,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
-			ResultSetComparator comparator = new ResultSetComparator(collator);
+			ResultSetComparator rsComparator = new ResultSetComparator(comparator);
 			ResultSetComparator.Column[] pCol1 = null;
 			ResultSetComparator.Column[] pCol2 = null;
 			ResultSetComparator.Column[] col1 = null;
@@ -285,25 +335,25 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext1 && hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = comparator.duplicate(rs1, on1);
-				col2 = comparator.duplicate(rs2, on2);
-				int dResult1 = pCol1 != null ? comparator.compare(pCol1, col1) : -1;
-				int dResult2 = pCol2 != null ? comparator.compare(pCol2, col2) : -1;
+				col1 = rsComparator.duplicate(rs1, on1);
+				col2 = rsComparator.duplicate(rs2, on2);
+				int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
+				int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
 
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
-					comparator.error(log, col1);
+					rsComparator.error(log, col1);
 					throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult2 == 0) {
 					log.error("Duplicate entries found.");
-					comparator.error(log, col2);
+					rsComparator.error(log, col2);
 					throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
-					comparator.error(log, pCol1);
-					comparator.error(log, col1);
+					rsComparator.error(log, pCol1);
+					rsComparator.error(log, col1);
 					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 					switch (joinNode.getCollation()) {
 					case DUMP:
@@ -315,8 +365,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
-					comparator.error(log, pCol2);
-					comparator.error(log, col2);
+					rsComparator.error(log, pCol2);
+					rsComparator.error(log, col2);
 					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 					switch (joinNode.getCollation()) {
 					case DUMP:
@@ -327,7 +377,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = comparator.compare(rs1, on1, rs2, on2);
+				int cResult = rsComparator.compare(rs1, on1, rs2, on2);
 				switch (cResult) {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
@@ -349,7 +399,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = comparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
+					int[] cmpArray = rsComparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
 					
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
 						if (joinNode.getResult())
@@ -399,19 +449,19 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				while (hasNext1) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
-					col1 = comparator.duplicate(rs1, on1);
-					int dResult1 = pCol1 != null ? comparator.compare(pCol1, col1) : -1;
+					col1 = rsComparator.duplicate(rs1, on1);
+					int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
 					pCol1 = col1;
 
 					if (dResult1 == 0) {
 						log.error("Duplicate entries found.");
-						comparator.error(log, col1);
+						rsComparator.error(log, col1);
 						throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
-						comparator.error(log, pCol1);
-						comparator.error(log, col1);
+						rsComparator.error(log, pCol1);
+						rsComparator.error(log, col1);
 						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 						switch (joinNode.getCollation()) {
 						case DUMP:
@@ -441,19 +491,19 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				while (hasNext2) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
-					col2 = comparator.duplicate(rs2, on2);
-					int dResult2 = pCol2 != null ? comparator.compare(pCol2, col2) : -1;
+					col2 = rsComparator.duplicate(rs2, on2);
+					int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
 					pCol2 = col2;
 
 					if (dResult2 == 0) {
 						log.error("Duplicate entries found.");
-						comparator.error(log, col2);
+						rsComparator.error(log, col2);
 						throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
-						comparator.error(log, pCol2);
-						comparator.error(log, col2);
+						rsComparator.error(log, pCol2);
+						rsComparator.error(log, col2);
 						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 						switch (joinNode.getCollation()) {
 						case DUMP:

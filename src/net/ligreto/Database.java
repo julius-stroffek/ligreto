@@ -55,7 +55,12 @@ public class Database {
 		Class.forName(node.getDriverClass());
 		
 		// Create the connection
-		Connection cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
+		Connection cnn;
+		try {
+			cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
+		} catch (SQLException e) {
+			throw new DataSourceException("Could not connect to data source: " + name, e);
+		}
 		
 		// Initialize the connection with the given SQL queries
 		try {

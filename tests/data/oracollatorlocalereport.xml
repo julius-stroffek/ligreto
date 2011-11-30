@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="ligreto.collatorClass" value="oracle.i18n.text.OraCollator"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:dbo1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:dbo2"/>
+		</data-source>
+	</data-sources>
+	<report name="OraCollator Report" options="autoFilter, autoSize,headerStyle">
+		<output file="oracollatorreport.xlsx"/>
+		<data>
+			<join on="1" target="full!B2" type="full" locale="en_US">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

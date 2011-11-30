@@ -39,7 +39,7 @@ public class Ligreto {
 		Options options = new Options();
 
 		Option help = new Option( "help", "print this help message" );
-		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file" );
+		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file. Currently this is the only behavior regardless the option. [obsolete]" );
 		Option excel97 = new Option( "excel97", "uses \"Excel 97\" format instead of default \"Excel 2007\" format" );
 		Option param = new Option(
 			"D",
@@ -67,7 +67,7 @@ public class Ligreto {
 				"ligreto.sh [OPTIONS] file1.xml [file2.xml...]",
 				"---",
 				options,
-				"\nExample:\n ligreto.sh -concat -D sysdate=2011-12-31 config.xml report1.xml\n---",
+				"\nExample:\n ligreto.sh -D sysdate=2011-12-31 config.xml report1.xml\n---",
 				false
 			);
 			//formatter.printHelp(cmdLineSyntax, header, options, footer, autoUsage)
@@ -82,38 +82,21 @@ public class Ligreto {
 		// Get the parameter values and store them after reading the file 
 		String[] params = cmd.getOptionValues("D");
 		try {
-			if (cmd.hasOption("concat")) {
-				LigretoNode ligretoNode = new LigretoNode();
-				for (int i=0; i < files.length; i++) {
-					Parser.parse(files[i], ligretoNode);
-				}
-				if (params != null) {
-					for (int j=0; j < params.length; j++) {
-						if (params[j].indexOf('=') >=0) {
-							String paramName = params[j].substring(0, params[j].indexOf('='));
-							String paramValue = params[j].substring(params[j].indexOf('=') + 1);
-							ligretoNode.addParam(paramName, paramValue);
-						}
+			LigretoNode ligretoNode = new LigretoNode();
+			for (int i=0; i < files.length; i++) {
+				Parser.parse(files[i], ligretoNode);
+			}
+			if (params != null) {
+				for (int j=0; j < params.length; j++) {
+					if (params[j].indexOf('=') >=0) {
+						String paramName = params[j].substring(0, params[j].indexOf('='));
+						String paramValue = params[j].substring(params[j].indexOf('=') + 1);
+						ligretoNode.addParam(paramName, paramValue);
 					}
-				}
-				LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-				result = executor.execute();
-			} else {
-				for (int i=0; i < files.length; i++) {
-					LigretoNode ligretoNode = Parser.parse(files[i]);
-					LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-					if (params != null) {
-						for (int j=0; j < params.length; j++) {
-							if (params[j].indexOf('=') >=0) {
-								String paramName = params[j].substring(0, params[j].indexOf('='));
-								String paramValue = params[j].substring(params[j].indexOf('=') + 1);
-								ligretoNode.addParam(paramName, paramValue);
-							}
-						}
-					}
-					result = executor.execute();
 				}
 			}
+			LigretoExecutor executor = new LigretoExecutor(ligretoNode);
+			result = executor.execute();
 		} catch (SAXException e) {
 			e.printStackTrace();
 			System.exit(EXCEPTION_EXIT_STATUS);

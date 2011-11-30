@@ -36,6 +36,18 @@ public class LigretoNode extends Node {
 		paramMap.put(name, value);
 	}
 	
+	public String getParam(String name) {
+		return getParam(name, null);
+	}
+	
+	public String getParam(String name, String defaultValue) {
+		String value = paramMap.get(name);
+		if (value != null) {
+			return value;
+		}
+		return defaultValue;
+	}
+	
 	public void addReport(ReportNode reportNode) {
 		reportNodes.add(reportNode);
 	}

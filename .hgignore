@@ -35,3 +35,5 @@ syntax: regexp
 ^manual/ligreto\.tp$
 syntax: regexp
 ^manual/ligreto\.vr$
+syntax: regexp
+^lib/PasswordQueries\.jar$

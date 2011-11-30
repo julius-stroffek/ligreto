@@ -16,7 +16,7 @@
 		<data>
 			<join on="1" target="A1" type="full" header="true" highlight="true" locale="en">
 				<sql data-source="Source1">select * from join_table1 a, join_table1 b</sql>
-				<sql data-source="Source2">select * from join_table2</sql>
+				<sql data-source="Source2">select * from join_table2 a, join_table2 b</sql>
 			</join>
 		</data>
 	</report>

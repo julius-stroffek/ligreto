@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.Collator;
+import java.util.Comparator;
 
 import org.apache.commons.logging.Log;
 
@@ -56,14 +57,14 @@ public class ResultSetComparator {
 	}
 	
 	/** The collator object used for comparisons. */
-	protected Collator collator;
+	protected Comparator<Object> comparator;
 	
 	public ResultSetComparator() {
-		collator = Collator.getInstance();
+		comparator = Collator.getInstance();
 	}
 	
-	public ResultSetComparator(Collator collator) {
-		this.collator = collator;
+	public ResultSetComparator(Comparator<Object> comparator) {
+		this.comparator = comparator;
 	}
 
 	public int compare(ResultSet rs1, int on1, ResultSet rs2, int on2) throws SQLException {
@@ -120,7 +121,7 @@ public class ResultSetComparator {
 	}
 	
 	public int compare(String s1, String s2) {
-		return collator.compare(s1.trim(), s2.trim());
+		return comparator.compare(s1.trim(), s2.trim());
 	}
 
 	public int compare(ResultSet rs1, ResultSet rs2) throws SQLException {
