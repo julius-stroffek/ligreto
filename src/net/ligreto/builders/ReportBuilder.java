@@ -48,6 +48,9 @@ import net.ligreto.util.MiscUtils;
  */
 public abstract class ReportBuilder {
 	
+	/** The types of the headers. */
+	public enum HeaderType {TOP, ROW};
+	
 	/** The string representation of NULL values. */
 	public static final String NULL="";
 	
@@ -296,8 +299,17 @@ public abstract class ReportBuilder {
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
 	 */
-	public void setHeaderColumn(int i, Object o) {
-		setColumn(i, o, getHlColor(i));
+	public void setHeaderColumn(int i, Object o, HeaderType headerType) {
+		switch (headerType) {
+		case TOP:
+			setColumn(i, o, getHlColor(i));
+			break;
+		case ROW:
+			setColumn(i, o, getHlColor(i));
+			break;
+		default:
+			throw new RuntimeException("Unexpected value of HeaderType enumeration.");
+		}
 	}
 	
 	/**
@@ -315,7 +327,7 @@ public abstract class ReportBuilder {
 		nextRow();
 		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				setHeaderColumn(columnStep*c++, rsmd.getColumnLabel(i));
+				setHeaderColumn(columnStep*c++, rsmd.getColumnLabel(i), HeaderType.TOP);
 			}
 		}
 	}
@@ -323,7 +335,7 @@ public abstract class ReportBuilder {
 	public void dumpJoinOnHeader(ResultSet rs, int[] on) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=0; i < on.length; i++) {
-			setHeaderColumn(columnStep*i, rsmd.getColumnLabel(on[i]));
+			setHeaderColumn(columnStep*i, rsmd.getColumnLabel(on[i]), HeaderType.TOP);
 		}
 	}
 
@@ -341,7 +353,7 @@ public abstract class ReportBuilder {
 			}
 			
 			if (!skip) {
-				setHeaderColumn(columnStep*idx, rsmd.getColumnLabel(i+1));
+				setHeaderColumn(columnStep*idx, rsmd.getColumnLabel(i+1), HeaderType.TOP);
 				idx++;
 			}
 		}

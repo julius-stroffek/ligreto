@@ -43,7 +43,7 @@
 <!ATTLIST join target CDATA #IMPLIED>
 <!ATTLIST join type (full|left|right|inner) "full">
 <!ATTLIST join diffs (true|false) "false">
-<!ATTLIST join interlaced (true|false) "true">
+<!ATTLIST join interlaced (true|false) #IMPLIED>
 <!ATTLIST join highlight (true|false) "true">
 <!ATTLIST join header (true|false) "true">
 <!ATTLIST join append (true|false) "false">
@@ -54,6 +54,7 @@
 <!ATTLIST join locale CDATA #IMPLIED>
 <!ATTLIST join collation (ignore|dump|fail) "fail">
 <!ATTLIST join result (true|false) "true">
+<!ATTLIST join layout (normal|interlaced|detailed) "interlaced">
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>

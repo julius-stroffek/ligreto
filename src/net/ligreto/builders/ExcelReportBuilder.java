@@ -226,13 +226,15 @@ public class ExcelReportBuilder extends ReportBuilder {
 		cell.setCellStyle(newStyle);
 	}
 
-	public void setHeaderColumn(int i, Object o) {
+	@Override
+	public void setHeaderColumn(int i, Object o, HeaderType headerType) {
 		setColumn(i, o);
+		
 		// Format the header column
 		if (headerStyle) {
 			// We can call createCell as the cell already exists and it will be returned
 			Cell cell = createCell(row, actCol + i);
-			setHeaderStyle(cell);
+			setHeaderStyle(cell, headerType);
 		}
 	}
 	
@@ -246,25 +248,25 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * 
 	 * @param cell The cell where to set the font color.
 	 */
-	protected void setHeaderStyle(Cell cell) {
+	protected void setHeaderStyle(Cell cell, HeaderType headerType) {
 		switch (outputFormat) {
 		case HSSF:
-			setHSSFHeaderStyle(cell);
+			setHSSFHeaderStyle(cell, headerType);
 			break;
 		case XSSF:
 			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell);
+			setHSSFHeaderStyle(cell, headerType);
 			break;
 		case SXSSF:
 			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell);
+			setHSSFHeaderStyle(cell, headerType);
 			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for format processing.");
 		}
 	}
 	
-	protected void setHSSFHeaderStyle(Cell cell) {
+	protected void setHSSFHeaderStyle(Cell cell, HeaderType headerType) {
 		CellStyle style = cell.getCellStyle();
 		
 		Font font = wb.getFontAt(style.getFontIndex());
@@ -294,7 +296,16 @@ public class ExcelReportBuilder extends ReportBuilder {
 		short fillPattern = style.getFillPattern();
 		short fillColor = style.getFillForegroundColor();
 		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
-		style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
+		switch (headerType) {
+		case TOP:
+			style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
+			break;
+		case ROW:
+			style.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
+			break;
+		default:
+			throw new RuntimeException("Unexpected value for HeaderType enumeration.");
+		}
 		CellStyle newStyle = cloneStyle(style);
 		cell.setCellStyle(newStyle);
 		

@@ -12,6 +12,7 @@ import net.ligreto.exceptions.ReportException;
 
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.JoinNode.JoinLayoutType;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.PostprocessNode;
@@ -308,8 +309,15 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (atts.getValue("diffs") != null) {
 						join.setDiffs(atts.getValue("diffs"));
 					}
+					if (atts.getValue("layout") != null) {
+						join.setJoinLayoutType(atts.getValue("layout"));
+					}
 					if (atts.getValue("interlaced") != null) {
-						join.setInterlaced(atts.getValue("interlaced"));
+						if (Boolean.parseBoolean(atts.getValue("interlaced"))) {
+							join.setJoinLayoutType(JoinLayoutType.INTERLACED);
+						} else {
+							join.setJoinLayoutType(JoinLayoutType.NORMAL);
+						}
 					}
 					if (atts.getValue("highlight") != null) {
 						join.setHighlight(atts.getValue("highlight"));

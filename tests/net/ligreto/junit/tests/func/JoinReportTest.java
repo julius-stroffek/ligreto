@@ -117,6 +117,24 @@ public class JoinReportTest {
 	}
 	
 	@Test
+	public void testDetailedJoinReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("detailedreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		
+		int result = executor.execute();
+		Assert.assertEquals(58, result); // 58 is the expected number of rows in the result
+		
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("detailedreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/detailedreport.xlsx"))
+		).areSame());
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("streamdetailedreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/streamdetailedreport.xlsx"))
+		).areSame());
+	}
+	
+	@Test
 	public void testDuplicateJoinColumns() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("duplicatejoincolumnsreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);

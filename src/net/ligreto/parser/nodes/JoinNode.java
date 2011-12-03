@@ -15,11 +15,13 @@ import net.ligreto.util.MiscUtils;
  */
 public class JoinNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER};
+	public enum JoinLayoutType {NORMAL, INTERLACED, DETAILED};
+	
 	protected JoinType joinType = JoinType.FULL;
+	protected JoinLayoutType joinLayoutType = JoinLayoutType.INTERLACED;
 	protected String target;
 	protected short[] rgbHlColor;
 	protected boolean diffs = false;
-	protected boolean interlaced = false;
 	protected boolean highlight = false;
 	protected boolean header = false;
 	protected boolean append = false;
@@ -54,7 +56,7 @@ public class JoinNode extends Node {
 	}
 
 	/**
-	 * @param joinType the joinType to set
+	 * @param joinType the joinType to set as string
 	 */
 	public void setJoinType(String joinType) {
 		if ("full".equals(joinType))
@@ -69,6 +71,34 @@ public class JoinNode extends Node {
 			throw new IllegalArgumentException("The join type could not be \"" + joinType + "\"");
 	}
 
+	/**
+	 * @return the joinLayoutType
+	 */
+	public JoinLayoutType getJoinLayoutType() {
+		return joinLayoutType;
+	}
+
+	/**
+	 * @param joinLayoutType the joinLayoutType to set
+	 */
+	public void setJoinLayoutType(JoinLayoutType joinLayoutType) {
+		this.joinLayoutType = joinLayoutType;
+	}
+
+	/**
+	 * @param joinLayout the joinLayout to set as string
+	 */
+	public void setJoinLayoutType(String joinLayoutType) {
+		if ("normal".equals(joinLayoutType))
+			this.joinLayoutType = JoinLayoutType.NORMAL;
+		else if ("interlaced".equals(joinLayoutType))
+			this.joinLayoutType = JoinLayoutType.INTERLACED;
+		else if ("detailed".equals(joinLayoutType))
+			this.joinLayoutType = JoinLayoutType.DETAILED;			
+		else
+			throw new IllegalArgumentException("The join layout could not be \"" + joinLayoutType + "\"");
+	}
+	
 	/**
 	 * @return the target
 	 */
@@ -124,27 +154,6 @@ public class JoinNode extends Node {
 	 */
 	public void setDiffs(String diffs) {
 		this.diffs = Boolean.parseBoolean(diffs);
-	}
-
-	/**
-	 * @return the interlaced
-	 */
-	public boolean getInterlaced() {
-		return interlaced;
-	}
-
-	/**
-	 * @param interlaced the interlaced to set
-	 */
-	public void setInterlaced(boolean interlaced) {
-		this.interlaced = interlaced;
-	}
-
-	/**
-	 * @param interlaced the interlaced to set
-	 */
-	public void setInterlaced(String interlaced) {
-		this.interlaced = Boolean.parseBoolean(interlaced);
 	}
 
 	/**

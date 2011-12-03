@@ -21,6 +21,11 @@ import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
+import net.ligreto.executor.layouts.DetailedJoinLayout;
+import net.ligreto.executor.layouts.InterlacedJoinLayout;
+import net.ligreto.executor.layouts.JoinLayout;
+import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
+import net.ligreto.executor.layouts.NormalJoinLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
@@ -92,24 +97,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				if ("oracle.i18n.text.OraCollator".equals(collatorName)) {
 					Class<?> collatorClass = Class.forName(collatorName);
 					
-					if (localeName != null) {
-						Method method = collatorClass.getMethod("getInstance", Locale.class);
-					
-						/* The local variable below is only due to @SuppressWarnings annotation. */
-						@SuppressWarnings("unchecked")
-						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, locale);
-						this.comparator = comparator;
-						log.info("Using collator class: " + collatorClass + "; locale: " + localeName);
-					} else {
-						Method method = collatorClass.getMethod("getInstance", String.class);
-						String collationName = joinNode.getLigretoNode().getParam("ligreto.collationName");
-					
-						/* The local variable below is only due to @SuppressWarnings annotation. */
-						@SuppressWarnings("unchecked")
-						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
-						this.comparator = comparator;
-						log.info("Using collator class: " + collatorClass + "; collation: " + collationName);
+					Method method = collatorClass.getMethod("getInstance", String.class);
+					String collationName = joinNode.getLigretoNode().getParam("ligreto.collationName").trim();
+				
+					if (collationName == null || "".equals(collationName)) {
+						throw new LigretoException("Parameter ligreto.collationName must be specified.");
 					}
+					
+					/* The local variable below is only due to @SuppressWarnings annotation. */
+					@SuppressWarnings("unchecked")
+					Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
+					this.comparator = comparator;
+					log.info("Using collator class: " + collatorClass + "; collation: " + collationName);
 				} else if (collatorName == null) {
 					Collator collator = Collator.getInstance(locale);
 					collator.setDecomposition(Collator.FULL_DECOMPOSITION);
@@ -125,6 +124,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		return result;
 	}
 
+	protected void returnRowNormal() {
+		
+	}
+	
+	protected void returnRowInterlaced() {
+		
+	}
+	
+	protected void returnRowDetailed() {
+		
+	}
+	
 	protected int executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
 		int result = 0;
 		reportBuilder.setTarget(joinNode.getTarget(), joinNode.isAppend());
@@ -165,7 +176,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				throw new LigretoException("All queries in the join have to have the same number of \"on\" columns.");
 			
 			// Things are all right, so we will continue...
-			int onLength = on1.length;
 			qry1.append(" order by ");
 			qry2.append(" order by ");
 			for (int i=0; i < on1.length; i++) {
@@ -309,22 +319,32 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			reportBuilder.setHighlight(joinNode.getHighlight());
 			reportBuilder.setHlColor(joinNode.getHlColor());
 			
+			/* Create the proper implementation of the join layout. */
+			JoinLayout joinLayout;
+			switch (joinNode.getJoinLayoutType()) {
+			case NORMAL:
+				joinLayout = new NormalJoinLayout(reportBuilder);
+				break;
+			case INTERLACED:
+				joinLayout = new InterlacedJoinLayout(reportBuilder);
+				break;
+			case DETAILED:
+				joinLayout = new DetailedJoinLayout(reportBuilder);
+				break;
+			default:
+				throw new LigretoException("Unexpected value of JoinLayoutType.");
+			}
+
+			// Setup other parameters required for the join layout
+			joinLayout.setJoinNode(joinNode);
+			joinLayout.setOnColumns(on1, on2);
+			joinLayout.setExcludeColumns(excl1, excl2);
+			joinLayout.setResultSets(rs1, rs2);
+			joinLayout.setColumnCount(rs1ColCount);
+			
 			// Dump the header row if requested
 			if (joinNode.getHeader()) {
-				reportBuilder.nextRow();
-				reportBuilder.dumpJoinOnHeader(rs1, on1);
-				if (joinNode.getInterlaced()) {
-					reportBuilder.setColumnPosition(onLength, 2, null);
-				} else  {
-					reportBuilder.setColumnPosition(onLength, 1, null);							
-				}
-				reportBuilder.dumpOtherHeader(rs1, on1, excl1);
-				if (joinNode.getInterlaced()) {
-					reportBuilder.setColumnPosition(onLength+1, 2, null);
-				} else {
-					reportBuilder.setColumnPosition(rs1ColCount, 1, null);
-				}
-				reportBuilder.dumpOtherHeader(rs2, on2, excl2);
+				joinLayout.dumpHeader();
 			}
 			
 			boolean hasNext1 = rs1.next();
@@ -385,18 +405,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 						if (joinNode.getResult())
 							result++;
-						reportBuilder.nextRow();
-						reportBuilder.setHighlightArray(higherArray);
-						reportBuilder.setJoinOnColumns(rs1, on1);
-						if (joinNode.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength, 2, lowerArray);
-						} else  {
-							reportBuilder.setColumnPosition(onLength, 1, lowerArray);							
-						}
-						reportBuilder.setOtherColumns(rs1, on1, excl1);
+						joinLayout.dumpRow(JoinResultType.LEFT);	
 					}
-					pCol1 = col1;
 					hasNext1 = rs1.next();
+					pCol1 = col1;
 					break;
 				case 0:
 					// We will break if we are supposed to produce only differences
@@ -406,41 +418,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
 						if (joinNode.getResult())
 							result++;
-						reportBuilder.nextRow();
-						reportBuilder.setJoinOnColumns(rs1, on1);
-						if (joinNode.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength, 2, cmpArray);
-						} else  {
-							reportBuilder.setColumnPosition(onLength, 1, cmpArray);							
-						}
-						
-						reportBuilder.setOtherColumns(rs1, on1, excl1);
-						
-						if (joinNode.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength+1, 2, cmpArray);
-						} else {
-							reportBuilder.setColumnPosition(rs1ColCount, 1, cmpArray);
-						}
-						reportBuilder.setOtherColumns(rs2, on2, excl1);
+						joinLayout.dumpRow(cmpArray, JoinResultType.INNER);
 					}
-					pCol1 = col1;
-					pCol2 = col2;
 					hasNext1 = rs1.next();
 					hasNext2 = rs2.next();
+					pCol1 = col1;
+					pCol2 = col2;
 					break;
 				case 1:
 					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 						if (joinNode.getResult())
 							result++;
-						reportBuilder.nextRow();							
-						reportBuilder.setHighlightArray(lowerArray);
-						reportBuilder.setJoinOnColumns(rs2, on2);
-						if (joinNode.getInterlaced()) {
-							reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
-						} else  {
-							reportBuilder.setColumnPosition(rs1ColCount, 1, higherArray);							
-						}
-						reportBuilder.setOtherColumns(rs2, on2, excl2);
+						joinLayout.dumpRow(JoinResultType.RIGHT);							
 					}
 					pCol2 = col2;
 					hasNext2 = rs2.next();
@@ -476,16 +465,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 
 					if (joinNode.getResult())
 						result++;
-
-					reportBuilder.nextRow();
-					reportBuilder.setHighlightArray(higherArray);
-					reportBuilder.setJoinOnColumns(rs1, on1);
-					if (joinNode.getInterlaced()) {
-						reportBuilder.setColumnPosition(onLength, 2, lowerArray);
-					} else  {
-						reportBuilder.setColumnPosition(onLength, 1, lowerArray);							
-					}
-					reportBuilder.setOtherColumns(rs1, on1, excl1);
+					joinLayout.dumpRow(JoinResultType.LEFT);
 					hasNext1 = rs1.next();
 				}
 			}
@@ -518,16 +498,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					
 					if (joinNode.getResult())
 						result++;
-
-					reportBuilder.nextRow();
-					reportBuilder.setHighlightArray(lowerArray);
-					reportBuilder.setJoinOnColumns(rs2, on2);
-					if (joinNode.getInterlaced()) {
-						reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
-					} else  {
-						reportBuilder.setColumnPosition(rs1ColCount, 1, higherArray);
-					}
-					reportBuilder.setOtherColumns(rs2, on2, excl2);
+					joinLayout.dumpRow(JoinResultType.RIGHT);
 					hasNext2 = rs2.next();
 				}
 			}

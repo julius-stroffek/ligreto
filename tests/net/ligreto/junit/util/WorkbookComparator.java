@@ -170,11 +170,24 @@ public class WorkbookComparator {
 	 * @return
 	 */
 	protected boolean areSame(CellStyle s1, CellStyle s2) {
+		boolean result = true;
 		if (!areSame(w1.getFontAt(s1.getFontIndex()), w2.getFontAt(s2.getFontIndex()))) {
 			log.error("The style fonts differ for matching styles.");
-			return false;
+			result = false;
 		}
-		return true;
+		if (s1.getFillForegroundColor() != s2.getFillForegroundColor()) {
+			log.error("The style fill foreground color differs for matching styles.");
+			result = false;
+		}
+		if (s1.getFillBackgroundColor() != s2.getFillBackgroundColor()) {
+			log.error("The style fill background color differs for matching styles.");
+			result = false;
+		}
+		if (s1.getFillPattern() != s2.getFillPattern()) {
+			log.error("The style fill pattern differs for matching styles.");
+			result = false;
+		}
+		return result;
 	}
 
 	/**
