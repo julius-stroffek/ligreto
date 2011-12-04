@@ -2,11 +2,11 @@ package net.ligreto.executor.layouts;
 
 import java.sql.SQLException;
 
-import net.ligreto.builders.ReportBuilder;
+import net.ligreto.builders.BuilderInterface;
 
 public class NormalJoinLayout extends JoinLayout {
 
-	public NormalJoinLayout(ReportBuilder reportBuilder) {
+	public NormalJoinLayout(BuilderInterface reportBuilder) {
 		super(reportBuilder);
 	}
 

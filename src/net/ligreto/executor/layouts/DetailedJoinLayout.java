@@ -3,15 +3,16 @@ package net.ligreto.executor.layouts;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
-import net.ligreto.builders.ReportBuilder;
-import net.ligreto.builders.ReportBuilder.HeaderType;
+import net.ligreto.builders.BuilderInterface;
+import net.ligreto.builders.BuilderInterface.CellFormat;
+import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetUtils;
 
 public class DetailedJoinLayout extends JoinLayout {
 
-	public DetailedJoinLayout(ReportBuilder reportBuilder) {
+	public DetailedJoinLayout(BuilderInterface reportBuilder) {
 		super(reportBuilder);
 	}
 
@@ -68,9 +69,9 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setColumn(0, rs1, i1 + 1);
 					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
 						reportBuilder.setColumn(2, rs1, i1 + 1);
-						reportBuilder.setColumn(3, "100%");
+						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE);
 					} else {
-						reportBuilder.setColumn(2, "yes");
+						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
 					}
 					break;
 				case RIGHT:
@@ -83,9 +84,9 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setColumn(1, rs2, i2 + 1);
 					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
 						reportBuilder.setColumn(2, rs2, i2 + 1);
-						reportBuilder.setColumn(3, "100%");
+						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE);
 					} else {
-						reportBuilder.setColumn(2, "yes");
+						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
 					}
 					break;
 				case INNER:
@@ -107,8 +108,8 @@ public class DetailedJoinLayout extends JoinLayout {
 						}
 						reportBuilder.setColumn(0, rs1, i1 + 1);
 						reportBuilder.setColumn(1, rs2, i2 + 1);
-						reportBuilder.setColumn(2, calculateDifference(i1 + 1, i2 + 1));
-						reportBuilder.setColumn(3, calculateRelativeDifference(i1 + 1, i2 + 1));
+						reportBuilder.setColumn(2, calculateDifference(i1 + 1, i2 + 1), CellFormat.UNCHANGED);
+						reportBuilder.setColumn(3, calculateRelativeDifference(i1 + 1, i2 + 1), CellFormat.PERCENTAGE);
 
 					}
 					break;
@@ -121,7 +122,7 @@ public class DetailedJoinLayout extends JoinLayout {
 		}
 	}
 
-	private long calculateDifference(long value1, long value2) {
+	private double calculateDifference(long value1, long value2) {
 		return Math.abs(value1 - value2);
 	}
 
@@ -129,8 +130,8 @@ public class DetailedJoinLayout extends JoinLayout {
 		return Math.abs(value1 - value2);
 	}
 
-	private BigDecimal calculateDifference(BigDecimal value1, BigDecimal value2) {
-		return value1.subtract(value2).abs();
+	private double calculateDifference(BigDecimal value1, BigDecimal value2) {
+		return value1.subtract(value2).abs().doubleValue();
 	}
 
 	private double calculateRelativeDifference(long value1, long value2) {
@@ -147,7 +148,7 @@ public class DetailedJoinLayout extends JoinLayout {
 				).doubleValue();
 	}
 
-	private String calculateDifference(int i1, int i2) throws SQLException, LigretoException {
+	private Object calculateDifference(int i1, int i2) throws SQLException, LigretoException {
 		Object columnValue1 = ResultSetUtils.getResultSetNumericObject(rs1, i1);
 		Object columnValue2 = ResultSetUtils.getResultSetNumericObject(rs2, i2);
 
@@ -157,46 +158,46 @@ public class DetailedJoinLayout extends JoinLayout {
 		}
 		
 		if (columnValue1 instanceof Long && columnValue2 instanceof Long) {
-			long diff = calculateDifference((Long)columnValue1, (Long)columnValue2);
-			return Long.toString(diff);
+			double diff = calculateDifference((Long)columnValue1, (Long)columnValue2);
+			return new Double(diff);
 		} else if (columnValue1 instanceof Double && columnValue2 instanceof Double) {
 			double diff = calculateDifference((Double)columnValue1, (Double)columnValue2);
-			return Double.toString(diff);
+			return new Double(diff);
 		} else if (columnValue1 instanceof BigDecimal && columnValue2 instanceof BigDecimal) {
-			BigDecimal diff = calculateDifference((BigDecimal)columnValue1, (BigDecimal)columnValue2);
-			return diff.toPlainString();
+			double diff = calculateDifference((BigDecimal)columnValue1, (BigDecimal)columnValue2);
+			return new Double(diff);
 		} else if (columnValue1 instanceof BigDecimal) {
-			BigDecimal diff;
+			double diff;
 			if (columnValue2 instanceof Long) {
 				diff = calculateDifference((BigDecimal)columnValue1, new BigDecimal((Long)columnValue2));
 			} else {
 				diff = calculateDifference((BigDecimal)columnValue1, new BigDecimal((Double)columnValue2));			
 			}
-			return diff.toPlainString();
+			return new Double(diff);
 		} else if (columnValue2 instanceof BigDecimal) {
-			BigDecimal diff;
+			double diff;
 			if (columnValue1 instanceof Long) {
 				diff = calculateDifference(new BigDecimal((Long)columnValue1), (BigDecimal)columnValue2);
 			} else {
 				diff = calculateDifference(new BigDecimal((Double)columnValue1), (BigDecimal)columnValue2);
 			}
-			return diff.toPlainString();
+			return new Double(diff);
 		} else if (columnValue1 instanceof Double) {
 			double diff = calculateDifference((Double)columnValue1, ((Long)columnValue2).doubleValue());
-			return Double.toString(diff);
+			return new Double(diff);
 		} else if (columnValue2 instanceof Double) {
 			double diff = calculateDifference(((Long)columnValue1).doubleValue(), (Double)columnValue2);
-			return Double.toString(diff);
+			return new Double(diff);
 		} else {
 			throw new RuntimeException("Executing unreachable code.");
 		}
 	}
 
-	private String calculateRelativeDifference(int i1, int i2) throws SQLException {
+	private Object calculateRelativeDifference(int i1, int i2) throws SQLException {
 		Object columnValue1 = ResultSetUtils.getResultSetNumericObject(rs1, i1);
 		Object columnValue2 = ResultSetUtils.getResultSetNumericObject(rs2, i2);
 		
-		// If one of the values is not number, report just 'yes'/'no'
+		// If one of the values is not number, report just empty string
 		if (columnValue1 == null || columnValue2 == null) {
 			return "";
 		}
@@ -227,6 +228,11 @@ public class DetailedJoinLayout extends JoinLayout {
 		} else {
 			throw new RuntimeException("Executing unreachable code.");
 		}
-		return String.format("%1.2f%%", 100*diff);
+		
+		// Provide number only for non-zero values
+		if (diff != 0)
+			return diff;
+		else
+			return "";
 	}
 }

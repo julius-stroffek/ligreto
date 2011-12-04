@@ -175,7 +175,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	@Override
-	public void setColumn(int i, Object o, short[] rgb) {
+	public void setColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
 		Cell cell = createCell(row, actCol + i);
 		if (o instanceof Integer) {
 			cell.setCellValue(((Integer)o).intValue());
@@ -208,6 +208,15 @@ public class ExcelReportBuilder extends ReportBuilder {
 		if (rgb != null) {
 			setCellColor(cell, rgb);
 		}
+		switch (cellFormat) {
+		case UNCHANGED:
+			break;
+		case PERCENTAGE:
+			setDataFormat(cell, "0.000%");
+			break;
+		default:
+			throw new RuntimeException("Unexpected value of CellFormat enumeration.");
+		}
 	}
 	
 	/**
@@ -228,7 +237,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 
 	@Override
 	public void setHeaderColumn(int i, Object o, HeaderType headerType) {
-		setColumn(i, o);
+		setColumn(i, o, CellFormat.UNCHANGED);
 		
 		// Format the header column
 		if (headerStyle) {

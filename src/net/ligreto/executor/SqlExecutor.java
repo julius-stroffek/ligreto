@@ -11,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
-import net.ligreto.builders.ReportBuilder;
+import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.util.MiscUtils;
@@ -32,7 +32,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	protected SqlResultCallBack callBack;
 	
 	/** The <code>ReportBuilder</code> object used to process the results. */
-	protected ReportBuilder reportBuilder;
+	protected BuilderInterface reportBuilder;
 	
 	/** The list of column indices to be excluded. */
 	protected int[] excl = new int[0];
@@ -178,14 +178,14 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	/**
 	 * @return the reportBuilder
 	 */
-	public ReportBuilder getReportBuilder() {
+	public BuilderInterface getReportBuilder() {
 		return reportBuilder;
 	}
 
 	/**
 	 * @param reportBuilder the reportBuilder to set
 	 */
-	public void setReportBuilder(ReportBuilder reportBuilder) {
+	public void setReportBuilder(BuilderInterface reportBuilder) {
 		this.reportBuilder = reportBuilder;
 	}
 

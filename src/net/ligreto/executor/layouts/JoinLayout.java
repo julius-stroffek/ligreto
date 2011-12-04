@@ -3,7 +3,7 @@ package net.ligreto.executor.layouts;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import net.ligreto.builders.ReportBuilder;
+import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
 
@@ -20,7 +20,7 @@ public abstract class JoinLayout {
 	public enum JoinResultType {LEFT, RIGHT, INNER};
 	
 	/** The report builder used for report generation of the layout. */
-	protected ReportBuilder reportBuilder;
+	protected BuilderInterface reportBuilder;
 	
 	/** The parser join node of the processed join. */
 	protected JoinNode joinNode = null;
@@ -56,7 +56,7 @@ public abstract class JoinLayout {
 	protected int[] higherArray = null;
 		
 	/** Constructs the layout having the specified report builder. */
-	protected JoinLayout(ReportBuilder reportBuilder) {
+	protected JoinLayout(BuilderInterface reportBuilder) {
 		this.reportBuilder = reportBuilder;
 	}
 

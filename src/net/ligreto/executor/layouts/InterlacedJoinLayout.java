@@ -2,11 +2,11 @@ package net.ligreto.executor.layouts;
 
 import java.sql.SQLException;
 
-import net.ligreto.builders.ReportBuilder;
+import net.ligreto.builders.BuilderInterface;
 
 public class InterlacedJoinLayout extends JoinLayout {
 
-	public InterlacedJoinLayout(ReportBuilder reportBuilder) {
+	public InterlacedJoinLayout(BuilderInterface reportBuilder) {
 		super(reportBuilder);
 	}
 

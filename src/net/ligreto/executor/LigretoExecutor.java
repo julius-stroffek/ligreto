@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
+import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.DataSourceException;
 import net.ligreto.exceptions.LigretoException;
@@ -76,7 +77,7 @@ public class LigretoExecutor extends Executor {
 	public int executeReport(ReportNode reportNode) throws LigretoException {
 		int result = 0;
 		try {
-			ReportBuilder reportBuilder = ReportBuilder.createInstance(ligretoNode, reportNode.getReportType());
+			BuilderInterface reportBuilder = ReportBuilder.createInstance(ligretoNode, reportNode.getReportType());
 			reportBuilder.setTemplate(reportNode.getTemplate());
 			reportBuilder.setOutput(reportNode.getOutput());
 			reportBuilder.setOptions(reportNode.getOptions());

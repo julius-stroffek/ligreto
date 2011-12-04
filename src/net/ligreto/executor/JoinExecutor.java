@@ -16,7 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
-import net.ligreto.builders.ReportBuilder;
+import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
@@ -50,7 +50,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	protected JoinResultCallBack callBack;
 	
 	/** The <code>ReportBuilder</code> object used to process the results. */
-	protected ReportBuilder reportBuilder;
+	protected BuilderInterface reportBuilder;
 	
 	/** The locale to be used for join processing. */
 	protected Locale locale;
@@ -541,14 +541,14 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	/**
 	 * @return the reportBuilder
 	 */
-	public ReportBuilder getReportBuilder() {
+	public BuilderInterface getReportBuilder() {
 		return reportBuilder;
 	}
 
 	/**
 	 * @param reportBuilder the reportBuilder to set
 	 */
-	public void setReportBuilder(ReportBuilder reportBuilder) {
+	public void setReportBuilder(BuilderInterface reportBuilder) {
 		this.reportBuilder = reportBuilder;
 	}
 }

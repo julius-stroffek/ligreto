@@ -46,13 +46,7 @@ import net.ligreto.util.MiscUtils;
  * @author Julius Stroffek
  *
  */
-public abstract class ReportBuilder {
-	
-	/** The types of the headers. */
-	public enum HeaderType {TOP, ROW};
-	
-	/** The string representation of NULL values. */
-	public static final String NULL="";
+public abstract class ReportBuilder implements BuilderInterface {
 	
 	/** 
 	 * The type of the report to be generated. This corresponds to the proper type
@@ -127,7 +121,7 @@ public abstract class ReportBuilder {
 	 * @return The instance of the child class of <code>ReportBuilder</code>
 	 *         corresponding to the desired report type.
 	 */
-	public static ReportBuilder createInstance(LigretoNode ligretoNode, ReportNode.ReportType reportType) {
+	public static BuilderInterface createInstance(LigretoNode ligretoNode, ReportNode.ReportType reportType) {
 		ReportBuilder builder;
 		switch (reportType) {
 		case EXCEL:
@@ -164,47 +158,31 @@ public abstract class ReportBuilder {
 		return null;
 	}
 
-	/**
-	 * This method will set the value in the output report at the i-th position
-	 * and taking the rsi-th position value from the specified result set.
-	 * 
-	 * @param i The report output column index.
-	 * @param rs The result set where to get the data.
-	 * @param rsi The result set index number where to get the value from.
-	 * @throws SQLException in case of database related problems.
-	 * 
-	 * <p>
-	 * The first output column index is 0.
-	 * </p><p>
-	 * The first result set column index is 1.
-	 * </p>
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet, int)
 	 */
+	@Override
 	public void setColumn(int i, ResultSet rs, int rsi) throws SQLException {
 		Object o = rs.getObject(rsi);
 		if (rs.wasNull()) {
-			setColumn(columnStep*i, NULL, getHlColor(i));
+			setColumn(columnStep*i, NULL, getHlColor(i), CellFormat.UNCHANGED);
 		} else {
-			setColumn(columnStep*i, o, getHlColor(i));
+			setColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
 		}
 	}
 
-	/**
-	 * This method will set the value in the output report at the i-th position
-	 * and taking the i-th position value from the specified result set.
-	 * 
-	 * @param i The report output column index.
-	 * @param rs The result set where to get the data.
-	 * @throws SQLException in case of database related problems.
-	 * 
-	 * <p>
-	 * The first output column index is 1.
-	 * </p>
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet)
 	 */
+	@Override
 	public void setColumn(int i, ResultSet rs) throws SQLException {
 		setColumn(i-1, rs, i);
 	}
 
-	/** Set up the template file. */
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setTemplate(java.lang.String)
+	 */
+	@Override
 	public void setTemplate(String template) {
 		if (template != null) {
 			this.template = ligretoNode.substituteParams(template);
@@ -213,16 +191,18 @@ public abstract class ReportBuilder {
 		}
 	}
 	
-	/** Set up the output file name. */
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setOutput(java.lang.String)
+	 */
+	@Override
 	public void setOutput(String output) {
 		this.output = ligretoNode.substituteParams(output);
 	}
 	
-	/** 
-	 * Move the output processing to the next row. The <code>highlightArray</code>
-	 * is replaced with null. The row number is increased and the actual column is
-	 * set to the base column value.
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#nextRow()
 	 */
+	@Override
 	public void nextRow() {
 		actRow++;
 		actCol = baseCol;
@@ -230,98 +210,89 @@ public abstract class ReportBuilder {
 		highlightArray = null;
 	}
 	
-	/** Shift the actual column position by the specified number of columns. */
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setColumnPosition(int)
+	 */
+	@Override
 	public void setColumnPosition(int column) {
 		actCol = baseCol + column;
 	}
 
-	/**
-	 * This method sets up the array that determines the highlighting of the actually processed row.
-	 * 
-	 * @param highlightArray
-	 * 
-	 * <p>
-	 * The highlight array will be erased by the call to <code>nextRow</code> method.
-	 * </p>
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setHighlightArray(int[])
 	 */
+	@Override
 	public void setHighlightArray(int[] highlightArray) {
 		this.highlightArray = highlightArray;
 	}
 	
-	/**
-	 * This method sets the column position for <code>setColumn</code> function. The position
-	 * have to be specified relatively to the <code>baseColumn</code> position.
-	 * 
-	 * @param column The relative position to <code>baseColumn</code>.
-	 * @param step The number of cells to be skipped between column <code>i</code> and <code>i+1</code>. 
-	 * @param highlightArray The array which determines the highlighting of the columns in the row
-	 *                       actually processed.
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setColumnPosition(int, int, int[])
 	 */
+	@Override
 	public void setColumnPosition(int column, int step, int[] highlightArray) {
 		actCol = baseCol + column;
 		columnStep = step;
 		this.highlightArray = highlightArray;
 	}
 
-	/**
-	 * Store the specified object into the result column of the current row.
-	 * 
-	 * @param i The column index relative to <code>actColumn</code> position.
-	 * @param o The object which value should be stored.
-	 * 
-	 * <p>
-	 * The method will automatically determine the highlight color to be used.
-	 * </p>
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.lang.Object)
 	 */
-	public void setColumn(int i, Object o) {
-		setColumn(i, o, getHlColor(i));
+	@Override
+	public void setColumn(int i, Object o, CellFormat cellFormat) {
+		setColumn(i, o, getHlColor(i), cellFormat);
 	}
 
-	/**
-	 * Sets up the report type specific options. 
-	 *
-	 * @throws LigretoException
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setOptions(java.lang.Iterable)
 	 */
+	@Override
 	public abstract void setOptions(Iterable<String> options) throws LigretoException;
 
-	/**
-	 * Store the specified object into the result column of the current row.
-	 * 
-	 * @param i The column index relative to <code>actColumn</code> position.
-	 * @param o The object which value should be stored.
-	 * @param rgb The text color to use.
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.lang.Object, short[])
 	 */
-	public abstract void setColumn(int i, Object o, short[] rgb);
+	@Override
+	public abstract void setColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
 	
-	/**
-	 * Store the specified object into the result column of the header row.
-	 * 
-	 * @param i The column index relative to <code>actColumn</code> position.
-	 * @param o The object which value should be stored.
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setHeaderColumn(int, java.lang.Object, net.ligreto.builders.ReportBuilder.HeaderType)
 	 */
+	@Override
 	public void setHeaderColumn(int i, Object o, HeaderType headerType) {
 		switch (headerType) {
 		case TOP:
-			setColumn(i, o, getHlColor(i));
+			setColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
 			break;
 		case ROW:
-			setColumn(i, o, getHlColor(i));
+			setColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
 			break;
 		default:
 			throw new RuntimeException("Unexpected value of HeaderType enumeration.");
 		}
 	}
 	
-	/**
-	 * This method will setup the 
-	 * @param target The target location to set.
-	 * @param append Indicates whether the data should be appended.
-	 * @throws InvalidTargetException
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setTarget(java.lang.String, boolean)
 	 */
+	@Override
 	public abstract void setTarget(String target, boolean append) throws InvalidTargetException;
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#start()
+	 */
+	@Override
 	public abstract void start() throws IOException, LigretoException;
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#writeOutput()
+	 */
+	@Override
 	public abstract void writeOutput() throws IOException;
 
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#dumpHeader(java.sql.ResultSet, int[])
+	 */
+	@Override
 	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		nextRow();
@@ -332,6 +303,10 @@ public abstract class ReportBuilder {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#dumpJoinOnHeader(java.sql.ResultSet, int[])
+	 */
+	@Override
 	public void dumpJoinOnHeader(ResultSet rs, int[] on) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=0; i < on.length; i++) {
@@ -339,6 +314,10 @@ public abstract class ReportBuilder {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#dumpOtherHeader(java.sql.ResultSet, int[], int[])
+	 */
+	@Override
 	public void dumpOtherHeader(ResultSet rs, int[] on, int[] excl) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int rsLength = rsmd.getColumnCount();
@@ -359,12 +338,20 @@ public abstract class ReportBuilder {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setJoinOnColumns(java.sql.ResultSet, int[])
+	 */
+	@Override
 	public void setJoinOnColumns(ResultSet rs, int[] on) throws SQLException {
 		for (int i=0; i < on.length; i++) {
 			setColumn(i, rs, on[i]);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setOtherColumns(java.sql.ResultSet, int[], int[])
+	 */
+	@Override
 	public void setOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException {
 		int rsLength = rs.getMetaData().getColumnCount();
 		int idx = 0;
@@ -384,20 +371,18 @@ public abstract class ReportBuilder {
 		}
 	}
 
-	/**
-	 * Sets the difference highlighting option
-	 * 
-	 * @param highlight
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setHighlight(boolean)
 	 */
+	@Override
 	public void setHighlight(boolean highlight) {
 		this.highlight = highlight;
 	}
 
-	/**
-	 * Sets the difference highlighting color
-	 * 
-	 * @param hlColor The color to set
+	/* (non-Javadoc)
+	 * @see net.ligreto.builders.BuilderInterface#setHlColor(short[])
 	 */
+	@Override
 	public void setHlColor(short[] rgbHlColor) {
 		this.rgbHlColor = rgbHlColor;
 	}
