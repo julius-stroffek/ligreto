@@ -195,7 +195,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	private String calculateRelativeDifference(int i1, int i2) throws SQLException {
 		Object columnValue1 = ResultSetUtils.getResultSetNumericObject(rs1, i1);
 		Object columnValue2 = ResultSetUtils.getResultSetNumericObject(rs2, i2);
-
+		
 		// If one of the values is not number, report just 'yes'/'no'
 		if (columnValue1 == null || columnValue2 == null) {
 			return "";
