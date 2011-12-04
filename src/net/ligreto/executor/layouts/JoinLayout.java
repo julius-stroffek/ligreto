@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import net.ligreto.builders.ReportBuilder;
+import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
 
 /**
@@ -72,8 +73,9 @@ public abstract class JoinLayout {
 	 * @param resultType Determines whether to dump the row from the first,
 	 *                   second or both result sets.
 	 * @throws SQLException 
+	 * @throws LigretoException 
 	 */
-	public abstract void dumpRow(int[] highlightArray, JoinResultType resultType) throws SQLException;
+	public abstract void dumpRow(int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException;
 	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
@@ -82,8 +84,9 @@ public abstract class JoinLayout {
 	 * @param resultType Determines whether to dump the row from the first,
 	 *                   second or both result sets.
 	 * @throws SQLException 
+	 * @throws LigretoException 
 	 */
-	public void dumpRow(JoinResultType resultType) throws SQLException {
+	public void dumpRow(JoinResultType resultType) throws SQLException, LigretoException {
 		dumpRow(null, resultType);
 	}
 
