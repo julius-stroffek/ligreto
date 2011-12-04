@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
+import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateJoinColumnsException;
@@ -80,8 +81,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	}
 
 	@Override
-	public int execute() throws LigretoException {
-		int result = 0;
+	public ResultStatus execute() throws LigretoException {
+		ResultStatus result = new ResultStatus();
 		try {
 			for (JoinNode joinNode : joinNodes) {
 				String localeName = joinNode.getLocale();
@@ -116,7 +117,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				} else {
 					throw new LigretoException("Unsupported collator: " + collatorName);
 				}
-				result += executeJoin(joinNode);
+				result.merge(executeJoin(joinNode));
 			}
 		} catch (Exception e) {
 			throw new LigretoException("Could not process the join.", e);
@@ -136,8 +137,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		
 	}
 	
-	protected int executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
-		int result = 0;
+	protected ResultStatus executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
+		ResultStatus result = new ResultStatus();
 		reportBuilder.setTarget(joinNode.getTarget(), joinNode.isAppend());
 		JoinNode.JoinType joinType = joinNode.getJoinType();
 		List<SqlNode> sqlQueries = joinNode.getSqlQueries();
@@ -337,6 +338,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 
 			// Setup other parameters required for the join layout
 			joinLayout.setJoinNode(joinNode);
+			joinLayout.setResultStatus(result);
 			joinLayout.setOnColumns(on1, on2);
 			joinLayout.setExcludeColumns(excl1, excl2);
 			joinLayout.setResultSets(rs1, rs2);
@@ -403,8 +405,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				switch (cResult) {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
-						if (joinNode.getResult())
-							result++;
+						result.addRow(joinNode.getResult());
 						joinLayout.dumpRow(JoinResultType.LEFT);	
 					}
 					hasNext1 = rs1.next();
@@ -416,8 +417,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					int[] cmpArray = rsComparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
 					
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
-						if (joinNode.getResult())
-							result++;
+						result.addRow(joinNode.getResult());
 						joinLayout.dumpRow(cmpArray, JoinResultType.INNER);
 					}
 					hasNext1 = rs1.next();
@@ -427,8 +427,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				case 1:
 					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
-						if (joinNode.getResult())
-							result++;
+						result.addRow(joinNode.getResult());
 						joinLayout.dumpRow(JoinResultType.RIGHT);							
 					}
 					pCol2 = col2;
@@ -463,8 +462,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 					}
 
-					if (joinNode.getResult())
-						result++;
+					result.addRow(joinNode.getResult());
 					joinLayout.dumpRow(JoinResultType.LEFT);
 					hasNext1 = rs1.next();
 				}
@@ -496,8 +494,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						}
 					}
 					
-					if (joinNode.getResult())
-						result++;
+					result.addRow(joinNode.getResult());
 					joinLayout.dumpRow(JoinResultType.RIGHT);
 					hasNext2 = rs2.next();
 				}
@@ -506,7 +503,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			Database.close(cnn1, stm1, cstm1, rs1);
 			Database.close(cnn2, stm2, cstm2, rs2);
 		}
-		log.info("JOIN result row count: " + result);
+		result.info(log, "JOIN");
 		return result;
 	}
 

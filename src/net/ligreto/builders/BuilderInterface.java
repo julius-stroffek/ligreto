@@ -13,7 +13,12 @@ public interface BuilderInterface {
 	public enum HeaderType {TOP, ROW}
 	
 	/** Keep the enumeration of the possible cell formatting changes. */
-	public enum CellFormat {UNCHANGED, PERCENTAGE};
+	public enum CellFormat {
+		UNCHANGED,
+		PERCENTAGE_NO_DECIMAL_DIGITS,
+		PERCENTAGE_2_DECIMAL_DIGITS,
+		PERCENTAGE_3_DECIMAL_DIGITS
+	};
 	
 	/** The string representation of NULL values. */
 	public static final String NULL = "";

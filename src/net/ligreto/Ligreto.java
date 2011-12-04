@@ -35,7 +35,7 @@ public class Ligreto {
 	 * @param args The command-line arguments
 	 */
 	public static void main(String[] args) {
-		int result = 0;
+		long result = 0;
 		Options options = new Options();
 
 		Option help = new Option( "help", "print this help message" );
@@ -96,7 +96,7 @@ public class Ligreto {
 				}
 			}
 			LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-			result = executor.execute();
+			result = executor.execute().getResultRowCount();
 		} catch (SAXException e) {
 			e.printStackTrace();
 			System.exit(EXCEPTION_EXIT_STATUS);
@@ -110,6 +110,6 @@ public class Ligreto {
 		if (result > MAX_RESULT_EXIT_STATUS)
 			System.exit(MAX_RESULT_EXIT_STATUS);
 		else
-			System.exit(result);
+			System.exit((int)result);
 	}
 }

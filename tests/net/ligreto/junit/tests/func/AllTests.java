@@ -19,6 +19,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	DateTimeReportTest.class,
 	JoinReportTest.class,
 	ResultReportTest.class,
+	NumericTypesTest.class,
 	Excel97ReportTest.class,
 	PtpReportTest.class,
 	StyleDedupTest.class,

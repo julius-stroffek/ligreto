@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
+import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.SqlNode;
@@ -72,12 +73,12 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	}
 
 	@Override
-	public int execute() throws LigretoException {
-		int result = 0;
+	public ResultStatus execute() throws LigretoException {
+		ResultStatus result = new ResultStatus();
 		
 		// Do nothing if there is nothing to process.
 		if (sqlNodes == null)
-			return 0;
+			return result;
 		
 		for (SqlNode sqlNode : sqlNodes) {
 			try {
@@ -108,9 +109,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 						if (callBack != null && rs != null) {
 							if (callBack.prepareProcessing(sqlNode, rs)) {
 								while (rs.next()) {
-									if (sqlNode.getResult()) {
-										result++;
-									}
+									result.addRow(sqlNode.getResult());
 									callBack.processResultSetRow(rs);
 								}
 							}

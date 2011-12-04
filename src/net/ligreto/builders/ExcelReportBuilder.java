@@ -211,7 +211,13 @@ public class ExcelReportBuilder extends ReportBuilder {
 		switch (cellFormat) {
 		case UNCHANGED:
 			break;
-		case PERCENTAGE:
+		case PERCENTAGE_NO_DECIMAL_DIGITS:
+			setDataFormat(cell, "0%");
+			break;
+		case PERCENTAGE_2_DECIMAL_DIGITS:
+			setDataFormat(cell, "0.00%");
+			break;
+		case PERCENTAGE_3_DECIMAL_DIGITS:
 			setDataFormat(cell, "0.000%");
 			break;
 		default:

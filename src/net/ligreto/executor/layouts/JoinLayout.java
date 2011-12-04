@@ -3,6 +3,7 @@ package net.ligreto.executor.layouts;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
@@ -24,6 +25,9 @@ public abstract class JoinLayout {
 	
 	/** The parser join node of the processed join. */
 	protected JoinNode joinNode = null;
+	
+	/** The object holding the join result status. */
+	protected ResultStatus resultStatus = null;
 	
 	/** The column indices of the columns to be equal from the first result set. */
 	protected int[] on1 = null;
@@ -92,6 +96,10 @@ public abstract class JoinLayout {
 
 	public void setJoinNode(JoinNode joinNode) {
 		this.joinNode = joinNode;
+	}
+
+	public void setResultStatus(ResultStatus resultStatus) {
+		this.resultStatus = resultStatus;
 	}
 
 	public void setOnColumns(int[] on1, int[] on2) {

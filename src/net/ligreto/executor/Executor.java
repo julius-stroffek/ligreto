@@ -1,5 +1,6 @@
 package net.ligreto.executor;
 
+import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.LigretoException;
 
 public abstract class Executor {
@@ -10,5 +11,5 @@ public abstract class Executor {
 	 * @return The number of rows returned.
 	 * @throws LigretoException
 	 */
-	public abstract int execute() throws LigretoException;
+	public abstract ResultStatus execute() throws LigretoException;
 }

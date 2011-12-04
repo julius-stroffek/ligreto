@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+		<data-source name="Source3">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db3"/>
+		</data-source>
+	</data-sources>
+	<ptp>
+		<transfer>
+			<target data-source="Source3" table="num_table3" recreate="true"/>
+			<sql data-source="Source2">select * from num_table2</sql>
+		</transfer>
+	</ptp>
+	<report name="Numeric Types Report" options="autoFilter,autoSize,headerStyle">
+		<output file="numericjoinreport.xlsx"/>
+		<data>
+			<join on="1" target="detailed!B2" type="full" layout="detailed">
+				<sql data-source="Source1">select * from num_table1</sql>
+				<sql data-source="Source2">select * from num_table2</sql>
+			</join>
+			<join on="1" target="interlaced!B2" type="full" layout="interlaced">
+				<sql data-source="Source1">select * from num_table1</sql>
+				<sql data-source="Source3">select * from num_table3</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

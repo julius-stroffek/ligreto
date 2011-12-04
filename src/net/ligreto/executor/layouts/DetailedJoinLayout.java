@@ -69,7 +69,7 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setColumn(0, rs1, i1 + 1);
 					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
 						reportBuilder.setColumn(2, rs1, i1 + 1);
-						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE);
+						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
 						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
 					}
@@ -84,7 +84,7 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setColumn(1, rs2, i2 + 1);
 					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
 						reportBuilder.setColumn(2, rs2, i2 + 1);
-						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE);
+						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
 						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
 					}
@@ -109,7 +109,7 @@ public class DetailedJoinLayout extends JoinLayout {
 						reportBuilder.setColumn(0, rs1, i1 + 1);
 						reportBuilder.setColumn(1, rs2, i2 + 1);
 						reportBuilder.setColumn(2, calculateDifference(i1 + 1, i2 + 1), CellFormat.UNCHANGED);
-						reportBuilder.setColumn(3, calculateRelativeDifference(i1 + 1, i2 + 1), CellFormat.PERCENTAGE);
+						reportBuilder.setColumn(3, calculateRelativeDifference(i1 + 1, i2 + 1), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 
 					}
 					break;
@@ -144,7 +144,8 @@ public class DetailedJoinLayout extends JoinLayout {
 
 	private double calculateRelativeDifference(BigDecimal value1, BigDecimal value2) {
 		return	value1.subtract(value2).abs().divide(
-					value1.abs().compareTo(value2.abs()) > 0 ? value1.abs() : value2.abs()
+					value1.abs().compareTo(value2.abs()) > 0 ? value1.abs() : value2.abs(),
+					20,	BigDecimal.ROUND_HALF_UP
 				).doubleValue();
 	}
 
@@ -230,9 +231,11 @@ public class DetailedJoinLayout extends JoinLayout {
 		}
 		
 		// Provide number only for non-zero values
-		if (diff != 0)
+		if (diff != 0) {
+			resultStatus.addRelativeDifference(diff);
 			return diff;
-		else
+		} else {
 			return "";
+		}
 	}
 }

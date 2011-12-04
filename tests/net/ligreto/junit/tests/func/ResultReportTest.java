@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
@@ -101,8 +102,8 @@ public class ResultReportTest {
 		LigretoNode ligreto = Parser.parse("resultreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
-		int result = executor.execute();
-		Assert.assertEquals(43, result); // 43 is the expected number of rows in the result  
+		ResultStatus result = executor.execute();
+		Assert.assertEquals(43, result.getResultRowCount()); // 43 is the expected number of rows in the result  
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("resultreport.xlsx")),
