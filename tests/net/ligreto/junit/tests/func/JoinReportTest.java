@@ -53,7 +53,17 @@ public class JoinReportTest {
 			// do nothing
 		}
 		try {
+			stm1.execute("drop table multi_join1");
+		} catch (SQLException e) {
+			// do nothing
+		}
+		try {
 			stm2.execute("drop table join_table2");
+		} catch (SQLException e) {
+			// do nothing
+		}
+		try {
+			stm2.execute("drop table multi_join2");
 		} catch (SQLException e) {
 			// do nothing
 		}
@@ -77,6 +87,23 @@ public class JoinReportTest {
 		stm1.execute("insert into join_table1 values (8, 'Bruce8', 'Abone8', 15)");
 		stm2.execute("insert into join_table2 values (8, 'Bruce8', 'Abone8', 88)");
 		
+		stm1.execute("create table multi_join1 (Id int, Id2 int, Id3 varchar(32), first_name varchar(32), last_name varchar(32), age int)");
+		stm2.execute("create table multi_join2 (Id int, Id2 int, Id3 varchar(32), first_name varchar(32), last_name varchar(32), age int)");
+		stm1.execute("insert into multi_join1 values (1, 11, '12', '1Martin1', '1Velky1', 11)");
+		stm2.execute("insert into multi_join2 values (1, 11, '12', '2Bruce1', '2Abone1', 21)");
+		stm1.execute("insert into multi_join1 values (2, null, '12', 'middle1', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (2, 11, '12', 'middle1', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (3, 11, '12', 'middle2', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (3, null, '12', 'middle2', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (4, 11, null, 'last1', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (4, 11, '12', 'last1', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (5, 11, '12', 'last2', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (5, 11, null, 'last2', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (6, null, null, 'match1', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (6, null, null, 'match1', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (7, 11, null, 'match2', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (7, 11, null, 'match2', 'null', 21)");
+
 		stm3.execute("create table coll_table (Id varchar(32), first_name varchar(32), last_name varchar(32), age int)");
 		stm3.execute("insert into coll_table values ('abcd', '1Martin1', '1Velky1', 11)");
 		stm3.execute("insert into coll_table values ('bcde', '1Martin2', '1Velky2', 12)");
@@ -105,7 +132,7 @@ public class JoinReportTest {
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
 		ResultStatus result = executor.execute();
-		Assert.assertEquals(66, result.getResultRowCount()); // 66 is the expected number of rows in the result
+		Assert.assertEquals(77, result.getResultRowCount()); // 77 is the expected number of rows in the result
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),

@@ -82,7 +82,7 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setJoinOnColumns(rs2, on2);
 					reportBuilder.setColumnPosition(onLength + 1);
 					reportBuilder.setColumn(1, rs2, i2 + 1);
-					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
+					if (ResultSetUtils.getResultSetNumericObject(rs2, i2 + 1) != null) {
 						reportBuilder.setColumn(2, rs2, i2 + 1);
 						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
@@ -135,18 +135,30 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	private double calculateRelativeDifference(long value1, long value2) {
-		return Math.abs(value1 - value2)/(double)Math.max(Math.abs(value1), Math.abs(value2));
+		double divisor = (double)Math.max(Math.abs(value1), Math.abs(value2));
+		if (divisor != 0)
+			return Math.abs(value1 - value2)/divisor;
+		else
+			return 0;
 	}
 
 	private double calculateRelativeDifference(double value1, double value2) {
-		return Math.abs(value1 - value2)/Math.max(Math.abs(value1), Math.abs(value2));
+		double divisor = Math.max(Math.abs(value1), Math.abs(value2));
+		if (divisor != 0)
+			return Math.abs(value1 - value2)/divisor;
+		else
+			return 0;
 	}
 
 	private double calculateRelativeDifference(BigDecimal value1, BigDecimal value2) {
-		return	value1.subtract(value2).abs().divide(
-					value1.abs().compareTo(value2.abs()) > 0 ? value1.abs() : value2.abs(),
-					20,	BigDecimal.ROUND_HALF_UP
-				).doubleValue();
+		try {
+			return	value1.subtract(value2).abs().divide(
+						value1.abs().compareTo(value2.abs()) > 0 ? value1.abs() : value2.abs(),
+								20,	BigDecimal.ROUND_HALF_UP
+					).doubleValue();
+		} catch (ArithmeticException e) {
+			return 0;
+		}
 	}
 
 	private Object calculateDifference(int i1, int i2) throws SQLException, LigretoException {
@@ -155,18 +167,25 @@ public class DetailedJoinLayout extends JoinLayout {
 
 		// If one of the values is not number, report just 'yes'/'no'
 		if (columnValue1 == null || columnValue2 == null) {
-			return rs1.getString(i1).equals(rs2.getString(i2)) ? "no" : "yes";
+			String str1 = rs1.getString(i1);
+			String str2 = rs2.getString(i2);
+			if (str1 == null && str2 == null)
+				return "no";
+			else if (str1 != null)
+				return str1.equals(str2) ? "no" : "yes";
+			else
+				return str2.equals(str1) ? "no" : "yes";
 		}
 		
 		if (columnValue1 instanceof Long && columnValue2 instanceof Long) {
 			double diff = calculateDifference((Long)columnValue1, (Long)columnValue2);
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else if (columnValue1 instanceof Double && columnValue2 instanceof Double) {
 			double diff = calculateDifference((Double)columnValue1, (Double)columnValue2);
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else if (columnValue1 instanceof BigDecimal && columnValue2 instanceof BigDecimal) {
 			double diff = calculateDifference((BigDecimal)columnValue1, (BigDecimal)columnValue2);
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else if (columnValue1 instanceof BigDecimal) {
 			double diff;
 			if (columnValue2 instanceof Long) {
@@ -174,7 +193,7 @@ public class DetailedJoinLayout extends JoinLayout {
 			} else {
 				diff = calculateDifference((BigDecimal)columnValue1, new BigDecimal((Double)columnValue2));			
 			}
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else if (columnValue2 instanceof BigDecimal) {
 			double diff;
 			if (columnValue1 instanceof Long) {
@@ -182,13 +201,13 @@ public class DetailedJoinLayout extends JoinLayout {
 			} else {
 				diff = calculateDifference(new BigDecimal((Double)columnValue1), (BigDecimal)columnValue2);
 			}
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else if (columnValue1 instanceof Double) {
 			double diff = calculateDifference((Double)columnValue1, ((Long)columnValue2).doubleValue());
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else if (columnValue2 instanceof Double) {
 			double diff = calculateDifference(((Long)columnValue1).doubleValue(), (Double)columnValue2);
-			return new Double(diff);
+			return diff != 0 ? new Double(diff) : "no";
 		} else {
 			throw new RuntimeException("Executing unreachable code.");
 		}

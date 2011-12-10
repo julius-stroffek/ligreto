@@ -46,9 +46,15 @@ public class ResultSetComparator {
 				break;
 			default:
 				columnType = Types.VARCHAR;
-				columnValue = new String(rs.getString(index));
+				String tmpValue = rs.getString(index);
+				if (tmpValue != null)
+					columnValue = new String(tmpValue);
+				else
+					columnValue = null;
 				break;			
 			}
+			if (rs.wasNull())
+				columnValue = null;
 		}
 		
 		/** The column type that correspond to java.sql.Types definitions. */
@@ -169,30 +175,40 @@ public class ResultSetComparator {
 			if (cols1[i].columnType != cols2[i].columnType) {
 				throw new LigretoException("The columns to compare have different types.");
 			}
-			switch (cols1[i].columnType) {
-			case Types.BOOLEAN:
-				result = compare((Boolean)cols1[i].columnValue, (Boolean)cols2[i].columnValue);
-				break;
-			case Types.BIGINT:
-			case Types.INTEGER:
-				result = compare((Long)cols1[i].columnValue, (Long)cols2[i].columnValue);
-				break;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-				result = compare((Double)cols1[i].columnValue, (Double)cols2[i].columnValue);
-				break;
-			case Types.DATE:
-			case Types.TIMESTAMP:
-			case Types.TIME:
-				result = compare((Timestamp)cols1[i].columnValue, (Timestamp)cols2[i].columnValue);
-				break;
-			case Types.DECIMAL:
-			case Types.NUMERIC:
-				result = compare((BigDecimal)cols1[i].columnValue, (BigDecimal)cols2[i].columnValue);
-				break;
-			default:
-				result = compare((String)cols1[i].columnValue, (String)cols2[i].columnValue);
-				break;
+			
+			// Take care of the null values first
+			if (cols1[i] == null && cols2[i] == null) {
+				result = 0;
+			} else if (cols1[i] == null) {
+				result = -1;
+			} else if (cols2[i] == null) {
+				result = 1;
+			} else {
+				switch (cols1[i].columnType) {
+				case Types.BOOLEAN:
+					result = compare((Boolean)cols1[i].columnValue, (Boolean)cols2[i].columnValue);
+					break;
+				case Types.BIGINT:
+				case Types.INTEGER:
+					result = compare((Long)cols1[i].columnValue, (Long)cols2[i].columnValue);
+					break;
+				case Types.DOUBLE:
+				case Types.FLOAT:
+					result = compare((Double)cols1[i].columnValue, (Double)cols2[i].columnValue);
+					break;
+				case Types.DATE:
+				case Types.TIMESTAMP:
+				case Types.TIME:
+					result = compare((Timestamp)cols1[i].columnValue, (Timestamp)cols2[i].columnValue);
+					break;
+				case Types.DECIMAL:
+				case Types.NUMERIC:
+					result = compare((BigDecimal)cols1[i].columnValue, (BigDecimal)cols2[i].columnValue);
+					break;
+				default:
+					result = compare((String)cols1[i].columnValue, (String)cols2[i].columnValue);
+					break;
+				}
 			}
 			if (result != 0)
 				break;

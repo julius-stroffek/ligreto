@@ -54,6 +54,10 @@
 				<sql data-source="Source1" on="1,2,3">select id, 'ABC' aco, cast('ABCD' as char(6)) bco, first_name, last_name, age from join_table1</sql>
 				<sql data-source="Source2" on="1,2,3">select id, 'ABC' aco, 'ABCD' bco, first_name, last_name, age from join_table2</sql>
 			</join>
+			<join target="multicolsWithNulls!A1" type="full" diffs="true" layout="normal" hlColor="#2020d0">
+				<sql data-source="Source1" on="1,2,3">select * from multi_join1</sql>
+				<sql data-source="Source2" on="1,2,3">select * from multi_join2</sql>
+			</join>
 		</data>
 	</report>
 	<report name="Simple Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">

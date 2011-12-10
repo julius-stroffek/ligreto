@@ -19,6 +19,11 @@ public class ResultSetUtils {
 	
 	/** @return The object created for the specified index in the result set. */
 	public static Object getResultSetNumericObject(ResultSet rs, int columnIndex) throws SQLException {
+		// Check the null value first
+		rs.getObject(columnIndex);
+		if (rs.wasNull())
+			return null;
+		
 		switch (rs.getMetaData().getColumnType(columnIndex)) {
 		case Types.BIGINT:
 		case Types.INTEGER:
@@ -29,7 +34,10 @@ public class ResultSetUtils {
 		case Types.DECIMAL:
 		case Types.NUMERIC:
 			BigDecimal bd = rs.getBigDecimal(columnIndex);
-			return new BigDecimal(bd.unscaledValue(), bd.scale());
+			if (bd != null)
+				return new BigDecimal(bd.unscaledValue(), bd.scale());
+			else
+				return null;
 		default:
 			return null;
 		}
