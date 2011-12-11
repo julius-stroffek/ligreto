@@ -13,6 +13,7 @@ import java.util.Properties;
 public class DataSourceNode extends Node {
 	
 	protected String name;
+	protected String description;
 	protected String driverClass;
 	protected String uri;
 	protected Properties parameters;
@@ -87,6 +88,14 @@ public class DataSourceNode extends Node {
 		return name;
 	}
 	
+	public String getDescription() {
+		return description != null ? description : name;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	/**
 	 * @return The string showing the basic attributes of the connection.
 	 */	 

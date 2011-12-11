@@ -473,6 +473,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("data-source".equals(localName)) {
 					objectStack.push(ObjectType.DATA_SOURCE);
 					dataSource = new DataSourceNode(ligretoNode, atts.getValue("name"));
+					dataSource.setDescription(atts.getValue("desc"));
 				} else if ("ligreto".equals(localName)) {
 					objectStack.push(ObjectType.LIGRETO);
 				} else {

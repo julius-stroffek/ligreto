@@ -81,6 +81,7 @@
 <!ELEMENT data-sources (data-source*)>
 <!ELEMENT data-source (driver,uri,param*,init?)>
 <!ATTLIST data-source name CDATA #REQUIRED>
+<!ATTLIST data-source desc CDATA #IMPLIED>
 <!ELEMENT driver EMPTY>
 <!ATTLIST driver value CDATA #REQUIRED>
 <!ELEMENT uri EMPTY>

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
+import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
 
@@ -65,8 +66,9 @@ public abstract class JoinLayout {
 	}
 
 	/** Dumps the join result header. 
-	 * @throws SQLException */
-	public abstract void dumpHeader() throws SQLException;
+	 * @throws SQLException 
+	 * @throws DataSourceNotDefinedException */
+	public abstract void dumpHeader() throws SQLException, DataSourceNotDefinedException;
 	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also

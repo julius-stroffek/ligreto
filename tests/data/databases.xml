@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE data-sources PUBLIC "ligreto.dtd" "ligreto.dtd">
 <data-sources>
-	<data-source name="Source1">
+	<data-source name="Source1" desc="1st Data Source">
 		<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
 		<uri value="jdbc:derby:testdb2"/>
 		<param name="user" value="test"/>

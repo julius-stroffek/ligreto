@@ -2,11 +2,11 @@
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
 	<data-sources>
-		<data-source name="Source1">
+		<data-source name="Source1" desc="1st Source">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
 			<uri value="jdbc:derby:db1"/>
 		</data-source>
-		<data-source name="Source2">
+		<data-source name="Source2" desc="2nd Source">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
 			<uri value="jdbc:derby:db2"/>
 		</data-source>

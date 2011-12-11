@@ -47,6 +47,14 @@ public class Database {
 		ligretoNode = aLigretoNode;
 	}
 	
+	public DataSourceNode getDataSourceNode(String name) throws DataSourceNotDefinedException {
+		DataSourceNode node = ligretoNode.getDataSourceNode(name);
+		if (node == null) {
+			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
+		}
+		return node;
+	}
+	
 	public Connection getConnection(String name) throws DataSourceException, ClassNotFoundException, SQLException {
 		DataSourceNode node = ligretoNode.getDataSourceNode(name);
 		if (node == null) {

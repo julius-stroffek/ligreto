@@ -3,9 +3,11 @@ package net.ligreto.executor.layouts;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
+import net.ligreto.Database;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetUtils;
@@ -17,14 +19,17 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws SQLException {
+	public void dumpHeader() throws SQLException, DataSourceNotDefinedException {
 		reportBuilder.nextRow();
 		reportBuilder.setHeaderColumn(0, "Column Name", HeaderType.TOP);
 		reportBuilder.setColumnPosition(1, 1, null);
 		reportBuilder.dumpJoinOnHeader(rs1, on1);
 		reportBuilder.setColumnPosition(onLength + 1, 1, null);
-		reportBuilder.setHeaderColumn(0, joinNode.getSqlQueries().get(0).getDataSource(), HeaderType.TOP);
-		reportBuilder.setHeaderColumn(1, joinNode.getSqlQueries().get(1).getDataSource(), HeaderType.TOP);
+		String dSrc0 =  joinNode.getSqlQueries().get(0).getDataSource();
+		String dSrc1 =  joinNode.getSqlQueries().get(1).getDataSource();
+		
+		reportBuilder.setHeaderColumn(0, Database.getInstance().getDataSourceNode(dSrc0).getDescription(), HeaderType.TOP);
+		reportBuilder.setHeaderColumn(1, Database.getInstance().getDataSourceNode(dSrc1).getDescription(), HeaderType.TOP);
 		reportBuilder.setHeaderColumn(2, "Difference", HeaderType.TOP);
 		reportBuilder.setHeaderColumn(3, "Relative", HeaderType.TOP);
 	}
