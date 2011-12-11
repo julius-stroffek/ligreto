@@ -37,6 +37,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 		
 		sheet = null;
 		reportExcelStatisctics();
+		log.info("The output will be written to \"" + output + "\".");
 	}
 
 }

@@ -614,7 +614,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 		// Alter the output format if necessary
 		if (System.getProperty("excel97") != null) {
 			outputFormat = OutputFormat.HSSF;
-		}
+		}		
 		
 		// Read the template file if the template was specified
 		if (template != null) {
@@ -650,6 +650,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 			sheet = null;
 		}
 		reportExcelStatisctics();
+		log.info("The output will be written to \"" + output + "\".");
 	}
 
 	/**

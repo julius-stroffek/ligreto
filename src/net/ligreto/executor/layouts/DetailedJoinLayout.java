@@ -25,11 +25,12 @@ public class DetailedJoinLayout extends JoinLayout {
 		reportBuilder.setColumnPosition(1, 1, null);
 		reportBuilder.dumpJoinOnHeader(rs1, on1);
 		reportBuilder.setColumnPosition(onLength + 1, 1, null);
-		String dSrc0 =  joinNode.getSqlQueries().get(0).getDataSource();
-		String dSrc1 =  joinNode.getSqlQueries().get(1).getDataSource();
 		
+		String dSrc0 =  joinNode.getSqlQueries().get(0).getDataSource();
+		String dSrc1 =  joinNode.getSqlQueries().get(1).getDataSource();		
 		reportBuilder.setHeaderColumn(0, Database.getInstance().getDataSourceNode(dSrc0).getDescription(), HeaderType.TOP);
 		reportBuilder.setHeaderColumn(1, Database.getInstance().getDataSourceNode(dSrc1).getDescription(), HeaderType.TOP);
+		
 		reportBuilder.setHeaderColumn(2, "Difference", HeaderType.TOP);
 		reportBuilder.setHeaderColumn(3, "Relative", HeaderType.TOP);
 	}
@@ -140,7 +141,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	private double calculateRelativeDifference(long value1, long value2) {
-		double divisor = (double)Math.max(Math.abs(value1), Math.abs(value2));
+		double divisor = (double)Math.abs(value1);
 		if (divisor != 0)
 			return Math.abs(value1 - value2)/divisor;
 		else
@@ -148,7 +149,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	private double calculateRelativeDifference(double value1, double value2) {
-		double divisor = Math.max(Math.abs(value1), Math.abs(value2));
+		double divisor = Math.abs(value1);
 		if (divisor != 0)
 			return Math.abs(value1 - value2)/divisor;
 		else
@@ -158,8 +159,8 @@ public class DetailedJoinLayout extends JoinLayout {
 	private double calculateRelativeDifference(BigDecimal value1, BigDecimal value2) {
 		try {
 			return	value1.subtract(value2).abs().divide(
-						value1.abs().compareTo(value2.abs()) > 0 ? value1.abs() : value2.abs(),
-								20,	BigDecimal.ROUND_HALF_UP
+						value1.abs(),
+						20,	BigDecimal.ROUND_HALF_UP
 					).doubleValue();
 		} catch (ArithmeticException e) {
 			return 0;
