@@ -1,5 +1,6 @@
 package net.ligreto.executor.layouts;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
@@ -19,7 +20,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws SQLException, DataSourceNotDefinedException {
+	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
 		reportBuilder.nextRow();
 		reportBuilder.setHeaderColumn(0, "Column Name", HeaderType.TOP);
 		reportBuilder.setColumnPosition(1, 1, null);
@@ -36,7 +37,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int[] cmpArray, JoinResultType resultType) throws SQLException, LigretoException {
+	public void dumpRow(int[] cmpArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
 		int rs1Length = rs1.getMetaData().getColumnCount();
 		int rs2Length = rs2.getMetaData().getColumnCount();
 		

@@ -1,5 +1,6 @@
 package net.ligreto.executor.layouts;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -67,8 +68,9 @@ public abstract class JoinLayout {
 
 	/** Dumps the join result header. 
 	 * @throws SQLException 
-	 * @throws DataSourceNotDefinedException */
-	public abstract void dumpHeader() throws SQLException, DataSourceNotDefinedException;
+	 * @throws DataSourceNotDefinedException 
+	 * @throws IOException */
+	public abstract void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException;
 	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
@@ -80,8 +82,9 @@ public abstract class JoinLayout {
 	 *                   second or both result sets.
 	 * @throws SQLException 
 	 * @throws LigretoException 
+	 * @throws IOException 
 	 */
-	public abstract void dumpRow(int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException;
+	public abstract void dumpRow(int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException;
 	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
@@ -91,8 +94,9 @@ public abstract class JoinLayout {
 	 *                   second or both result sets.
 	 * @throws SQLException 
 	 * @throws LigretoException 
+	 * @throws IOException 
 	 */
-	public void dumpRow(JoinResultType resultType) throws SQLException, LigretoException {
+	public void dumpRow(JoinResultType resultType) throws SQLException, LigretoException, IOException {
 		dumpRow(null, resultType);
 	}
 

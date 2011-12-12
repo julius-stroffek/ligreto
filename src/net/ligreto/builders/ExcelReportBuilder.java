@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Date;
@@ -99,7 +101,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	@Override
 	public void setTarget(String target, boolean append) throws InvalidTargetException {
 		// Finalize the previous target first
-		finalizeTarget();
+		finalizeTarget(true);
 		
 		// Now create the new target
 		CellReference ref = new CellReference(target);
@@ -145,7 +147,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	@Override
-	public void nextRow() {
+	public void nextRow() throws IOException {
 		super.nextRow();
 		row = sheet.getRow(actRow);
 		if (row == null)
@@ -223,6 +225,12 @@ public class ExcelReportBuilder extends ReportBuilder {
 		default:
 			throw new RuntimeException("Unexpected value of CellFormat enumeration.");
 		}
+	}
+	
+	@Override
+	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException {
+		super.dumpHeader(rs, excl);
+		finalizeTarget(false);
 	}
 	
 	/**
@@ -600,7 +608,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	@Override
 	public void writeOutput() throws IOException {
 		// Finalize the previous target first
-		finalizeTarget();
+		finalizeTarget(true);
 		
 		reportExcelStatisctics();
 		log.info("Writing the result into the file: " + output);
@@ -656,17 +664,21 @@ public class ExcelReportBuilder extends ReportBuilder {
 	/**
 	 * The method called to finalize the target - i.e. create auto-filter, etc.
 	 */
-	protected void finalizeTarget() {
-		if (autoFilter && lastColumnIndex > baseCol) {
+	protected void finalizeTarget(boolean incremental) {
+		if (incremental && autoFilter && lastColumnIndex > baseCol) {
 			sheet.setAutoFilter(new CellRangeAddress(baseRow, actRow, baseCol, lastColumnIndex));
 		}
 		
 		if (autoSize && lastColumnIndex > baseCol) {
 			for (int i=baseCol; i <= lastColumnIndex; i++) {
+				int columnWidth = sheet.getColumnWidth(i);
 				sheet.autoSizeColumn(i);
-				int columnWidth = sheet.getColumnWidth(i) + 1024;
-				if (columnWidth > maxColumnWidth) {
-					columnWidth = maxColumnWidth;
+				int newColumnWidth = sheet.getColumnWidth(i) + 1024;
+				if (incremental && columnWidth > newColumnWidth) {
+					newColumnWidth = columnWidth;
+				}
+				if (newColumnWidth > maxColumnWidth) {
+					newColumnWidth = maxColumnWidth;
 				}
 				sheet.setColumnWidth(i, columnWidth);
 			}

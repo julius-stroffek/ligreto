@@ -203,7 +203,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#nextRow()
 	 */
 	@Override
-	public void nextRow() {
+	public void nextRow() throws IOException {
 		actRow++;
 		actCol = baseCol;
 		columnStep = 1;
@@ -293,7 +293,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#dumpHeader(java.sql.ResultSet, int[])
 	 */
 	@Override
-	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException {
+	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		nextRow();
 		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {

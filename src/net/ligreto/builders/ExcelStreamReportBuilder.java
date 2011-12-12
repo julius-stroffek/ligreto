@@ -7,14 +7,43 @@ import net.ligreto.exceptions.LigretoException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
+/**
+ * Provides the streaming version of XSSF Apache POI report generator. The produced
+ * rows are flushed to disk each time the certain number of rows is produced.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 
+	/**
+	 * The number of rows which are kept in memory. If the number of rows produced
+	 * in the report exceeds this number, all the rows are flushed to disk.
+	 */
+	protected static final int FLUSH_ROW_INTERVAL = 500;
+	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(ExcelReportBuilder.class);
 
 	public ExcelStreamReportBuilder() {
+	}
+	
+	protected void flushRows() throws IOException {
+		SXSSFSheet ss = (SXSSFSheet) sheet;
+		finalizeTarget(true);
+		ss.flushRows();
+	}
+	
+	@Override
+	public void nextRow() throws IOException {
+		// Flush the rows if the number of produced rows matched the specified number
+		if ((actRow - baseRow) % FLUSH_ROW_INTERVAL == 0)
+			flushRows();
+		// Do the rest of the job
+		super.nextRow();
 	}
 
 	@Override
@@ -30,7 +59,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 		}
 		
 		log.info("Creating the empty workbook.");
-		wb = new SXSSFWorkbook(100);
+		wb = new SXSSFWorkbook();
 
 		// Create the data format object
 		dataFormat = wb.createDataFormat();

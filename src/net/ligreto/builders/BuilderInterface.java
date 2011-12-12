@@ -64,8 +64,9 @@ public interface BuilderInterface {
 	 * Move the output processing to the next row. The <code>highlightArray</code>
 	 * is replaced with null. The row number is increased and the actual column is
 	 * set to the base column value.
+	 * @throws IOException 
 	 */
-	public abstract void nextRow();
+	public abstract void nextRow() throws IOException;
 
 	/** Shift the actual column position by the specified number of columns. */
 	public abstract void setColumnPosition(int column);
@@ -141,7 +142,7 @@ public interface BuilderInterface {
 
 	public abstract void writeOutput() throws IOException;
 
-	public abstract void dumpHeader(ResultSet rs, int[] excl) throws SQLException;
+	public abstract void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException;
 
 	public abstract void dumpJoinOnHeader(ResultSet rs, int[] on) throws SQLException;
 

@@ -1,5 +1,6 @@
 package net.ligreto.executor;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -137,7 +138,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		
 	}
 	
-	protected ResultStatus executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException {
+	protected ResultStatus executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException, IOException {
 		ResultStatus result = new ResultStatus();
 		reportBuilder.setTarget(joinNode.getTarget(), joinNode.isAppend());
 		JoinNode.JoinType joinType = joinNode.getJoinType();

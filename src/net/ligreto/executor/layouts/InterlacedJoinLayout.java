@@ -1,5 +1,6 @@
 package net.ligreto.executor.layouts;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import net.ligreto.builders.BuilderInterface;
@@ -11,7 +12,7 @@ public class InterlacedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws SQLException {
+	public void dumpHeader() throws SQLException, IOException {
 		reportBuilder.nextRow();
 		reportBuilder.dumpJoinOnHeader(rs1, on1);
 		reportBuilder.setColumnPosition(onLength, 2, null);
@@ -21,7 +22,7 @@ public class InterlacedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int[] cmpArray, JoinResultType resultType) throws SQLException {
+	public void dumpRow(int[] cmpArray, JoinResultType resultType) throws SQLException, IOException {
 		reportBuilder.nextRow();
 		switch (resultType) {
 		case LEFT:
