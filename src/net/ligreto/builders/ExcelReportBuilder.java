@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import net.ligreto.exceptions.InvalidTargetException;
@@ -53,6 +54,37 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class ExcelReportBuilder extends ReportBuilder {
 
+	/**
+	 * This class represents the target in the result spread sheet
+	 * which is than used for hashing to associate any information
+	 * with the corresponding target.
+	 */
+	protected class TargetInfo {
+		int sheet;
+		int row;
+		int column;
+		
+		@Override
+		public int hashCode() {
+			return sheet + row + column;
+		}
+		
+		@Override
+		public boolean equals(Object object) {
+			if (object instanceof TargetInfo) {
+				TargetInfo info = (TargetInfo) object;
+				return sheet == info.sheet && row == info.row && column == info.column;
+			}
+			return false;
+		}
+	}
+	
+	/**
+	 * The hash map that stores the last free row number for the specified target.
+	 * It is used for append operation on the target.
+	 */
+	HashMap<TargetInfo, Integer> targetMap = new HashMap<TargetInfo, Integer>();
+	
 	/** The output file type enumeration. */
 	protected enum OutputFormat {HSSF, XSSF, SXSSF};
 	
@@ -126,16 +158,21 @@ public class ExcelReportBuilder extends ReportBuilder {
 			actRow = baseRow-1;
 			actCol = baseCol;
 			if (append) {
-				Row row = sheet.getRow(actRow+1);
-				while (append && row != null) {
-					actRow++;
-					row = sheet.getRow(actRow+1);
+				TargetInfo info = new TargetInfo();
+				info.sheet = wb.getSheetIndex(sheet);
+				info.row = baseRow;
+				info.column = baseCol;
+				Integer nextRow = targetMap.get(info);
+				
+				if (nextRow != null) {
+					actRow = nextRow - 1;
 				}
+				
 				if (actRow != baseRow-1) {
 					log.info(
 						"Moved from the specified target row \""
 						+ baseRow
-						+ "\" to nearest empty row \""
+						+ "\" to next row to be filled\""
 						+ (actRow+1)
 						+ "\" due to append."
 					);
@@ -684,6 +721,14 @@ public class ExcelReportBuilder extends ReportBuilder {
 			}
 		}
 		
+		// Add the information about the next row for
+		// the possible append operation.
+		TargetInfo info = new TargetInfo();
+		info.sheet = wb.getSheetIndex(sheet);
+		info.row = baseRow;
+		info.column = baseCol;
+		targetMap.put(info, new Integer(actRow + 1));
+		
 		// Reset last column index
 		lastColumnIndex = -1;
 	}
@@ -695,7 +740,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 				autoFilter = true;
 			} else if ("autoSize".equals(o)) {
 				autoSize = true;
-			} else if ("headerStyle".equals(o)) {
+			} else if ("headerStyle".equals(o)) {	
 				headerStyle = true;
 			} else if ("noDateTimeFormat".equals(o)) {
 				noDateTimeFormat = true;

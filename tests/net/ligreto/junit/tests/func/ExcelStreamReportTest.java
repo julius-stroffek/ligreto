@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 
+import net.ligreto.builders.ExcelStreamReportBuilder;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.tests.TestUtils;
@@ -45,6 +46,10 @@ public class ExcelStreamReportTest {
 		stm.execute("create table large_table (Id int, stamp timestamp, first_name varchar(32), last_name varchar(32), age int)");
 		PreparedStatement pstm = cnn.prepareStatement("insert into large_table values (?, ?, ?, ?, ?)");
 		cnn.setAutoCommit(false);
+		
+		// The number of rows processed here have to be greater than the number of rows kept in memory
+		Assert.assertTrue(rowCount > ExcelStreamReportBuilder.FLUSH_ROW_INTERVAL);
+
 		long startStamp = System.currentTimeMillis();
 		for (long l=0; l < rowCount; l++) {
 			pstm.setLong(1, l);

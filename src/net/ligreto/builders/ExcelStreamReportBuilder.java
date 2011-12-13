@@ -23,7 +23,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 	 * The number of rows which are kept in memory. If the number of rows produced
 	 * in the report exceeds this number, all the rows are flushed to disk.
 	 */
-	protected static final int FLUSH_ROW_INTERVAL = 500;
+	public static final int FLUSH_ROW_INTERVAL = 500;
 	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(ExcelReportBuilder.class);

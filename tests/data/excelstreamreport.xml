@@ -15,8 +15,9 @@
 	<report type="excel.stream" options="autoFilter,autoSize ,headerStyle">
 		<output file="excelstreamreport.xlsx"/>
 		<data>
-			<sql data-source="Source1" header="true" target="First!A1">select * from large_table</sql>
-			<sql data-source="Source1" header="true" target="Second!A1">select * from large_table</sql>
+			<sql data-source="Source1" target="First!A1">select * from large_table</sql>
+			<sql data-source="Source1" append="true" header="false" target="First!A1">select * from large_table</sql>
+			<sql data-source="Source1" target="Second!A1">select * from large_table</sql>
 		</data>
 	</report>
 </ligreto>
