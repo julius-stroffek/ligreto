@@ -79,6 +79,7 @@ public class LigretoExecutor extends Executor {
 		ResultStatus result = new ResultStatus();
 		try {
 			BuilderInterface reportBuilder = ReportBuilder.createInstance(ligretoNode, reportNode.getReportType());
+			reportBuilder.setLigretoParameters(reportNode.getLigretoNode().getLigretoParameters());
 			reportBuilder.setTemplate(reportNode.getTemplate());
 			reportBuilder.setOutput(reportNode.getOutput());
 			reportBuilder.setOptions(reportNode.getOptions());

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
@@ -60,10 +61,14 @@ public abstract class JoinLayout {
 
 	/** The arrays showing all the elements from the second result set to be higher. */
 	protected int[] higherArray = null;
+	
+	/** The global ligreto parameters. */
+	protected LigretoParameters ligretoParameters;
 		
 	/** Constructs the layout having the specified report builder. */
-	protected JoinLayout(BuilderInterface reportBuilder) {
+	protected JoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
 		this.reportBuilder = reportBuilder;
+		this.ligretoParameters = ligretoParameters;
 	}
 
 	/** Dumps the join result header. 

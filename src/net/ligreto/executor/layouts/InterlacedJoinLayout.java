@@ -3,12 +3,14 @@ package net.ligreto.executor.layouts;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface;
+import net.ligreto.builders.BuilderInterface.CellFormat;
 
 public class InterlacedJoinLayout extends JoinLayout {
 
-	public InterlacedJoinLayout(BuilderInterface reportBuilder) {
-		super(reportBuilder);
+	public InterlacedJoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
+		super(reportBuilder, ligretoParameters);
 	}
 
 	@Override
@@ -30,10 +32,24 @@ public class InterlacedJoinLayout extends JoinLayout {
 			reportBuilder.setJoinOnColumns(rs1, on1);
 			reportBuilder.setColumnPosition(onLength, 2, lowerArray);
 			reportBuilder.setOtherColumns(rs1, on1, excl1);
+			reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
+			for (int i=0; i < rsColCount - onLength; i++) {
+				reportBuilder.setColumn(
+					2*i, ligretoParameters.getMissingString(),
+					CellFormat.UNCHANGED, true
+				);
+			}
 			break;
 		case RIGHT:
 			reportBuilder.setHighlightArray(lowerArray);
 			reportBuilder.setJoinOnColumns(rs2, on2);
+			reportBuilder.setColumnPosition(onLength, 2, higherArray);							
+			for (int i=0; i < rsColCount - onLength; i++) {
+				reportBuilder.setColumn(
+					2*i, ligretoParameters.getMissingString(),
+					CellFormat.UNCHANGED, true
+				);
+			}
 			reportBuilder.setColumnPosition(onLength+1, 2, higherArray);
 			reportBuilder.setOtherColumns(rs2, on2, excl2);
 			break;

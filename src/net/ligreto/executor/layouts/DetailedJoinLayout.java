@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 
 import net.ligreto.Database;
+import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
@@ -15,8 +16,20 @@ import net.ligreto.util.ResultSetUtils;
 
 public class DetailedJoinLayout extends JoinLayout {
 
-	public DetailedJoinLayout(BuilderInterface reportBuilder) {
-		super(reportBuilder);
+	public static final int OUTPUT_COLUMN_COUNT = 7;
+	
+	public DetailedJoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
+		super(reportBuilder, ligretoParameters);
+	}
+
+	public void setColumnCount(int columnCount) {
+		super.setColumnCount(columnCount);
+		lowerArray = new int[OUTPUT_COLUMN_COUNT];
+		higherArray = new int[OUTPUT_COLUMN_COUNT];
+		for (int i=0; i < lowerArray.length; i++) {
+			lowerArray[i] = -1;
+			higherArray[i] = 1;
+		}
 	}
 
 	@Override
@@ -74,6 +87,7 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setJoinOnColumns(rs1, on1);
 					reportBuilder.setColumnPosition(onLength + 1);
 					reportBuilder.setColumn(0, rs1, i1 + 1);
+					reportBuilder.setColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
 					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
 						reportBuilder.setColumn(2, rs1, i1 + 1);
 						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
@@ -88,6 +102,7 @@ public class DetailedJoinLayout extends JoinLayout {
 					reportBuilder.setColumnPosition(1);
 					reportBuilder.setJoinOnColumns(rs2, on2);
 					reportBuilder.setColumnPosition(onLength + 1);
+					reportBuilder.setColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
 					reportBuilder.setColumn(1, rs2, i2 + 1);
 					if (ResultSetUtils.getResultSetNumericObject(rs2, i2 + 1) != null) {
 						reportBuilder.setColumn(2, rs2, i2 + 1);

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
+	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
+	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>

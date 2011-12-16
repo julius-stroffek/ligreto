@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.ligreto.LigretoParameters;
+import net.ligreto.exceptions.LigretoException;
+
 /**
  * This class encapsulates the main <ligreto> node in the report configuration file.
  * 
@@ -19,6 +22,7 @@ public class LigretoNode extends Node {
 	protected HashMap<String, String> paramMap = new HashMap<String, String>();
 	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
 	protected List<PtpNode> ptpNodes = new LinkedList<PtpNode>();
+	protected LigretoParameters ligretoParameters = new LigretoParameters();
 
 	public LigretoNode() {
 		super(null);
@@ -32,20 +36,28 @@ public class LigretoNode extends Node {
 		queryMap.put(name, query);
 	}
 
-	public void addParam(String name, String value) {
-		paramMap.put(name, value);
+	public void addParam(String name, String value) throws LigretoException {
+		if (name.startsWith("ligreto.")) {
+			ligretoParameters.setParameter(name, value);
+		} else {
+			paramMap.put(name, value);
+		}
 	}
 	
-	public String getParam(String name) {
+	public String getParam(String name) throws LigretoException {
 		return getParam(name, null);
 	}
 	
-	public String getParam(String name, String defaultValue) {
-		String value = paramMap.get(name);
-		if (value != null) {
-			return value;
+	public String getParam(String name, String defaultValue) throws LigretoException {
+		if (name.startsWith("ligreto.")) {
+			return ligretoParameters.getParameter(name);
+		} else {
+			String value = paramMap.get(name);
+			if (value != null) {
+				return value;
+			}
+			return defaultValue;
 		}
-		return defaultValue;
 	}
 	
 	public void addReport(ReportNode reportNode) {
@@ -85,5 +97,9 @@ public class LigretoNode extends Node {
 	
 	public String getQuery(String name) {
 		return substituteParams(queryMap.get(name));
+	}
+
+	public LigretoParameters getLigretoParameters() {
+		return ligretoParameters;
 	}
 }

@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.InvalidTargetException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
@@ -108,6 +109,9 @@ public abstract class ReportBuilder implements BuilderInterface {
 	/** Specifies the highlight text color for highlighted cells. */
 	protected short[] rgbHlColor;
 	
+	/** The global ligreto parameters. */
+	protected LigretoParameters ligretoParameters;
+	
 	/** Nobody except child classes could create the instance. */
 	protected ReportBuilder() {
 	}
@@ -164,11 +168,10 @@ public abstract class ReportBuilder implements BuilderInterface {
 	@Override
 	public void setColumn(int i, ResultSet rs, int rsi) throws SQLException {
 		Object o = rs.getObject(rsi);
-		if (rs.wasNull()) {
-			setColumn(columnStep*i, NULL, getHlColor(i), CellFormat.UNCHANGED);
-		} else {
-			setColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
+		if (rs.wasNull() || o == null) {
+			o = ligretoParameters.getNullString();
 		}
+		setColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
 	}
 
 	/* (non-Javadoc)
@@ -242,6 +245,11 @@ public abstract class ReportBuilder implements BuilderInterface {
 	@Override
 	public void setColumn(int i, Object o, CellFormat cellFormat) {
 		setColumn(i, o, getHlColor(i), cellFormat);
+	}
+	
+	@Override
+	public void setColumn(int i, Object o, CellFormat cellFormat, boolean highlight) {
+		setColumn(i, o, highlight && this.highlight ? rgbHlColor : null, cellFormat);
 	}
 
 	/* (non-Javadoc)
@@ -385,5 +393,9 @@ public abstract class ReportBuilder implements BuilderInterface {
 	@Override
 	public void setHlColor(short[] rgbHlColor) {
 		this.rgbHlColor = rgbHlColor;
+	}
+
+	public void setLigretoParameters(LigretoParameters ligretoParameters) {
+		this.ligretoParameters = ligretoParameters;
 	}
 }

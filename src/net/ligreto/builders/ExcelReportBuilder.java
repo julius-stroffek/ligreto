@@ -717,7 +717,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 				if (newColumnWidth > maxColumnWidth) {
 					newColumnWidth = maxColumnWidth;
 				}
-				sheet.setColumnWidth(i, columnWidth);
+				sheet.setColumnWidth(i, newColumnWidth);
 			}
 		}
 		

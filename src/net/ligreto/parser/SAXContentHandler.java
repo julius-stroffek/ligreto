@@ -89,6 +89,14 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		this.ligretoNode = ligretoNode;
 	}
 
+	protected String getAttributeValue(Attributes atts, String name) {
+		String value = atts.getValue(name);
+		if (value != null) {
+			value = ligretoNode.substituteParams(value);
+		}
+		return value;
+	}
+	
 	@Override
 	public void characters(char[] chars, int start, int length) throws SAXException {
 		switch (objectStack.empty() ? ObjectType.NONE : objectStack.peek()) {
@@ -151,7 +159,11 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			join = null;
 			break;
 		case PARAM:
-			ligretoNode.addParam(paramName, paramValue.toString());
+			try {
+				ligretoNode.addParam(paramName, paramValue.toString());
+			} catch (LigretoException e) {
+				throw new SAXException("Error parsing input file.", e);
+			}
 			break;
 		}
 	}
@@ -195,26 +207,26 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("param".equals(localName)) {
 					objectStack.push(ObjectType.PARAM);
 					paramValue = new StringBuilder();
-					paramName = atts.getValue("name");
-					if (atts.getValue("value") != null) {
-						paramValue.append(atts.getValue("value"));
+					paramName = getAttributeValue(atts, "name");
+					if (getAttributeValue(atts, "value") != null) {
+						paramValue.append(getAttributeValue(atts, "value"));
 					}
 				} else if ("report".equals(localName)) {
 					objectStack.push(ObjectType.REPORT);
 					try {
-						reportNode = new ReportNode(ligretoNode, atts.getValue("name"), atts.getValue("type"));
-						String options = atts.getValue("options");
+						reportNode = new ReportNode(ligretoNode, getAttributeValue(atts, "name"), getAttributeValue(atts, "type"));
+						String options = getAttributeValue(atts, "options");
 						if (options != null) {
 							reportNode.setOptions(options);
 						}
-						reportNode.setLocale(atts.getValue("locale"));
-						reportNode.setResult(atts.getValue("result"));
+						reportNode.setLocale(getAttributeValue(atts, "locale"));
+						reportNode.setResult(getAttributeValue(atts, "result"));
 					} catch (ReportException e) {
 						throw new SAXException(e);
 					}
 				} else if ("ptp".equals(localName)) {
 					ptpNode = new PtpNode(ligretoNode);
-					ptpNode.setName(atts.getValue("name"));
+					ptpNode.setName(getAttributeValue(atts, "name"));
 					ligretoNode.addPTP(ptpNode);
 					objectStack.push(ObjectType.PTP);
 				} else {
@@ -223,13 +235,13 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 			case DATA_SOURCE:
 				if ("driver".equals(localName)) {
-					dataSource.setDriverClass(atts.getValue("value"));
+					dataSource.setDriverClass(getAttributeValue(atts, "value"));
 					objectStack.push(ObjectType.NONE);
 				} else if ("uri".equals(localName)) {
-					dataSource.setUri(atts.getValue("value"));
+					dataSource.setUri(getAttributeValue(atts, "value"));
 					objectStack.push(ObjectType.NONE);
 				} else if ("param".equals(localName)) {
-					dataSource.setParameter(atts.getValue("name"), atts.getValue("value"));
+					dataSource.setParameter(getAttributeValue(atts, "name"), getAttributeValue(atts, "value"));
 					objectStack.push(ObjectType.NONE);
 				} else if ("init".equals(localName)) {
 					objectStack.push(ObjectType.INIT);
@@ -241,27 +253,27 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("sql".equals(localName)) {
 					objectStack.push(ObjectType.INIT_SQL);
 					sql = new SqlNode(ligretoNode);
-					if (atts.getValue("data-source") != null) {
-						sql.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("query") != null) {
-						sql.setQueryName(atts.getValue("query"));
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
 					}
-					if (atts.getValue("exceptions") != null) {
-						sql.setExceptions(atts.getValue("exceptions"));
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
 					}
-					if (atts.getValue("type") != null) {
-						sql.setQueryType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
 				}
 				break;
 			case REPORT:
 				if ("template".equals(localName)) {
 					objectStack.push(ObjectType.NONE);
-					reportNode.setTemplate(atts.getValue("file"));
+					reportNode.setTemplate(getAttributeValue(atts, "file"));
 				} else if ("output".equals(localName)) {
 					objectStack.push(ObjectType.NONE);
-					reportNode.setOutput(atts.getValue("file"));
+					reportNode.setOutput(getAttributeValue(atts, "file"));
 				} else if ("data".equals(localName)) {
 					objectStack.push(ObjectType.DATA);
 				} else {
@@ -272,76 +284,76 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("sql".equals(localName)) {
 					objectStack.push(ObjectType.SQL);
 					sql = new SqlNode(ligretoNode);
-					if (atts.getValue("data-source") != null) {
-						sql.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("target") != null) {
-						sql.setTarget(atts.getValue("target"));
+					if (getAttributeValue(atts, "target") != null) {
+						sql.setTarget(getAttributeValue(atts, "target"));
 					}
-					if (atts.getValue("query") != null) {
-						sql.setQueryName(atts.getValue("query"));
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
 					}
-					if (atts.getValue("header") != null) {
-						sql.setHeader(atts.getValue("header"));
+					if (getAttributeValue(atts, "header") != null) {
+						sql.setHeader(getAttributeValue(atts, "header"));
 					}
-					if (atts.getValue("append") != null) {
-						sql.setAppend(atts.getValue("append"));
+					if (getAttributeValue(atts, "append") != null) {
+						sql.setAppend(getAttributeValue(atts, "append"));
 					}
-					if (atts.getValue("exclude") != null) {
-						sql.setExclude(atts.getValue("exclude"));
+					if (getAttributeValue(atts, "exclude") != null) {
+						sql.setExclude(getAttributeValue(atts, "exclude"));
 					}
-					if (atts.getValue("exceptions") != null) {
-						sql.setExceptions(atts.getValue("exceptions"));
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
 					}
-					if (atts.getValue("type") != null) {
-						sql.setQueryType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
-					sql.setResult(atts.getValue("result"));
+					sql.setResult(getAttributeValue(atts, "result"));
 				} else if ("join".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
-					if (atts.getValue("target") != null) {
-						join.setTarget(atts.getValue("target"));
+					if (getAttributeValue(atts, "target") != null) {
+						join.setTarget(getAttributeValue(atts, "target"));
 					}
-					if (atts.getValue("type") != null) {
-						join.setJoinType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						join.setJoinType(getAttributeValue(atts, "type"));
 					}
-					if (atts.getValue("diffs") != null) {
-						join.setDiffs(atts.getValue("diffs"));
+					if (getAttributeValue(atts, "diffs") != null) {
+						join.setDiffs(getAttributeValue(atts, "diffs"));
 					}
-					if (atts.getValue("layout") != null) {
-						join.setJoinLayoutType(atts.getValue("layout"));
+					if (getAttributeValue(atts, "layout") != null) {
+						join.setJoinLayoutType(getAttributeValue(atts, "layout"));
 					}
-					if (atts.getValue("interlaced") != null) {
-						if (Boolean.parseBoolean(atts.getValue("interlaced"))) {
+					if (getAttributeValue(atts, "interlaced") != null) {
+						if (Boolean.parseBoolean(getAttributeValue(atts, "interlaced"))) {
 							join.setJoinLayoutType(JoinLayoutType.INTERLACED);
 						} else {
 							join.setJoinLayoutType(JoinLayoutType.NORMAL);
 						}
 					}
-					if (atts.getValue("highlight") != null) {
-						join.setHighlight(atts.getValue("highlight"));
+					if (getAttributeValue(atts, "highlight") != null) {
+						join.setHighlight(getAttributeValue(atts, "highlight"));
 					}
-					if (atts.getValue("hlColor") != null) {
-						join.setHlColor(atts.getValue("hlColor"));
+					if (getAttributeValue(atts, "hlColor") != null) {
+						join.setHlColor(getAttributeValue(atts, "hlColor"));
 					}
-					if (atts.getValue("on") != null) {
-						join.setOn(atts.getValue("on"));
+					if (getAttributeValue(atts, "on") != null) {
+						join.setOn(getAttributeValue(atts, "on"));
 					}
-					if (atts.getValue("exclude") != null) {
-						join.setExclude(atts.getValue("exclude"));
+					if (getAttributeValue(atts, "exclude") != null) {
+						join.setExclude(getAttributeValue(atts, "exclude"));
 					}
-					if (atts.getValue("header") != null) {
-						join.setHeader(atts.getValue("header"));
+					if (getAttributeValue(atts, "header") != null) {
+						join.setHeader(getAttributeValue(atts, "header"));
 					}
-					if (atts.getValue("append") != null) {
-						join.setAppend(atts.getValue("append"));
+					if (getAttributeValue(atts, "append") != null) {
+						join.setAppend(getAttributeValue(atts, "append"));
 					}
-					join.setLocale(atts.getValue("locale"));
-					if (atts.getValue("collation") != null) {
-						join.setCollation(atts.getValue("collation"));
+					join.setLocale(getAttributeValue(atts, "locale"));
+					if (getAttributeValue(atts, "collation") != null) {
+						join.setCollation(getAttributeValue(atts, "collation"));
 					}
-					join.setResult(atts.getValue("result"));
+					join.setResult(getAttributeValue(atts, "result"));
 				}
 				break;
 			case JOIN:
@@ -353,23 +365,23 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					objectStack.push(ObjectType.JOIN_SQL);
 					sql = new SqlNode(ligretoNode);
-					if (atts.getValue("data-source") != null) {
-						sql.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("on") != null) {
-						sql.setOn(atts.getValue("on"));
+					if (getAttributeValue(atts, "on") != null) {
+						sql.setOn(getAttributeValue(atts, "on"));
 					}
-					if (atts.getValue("exclude") != null) {
-						sql.setExclude(atts.getValue("exclude"));
+					if (getAttributeValue(atts, "exclude") != null) {
+						sql.setExclude(getAttributeValue(atts, "exclude"));
 					}
-					if (atts.getValue("query") != null) {
-						sql.setQueryName(atts.getValue("query"));
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
 					}
-					if (atts.getValue("exceptions") != null) {
-						sql.setExceptions(atts.getValue("exceptions"));
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
 					}
-					if (atts.getValue("type") != null) {
-						sql.setQueryType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
 				}
 				break;
@@ -381,7 +393,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("transfer".equals(localName)) {
 					objectStack.push(ObjectType.PTP_TRANSFER);
 					ptpTransfer = new TransferNode(ligretoNode);
-					ptpTransfer.setResult(atts.getValue("result"));
+					ptpTransfer.setResult(getAttributeValue(atts, "result"));
 					ptpNode.addTransferNode(ptpTransfer);
 				} else if ("postprocess".equals(localName)) {
 					objectStack.push(ObjectType.PTP_POSTPROCESS);
@@ -393,17 +405,17 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("sql".equals(localName)) {
 					objectStack.push(ObjectType.PTP_PREPROCESS_SQL);
 					sql = new SqlNode(ligretoNode);
-					if (atts.getValue("data-source") != null) {
-						sql.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("query") != null) {
-						sql.setQueryName(atts.getValue("query"));
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
 					}
-					if (atts.getValue("exceptions") != null) {
-						sql.setExceptions(atts.getValue("exceptions"));
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
 					}
-					if (atts.getValue("type") != null) {
-						sql.setQueryType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
 				}
 				break;
@@ -411,39 +423,39 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("target".equals(localName)) {
 					objectStack.push(ObjectType.NONE);
 					TargetNode ptpTarget = new TargetNode(ligretoNode);
-					if (atts.getValue("table") != null) {
-						ptpTarget.setTable(atts.getValue("table"));
+					if (getAttributeValue(atts, "table") != null) {
+						ptpTarget.setTable(getAttributeValue(atts, "table"));
 					}
-					if (atts.getValue("data-source") != null) {
-						ptpTarget.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						ptpTarget.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("create") != null) {
-						ptpTarget.setCreate(atts.getValue("create"));
+					if (getAttributeValue(atts, "create") != null) {
+						ptpTarget.setCreate(getAttributeValue(atts, "create"));
 					}
-					if (atts.getValue("recreate") != null) {
-						ptpTarget.setRecreate(atts.getValue("recreate"));
+					if (getAttributeValue(atts, "recreate") != null) {
+						ptpTarget.setRecreate(getAttributeValue(atts, "recreate"));
 					}
-					if (atts.getValue("truncate") != null) {
-						ptpTarget.setTruncate(atts.getValue("truncate"));
+					if (getAttributeValue(atts, "truncate") != null) {
+						ptpTarget.setTruncate(getAttributeValue(atts, "truncate"));
 					}
-					if (atts.getValue("commitInterval") != null) {
-						ptpTarget.setCommitInterval(atts.getValue("commitInterval"));
+					if (getAttributeValue(atts, "commitInterval") != null) {
+						ptpTarget.setCommitInterval(getAttributeValue(atts, "commitInterval"));
 					}
 					ptpTransfer.setTargetNode(ptpTarget);
 				} else if ("sql".equals(localName)) {
 					objectStack.push(ObjectType.PTP_TRANSFER_SQL);
 					sql = new SqlNode(ligretoNode);
-					if (atts.getValue("data-source") != null) {
-						sql.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("query") != null) {
-						sql.setQueryName(atts.getValue("query"));
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
 					}
-					if (atts.getValue("exceptions") != null) {
-						sql.setExceptions(atts.getValue("exceptions"));
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
 					}
-					if (atts.getValue("type") != null) {
-						sql.setQueryType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
 					ptpTransfer.setSqlNode(sql);
 				}
@@ -452,28 +464,28 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("sql".equals(localName)) {
 					objectStack.push(ObjectType.PTP_POSTPROCESS_SQL);
 					sql = new SqlNode(ligretoNode);
-					if (atts.getValue("data-source") != null) {
-						sql.setDataSource(atts.getValue("data-source"));
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (atts.getValue("query") != null) {
-						sql.setQueryName(atts.getValue("query"));
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
 					}
-					if (atts.getValue("exceptions") != null) {
-						sql.setExceptions(atts.getValue("exceptions"));
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
 					}
-					if (atts.getValue("type") != null) {
-						sql.setQueryType(atts.getValue("type"));
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
 				}
 				break;
 			default:
 				if ("query".equals(localName)) {
-					query = new Pair<String, StringBuilder>(atts.getValue("name"), new StringBuilder());
+					query = new Pair<String, StringBuilder>(getAttributeValue(atts, "name"), new StringBuilder());
 					objectStack.push(ObjectType.QUERY);
 				} else if ("data-source".equals(localName)) {
 					objectStack.push(ObjectType.DATA_SOURCE);
-					dataSource = new DataSourceNode(ligretoNode, atts.getValue("name"));
-					dataSource.setDescription(atts.getValue("desc"));
+					dataSource = new DataSourceNode(ligretoNode, getAttributeValue(atts, "name"));
+					dataSource.setDescription(getAttributeValue(atts, "desc"));
 				} else if ("ligreto".equals(localName)) {
 					objectStack.push(ObjectType.LIGRETO);
 				} else {

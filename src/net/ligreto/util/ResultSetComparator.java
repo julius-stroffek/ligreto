@@ -10,6 +10,7 @@ import java.util.Comparator;
 
 import org.apache.commons.logging.Log;
 
+import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.LigretoException;
 
 public class ResultSetComparator {
@@ -129,6 +130,16 @@ public class ResultSetComparator {
 	}
 	
 	public int compare(String s1, String s2) {
+		boolean isNull1 = s1 == null;
+		boolean isNull2 = s2 == null;
+		
+		if (isNull1 && isNull2)
+			return 0;
+		if (isNull1)
+			return -1;
+		if (isNull2)
+			return 1;
+		
 		return comparator.compare(s1.trim(), s2.trim());
 	}
 
@@ -160,6 +171,7 @@ public class ResultSetComparator {
 
 	public Column[] duplicate(ResultSet rs, int[] on) throws SQLException {
 		Column[] result = new Column[on.length];
+
 		for (int i=0; i < on.length; i++) {
 			result[i] = new Column(rs, on[i]);
 		}
@@ -177,11 +189,11 @@ public class ResultSetComparator {
 			}
 			
 			// Take care of the null values first
-			if (cols1[i] == null && cols2[i] == null) {
+			if (cols1[i].columnValue == null && cols2[i].columnValue == null) {
 				result = 0;
-			} else if (cols1[i] == null) {
+			} else if (cols1[i].columnValue == null) {
 				result = -1;
-			} else if (cols2[i] == null) {
+			} else if (cols2[i].columnValue == null) {
 				result = 1;
 			} else {
 				switch (cols1[i].columnType) {
@@ -301,7 +313,11 @@ public class ResultSetComparator {
 	public void error(Log log, Column[] col) {
 		log.error("Key columns:");
 		for (int c=0; c < col.length; c++) {
-			log.error(col[c].columnValue.toString());
+			if (col[c] != null && col[c].columnValue != null) {
+				log.error(col[c].columnValue.toString());
+			} else {
+				log.error("<null>");
+			}
 		}
 	}
 }

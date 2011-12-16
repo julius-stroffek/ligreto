@@ -325,13 +325,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			JoinLayout joinLayout;
 			switch (joinNode.getJoinLayoutType()) {
 			case NORMAL:
-				joinLayout = new NormalJoinLayout(reportBuilder);
+				joinLayout = new NormalJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
 				break;
 			case INTERLACED:
-				joinLayout = new InterlacedJoinLayout(reportBuilder);
+				joinLayout = new InterlacedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
 				break;
 			case DETAILED:
-				joinLayout = new DetailedJoinLayout(reportBuilder);
+				joinLayout = new DetailedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
 				break;
 			default:
 				throw new LigretoException("Unexpected value of JoinLayoutType.");
@@ -442,7 +442,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					// the collation we are using here for processing
 					col1 = rsComparator.duplicate(rs1, on1);
 					int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
-					pCol1 = col1;
 
 					if (dResult1 == 0) {
 						log.error("Duplicate entries found.");
@@ -462,6 +461,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 							throw e;
 						}
 					}
+					pCol1 = col1;
 
 					result.addRow(joinNode.getResult());
 					joinLayout.dumpRow(JoinResultType.LEFT);
@@ -474,7 +474,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					// the collation we are using here for processing
 					col2 = rsComparator.duplicate(rs2, on2);
 					int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
-					pCol2 = col2;
 
 					if (dResult2 == 0) {
 						log.error("Duplicate entries found.");
@@ -494,6 +493,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 							throw e;
 						}
 					}
+					pCol2 = col2;
 					
 					result.addRow(joinNode.getResult());
 					joinLayout.dumpRow(JoinResultType.RIGHT);

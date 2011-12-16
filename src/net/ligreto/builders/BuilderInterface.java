@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.InvalidTargetException;
 import net.ligreto.exceptions.LigretoException;
 
@@ -105,6 +106,16 @@ public interface BuilderInterface {
 	 * </p>
 	 */
 	public abstract void setColumn(int i, Object o, CellFormat cellFormat);
+	
+	/**
+	 * Store the specified object into the result column of the current row.
+	 * 
+	 * @param i The column index relative to <code>actColumn</code> position.
+	 * @param o The object which value should be stored.
+	 * @param cellFormat The change in the cell formatting.
+	 * @param highlight Indicates whether to highlight the cell content.
+	 */
+	public abstract void setColumn(int i, Object o, CellFormat cellFormat, boolean highlight);
 
 	/**
 	 * Sets up the report type specific options. 
@@ -165,4 +176,10 @@ public interface BuilderInterface {
 	 * @param hlColor The color to set
 	 */
 	public abstract void setHlColor(short[] rgbHlColor);
+	
+	/**
+	 * Sets up the global ligreto parameters object.
+	 * @param ligretoParameters the parameter object to set.
+	 */
+	public void setLigretoParameters(LigretoParameters ligretoParameters);
 }
