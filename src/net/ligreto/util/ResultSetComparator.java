@@ -10,7 +10,6 @@ import java.util.Comparator;
 
 import org.apache.commons.logging.Log;
 
-import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.LigretoException;
 
 public class ResultSetComparator {
