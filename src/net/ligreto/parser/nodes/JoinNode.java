@@ -86,7 +86,7 @@ public class JoinNode extends Node {
 	}
 
 	/**
-	 * @param joinLayout the joinLayout to set as string
+	 * @param joinLayoutType the joinLayout to set as string
 	 */
 	public void setJoinLayoutType(String joinLayoutType) {
 		if ("normal".equals(joinLayoutType))
@@ -121,14 +121,14 @@ public class JoinNode extends Node {
 	}
 
 	/**
-	 * @param hlColor the hlColor to set
+	 * @param rgbHlColor The RGB highlight color to set.
 	 */
 	public void setHlColor(short[] rgbHlColor) {
 		this.rgbHlColor = rgbHlColor;
 	}
 
 	/**
-	 * @param hlColor the hlColor to set
+	 * @param rgbHlColor The RGB highlight color to set.
 	 * @throws InvalidFormatException 
 	 */
 	public void setHlColor(String rgbHlColor) throws InvalidFormatException {

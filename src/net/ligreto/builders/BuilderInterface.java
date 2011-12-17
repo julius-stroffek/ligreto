@@ -173,7 +173,7 @@ public interface BuilderInterface {
 	/**
 	 * Sets the difference highlighting color
 	 * 
-	 * @param hlColor The color to set
+	 * @param rgbHlColor The RGB color to set
 	 */
 	public abstract void setHlColor(short[] rgbHlColor);
 	

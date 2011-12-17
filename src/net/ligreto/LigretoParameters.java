@@ -133,7 +133,6 @@ public class LigretoParameters {
 	 * 
 	 * @param name The name of the ligreto parameter as 'ligreto.*'
 	 * @param value The value of the parameter
-	 * @return The parameter value
 	 * @throws LigretoException In case of any error
 	 */
 	public void setParameter(String name, String value) throws LigretoException {

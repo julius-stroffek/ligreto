@@ -30,7 +30,7 @@ public class ResultStatus {
 	/**
 	 * The method will merge the results from the child (or other) operation.
 	 * 
-	 * @param child The result of the child/other operation.
+	 * @param other The result of the other operation to be merged.
 	 */
 	public void merge(ResultStatus other) {
 		resultRowCount += other.resultRowCount;
@@ -41,7 +41,7 @@ public class ResultStatus {
 	/**
 	 * The method will merge the results from the child (or other) operation.
 	 * 
-	 * @param child The result of the child/other operation.
+	 * @param other The result of the other operation to be merged.
 	 * @param result Indicates whether the child/other operation should be treated as the result.
 	 */
 	public void merge(ResultStatus other, boolean result) {

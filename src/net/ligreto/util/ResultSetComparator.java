@@ -64,6 +64,12 @@ public class ResultSetComparator {
 		public Object columnValue;
 	}
 	
+	/** Determines where the null values should be ordered. */
+	protected enum NullOrdering {Unspecified, OrderFirst, OrderLast};
+	
+	/** Determines the actual null ordering policy. */
+	protected NullOrdering nullOrdering = NullOrdering.Unspecified;
+	
 	/** The collator object used for comparisons. */
 	protected Comparator<Object> comparator;
 	
@@ -75,6 +81,64 @@ public class ResultSetComparator {
 		this.comparator = comparator;
 	}
 
+	/**
+	 * Determines whether the first entry should be lower or higher than the second entry
+	 * based on the current null ordering policy. If both values are null or both values
+	 * are not null the return value is 0.
+	 * 
+	 * <p>
+	 * It is expected that this function will math the null ordering as was in the database.
+	 * Thus this method have to be first called from JoinExecutor on the column of subsequent rows
+	 * from the same data source where exactly one field is null and one is not null.
+	 * </p>
+	 * <p>
+	 * The ordering should be adjusted only in case of comparing the subsequent rows ordered
+	 * on the same data source. Otherwise, the overall behavior is undefined and the parameter
+	 * {@code adjust} should be {@code false}.
+	 * </p>
+	 * @param isNull1
+	 * @param isNull2
+	 * @param adjust Indicates whether to adjust the settings to the order which was received.
+	 *               This makes sense only if orderNulls has value 'Unspecified'.
+	 * @return -1 if the first entry is lower, 1 if the second entry is lower, 0 if both
+	 * values are null or both are non-null.
+	 */
+	public int compareNulls(boolean isNull1, boolean isNull2, boolean adjust) {
+		if (!isNull1 && !isNull2)
+			return 0;
+		if (isNull1 && isNull2)
+			return 0;
+		switch (nullOrdering) {
+		case OrderFirst:
+			if (isNull1)
+				return -1;
+			else
+				return 1;
+		case OrderLast:
+			if (isNull2)
+				return -1;
+			else
+				return 1;
+		case Unspecified:
+			if (adjust) {
+				if (isNull1)
+					nullOrdering = NullOrdering.OrderFirst;
+				else
+					nullOrdering = NullOrdering.OrderLast;
+			}
+			return -1;
+		default:
+			throw new RuntimeException("Unexpected value of NullOrdering enumeration.");
+		}
+	}
+	
+	/**
+	 * Resets the adjustment of null ordering policy done previously.
+	 */
+	public void restNullOrdering() {
+		nullOrdering = NullOrdering.Unspecified;
+	}
+	
 	public int compare(ResultSet rs1, int on1, ResultSet rs2, int on2) throws SQLException {
 		int result = 0;
 		// Deal with the case when at least one of the values is null.
@@ -83,12 +147,11 @@ public class ResultSetComparator {
 		boolean isNull1 = rs1.wasNull();
 		boolean isNull2 = rs2.wasNull();
 		
+		result = compareNulls(isNull1, isNull2, false);
+		if (result != 0)
+			return result;
 		if (isNull1 && isNull2)
 			return 0;
-		if (isNull1)
-			return -1;
-		if (isNull2)
-			return 1;
 		
 		int ct1 = rs1.getMetaData().getColumnType(on1);
 		int ct2 = rs2.getMetaData().getColumnType(on2);
@@ -132,12 +195,11 @@ public class ResultSetComparator {
 		boolean isNull1 = s1 == null;
 		boolean isNull2 = s2 == null;
 		
+		int result = compareNulls(isNull1, isNull2, false);
+		if (result != 0)
+			return result;
 		if (isNull1 && isNull2)
-			return 0;
-		if (isNull1)
-			return -1;
-		if (isNull2)
-			return 1;
+			return 0;	
 		
 		return comparator.compare(s1.trim(), s2.trim());
 	}
@@ -188,12 +250,13 @@ public class ResultSetComparator {
 			}
 			
 			// Take care of the null values first
-			if (cols1[i].columnValue == null && cols2[i].columnValue == null) {
-				result = 0;
-			} else if (cols1[i].columnValue == null) {
-				result = -1;
-			} else if (cols2[i].columnValue == null) {
-				result = 1;
+			boolean isNull1 = cols1[i].columnValue == null;
+			boolean isNull2 = cols2[i].columnValue == null;
+			result = compareNulls(isNull1, isNull2, true);
+			if (result != 0) {
+				break;
+			} else if (isNull1 && isNull2) {
+				continue;
 			} else {
 				switch (cols1[i].columnType) {
 				case Types.BOOLEAN:
@@ -260,16 +323,10 @@ public class ResultSetComparator {
 		for (int j=i+1; j < cmpCount; j++, i1++, i2++) {
 			if (colCount1 > colCount2) {
 				rs1.getString(i1);
-				if (rs1.wasNull())
-					result[j] = 0;
-				else
-					result[j] = 1;
+				result[j] = compareNulls(rs1.wasNull(), true, false);
 			} else if (colCount1 < colCount2) {
 				rs2.getString(i1);
-				if (rs2.wasNull())
-					result[j] = 0;
-				else
-					result[j] = -1;
+				result[j] = compareNulls(true, rs2.wasNull(), false);
 			} else {
 				result[j] = 0;
 			}

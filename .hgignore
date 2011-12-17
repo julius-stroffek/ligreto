@@ -12,7 +12,6 @@ syntax: regexp
 syntax: regexp
 ^dist$
 syntax: regexp
-^javadoc$
 syntax: regexp
 ^manual/ligreto\.aux$
 syntax: regexp
