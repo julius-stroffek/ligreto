@@ -44,6 +44,9 @@ public abstract class JoinLayout {
 	/** The column indices of the columns to be excluded from the comparison in the second result set. */
 	protected int[] excl2 = null;
 	
+	/** The columns which should be used for aggregated result. */
+	protected int[] groupBy = null;
+	
 	/** The first result set. */
 	protected ResultSet rs1 = null;
 	
@@ -52,6 +55,9 @@ public abstract class JoinLayout {
 	
 	/** The length of the on1 and on2 arrays which have to be the same. */
 	protected int onLength = -1;
+	
+	/** The length of {@code groupBy} array. */
+	protected int groupByLength = 0;
 	
 	/** The number of columns that will get processed from the both first and second result sets. */
 	protected int rsColCount = -1;
@@ -120,6 +126,14 @@ public abstract class JoinLayout {
 			throw new IllegalArgumentException("The length of on1 and on2 arrays differs.");
 		onLength = on1.length;
 	}
+	
+	public void setGroupByColumns(int[] groupBy) {
+		this.groupBy = groupBy;
+		if (groupBy != null)
+			groupByLength = groupBy.length;
+		else
+			groupByLength = 0;
+	}
 
 	public void setExcludeColumns(int[] excl1, int[] excl2) {
 		this.excl1 = excl1;
@@ -141,5 +155,17 @@ public abstract class JoinLayout {
 			lowerArray[i] = -1;
 			higherArray[i] = 1;
 		}
+	}
+
+	/**
+	 * The method executed before providing any data to the layout object.
+	 */
+	public void start() {
+	}
+
+	/**
+	 * The method executed after providing all data to the layout object.
+	 */
+	public void finish() {
 	}
 }

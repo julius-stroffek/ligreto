@@ -15,7 +15,7 @@ import net.ligreto.util.MiscUtils;
  */
 public class JoinNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER};
-	public enum JoinLayoutType {NORMAL, INTERLACED, DETAILED};
+	public enum JoinLayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED};
 	
 	protected JoinType joinType = JoinType.FULL;
 	protected JoinLayoutType joinLayoutType = JoinLayoutType.INTERLACED;
@@ -28,6 +28,7 @@ public class JoinNode extends Node {
 	protected boolean result = true;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected String on;
+	protected String groupBy;
 	protected String exclude;
 	protected String locale;
 	protected ReportNode reportNode;
@@ -95,6 +96,8 @@ public class JoinNode extends Node {
 			this.joinLayoutType = JoinLayoutType.INTERLACED;
 		else if ("detailed".equals(joinLayoutType))
 			this.joinLayoutType = JoinLayoutType.DETAILED;			
+		else if ("aggregated".equals(joinLayoutType))
+			this.joinLayoutType = JoinLayoutType.AGGREGATED;			
 		else
 			throw new IllegalArgumentException("The join layout could not be \"" + joinLayoutType + "\"");
 	}
@@ -236,6 +239,14 @@ public class JoinNode extends Node {
 	}
 
 	/**
+	 * 
+	 * @param groupBy the comma separated list of column indices to be used for aggregating results
+	 */
+	public void setGroupBy(String groupBy) {
+		this.groupBy = groupBy;
+	}
+
+	/**
 	 * @return the result
 	 */
 	public boolean getResult() {
@@ -266,12 +277,26 @@ public class JoinNode extends Node {
 	public int[] getOn() {
 		if (on == null)
 			return null;
-		String[] ons = ligretoNode.substituteParams(on).split(",");
-		int onn[] = new int[ons.length];
-		for (int i=0; i < onn.length; i++) {
-			onn[i] = Integer.parseInt(ons[i]);
+		String[] sValues = ligretoNode.substituteParams(on).split(",");
+		int values[] = new int[sValues.length];
+		for (int i=0; i < values.length; i++) {
+			values[i] = Integer.parseInt(sValues[i]);
 		}
-		return onn;
+		return values;
+	}
+	
+	/**
+	 * @return the array of column indices to be used for aggregation of results
+	 */
+	public int[] getGroupBy() {
+		if (groupBy == null)
+			return null;
+		String[] sValues = ligretoNode.substituteParams(groupBy).split(",");
+		int values[] = new int[sValues.length];
+		for (int i=0; i < values.length; i++) {
+			values[i] = Integer.parseInt(sValues[i]);
+		}
+		return values;
 	}
 	
 	/**

@@ -14,56 +14,6 @@ import net.ligreto.exceptions.LigretoException;
 
 public class ResultSetComparator {
 	
-	/** This class holds the information about duplicate column from the result set. */
-	public class Column {
-		/**
-		 * Creates the instance from the result set. 
-		 * @throws SQLException
-		 */
-		private Column(ResultSet rs, int index) throws SQLException {
-			columnType = rs.getMetaData().getColumnType(index);
-			switch (columnType) {
-			case Types.BOOLEAN:
-				columnValue = new Boolean(rs.getBoolean(index));
-				break;
-			case Types.BIGINT:
-			case Types.INTEGER:
-				columnValue = new Long(rs.getLong(index));
-				break;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-				columnValue = new Double(rs.getDouble(index));
-				break;
-			case Types.DATE:
-			case Types.TIMESTAMP:
-			case Types.TIME:
-				columnValue = new Timestamp(rs.getTimestamp(index).getTime());
-				break;
-			case Types.DECIMAL:
-			case Types.NUMERIC:
-				BigDecimal bd = rs.getBigDecimal(index);
-				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
-				break;
-			default:
-				columnType = Types.VARCHAR;
-				String tmpValue = rs.getString(index);
-				if (tmpValue != null)
-					columnValue = new String(tmpValue);
-				else
-					columnValue = null;
-				break;			
-			}
-			if (rs.wasNull())
-				columnValue = null;
-		}
-		
-		/** The column type that correspond to java.sql.Types definitions. */
-		public int columnType;
-		
-		/** The column value. */
-		public Object columnValue;
-	}
-	
 	/** Determines where the null values should be ordered. */
 	protected enum NullOrdering {Unspecified, OrderFirst, OrderLast};
 	
@@ -230,16 +180,16 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	public Column[] duplicate(ResultSet rs, int[] on) throws SQLException {
-		Column[] result = new Column[on.length];
+	public Field[] duplicate(ResultSet rs, int[] on) throws SQLException {
+		Field[] result = new Field[on.length];
 
 		for (int i=0; i < on.length; i++) {
-			result[i] = new Column(rs, on[i]);
+			result[i] = new Field(rs, on[i]);
 		}
 		return result;
 	}
 
-	public int compare(Column[] cols1, Column[] cols2) throws LigretoException {
+	public int compare(Field[] cols1, Field[] cols2) throws LigretoException {
 		int result = 0;
 		if (cols1.length != cols2.length) {
 			throw new LigretoException("The column arrays to compare have different lengths.");
@@ -366,7 +316,7 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	public void error(Log log, Column[] col) {
+	public void error(Log log, Field[] col) {
 		log.error("Key columns:");
 		for (int c=0; c < col.length; c++) {
 			if (col[c] != null && col[c].columnValue != null) {

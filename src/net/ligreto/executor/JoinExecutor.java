@@ -23,6 +23,7 @@ import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
+import net.ligreto.executor.layouts.AggregatedLayout;
 import net.ligreto.executor.layouts.DetailedJoinLayout;
 import net.ligreto.executor.layouts.InterlacedJoinLayout;
 import net.ligreto.executor.layouts.JoinLayout;
@@ -31,6 +32,7 @@ import net.ligreto.executor.layouts.NormalJoinLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
+import net.ligreto.util.Field;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetComparator;
 
@@ -333,6 +335,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			case DETAILED:
 				joinLayout = new DetailedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
 				break;
+			case AGGREGATED:
+				joinLayout = new AggregatedLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+				break;
 			default:
 				throw new LigretoException("Unexpected value of JoinLayoutType.");
 			}
@@ -344,6 +349,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			joinLayout.setExcludeColumns(excl1, excl2);
 			joinLayout.setResultSets(rs1, rs2);
 			joinLayout.setColumnCount(rs1ColCount);
+			joinLayout.start();
 			
 			// Dump the header row if requested
 			if (joinNode.getHeader()) {
@@ -353,10 +359,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
 			ResultSetComparator rsComparator = new ResultSetComparator(comparator);
-			ResultSetComparator.Column[] pCol1 = null;
-			ResultSetComparator.Column[] pCol2 = null;
-			ResultSetComparator.Column[] col1 = null;
-			ResultSetComparator.Column[] col2 = null;
+			Field[] pCol1 = null;
+			Field[] pCol2 = null;
+			Field[] col1 = null;
+			Field[] col2 = null;
 			while (hasNext1 && hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
@@ -500,6 +506,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					hasNext2 = rs2.next();
 				}
 			}
+			joinLayout.finish();
 		} finally {
 			Database.close(cnn1, stm1, cstm1, rs1);
 			Database.close(cnn2, stm2, cstm2, rs2);

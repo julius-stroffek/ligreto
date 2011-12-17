@@ -54,7 +54,8 @@
 <!ATTLIST join locale CDATA #IMPLIED>
 <!ATTLIST join collation (ignore|dump|fail) "fail">
 <!ATTLIST join result (true|false) "true">
-<!ATTLIST join layout (normal|interlaced|detailed) "interlaced">
+<!ATTLIST join layout (normal|interlaced|detailed|aggregated) "interlaced">
+<!ATTLIST join group-by CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>

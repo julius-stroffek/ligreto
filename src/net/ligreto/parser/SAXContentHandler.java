@@ -340,6 +340,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "on") != null) {
 						join.setOn(getAttributeValue(atts, "on"));
 					}
+					if (getAttributeValue(atts, "group-by") != null) {
+						join.setGroupBy(getAttributeValue(atts, "group-by"));
+					}
 					if (getAttributeValue(atts, "exclude") != null) {
 						join.setExclude(getAttributeValue(atts, "exclude"));
 					}
