@@ -36,6 +36,12 @@ import net.ligreto.util.Field;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.ResultSetComparator;
 
+/**
+ * Provides execution code for join like comparison.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class JoinExecutor extends Executor implements JoinResultCallBack {
 
 	/** The collation error message used in multiple places. */
@@ -366,8 +372,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext1 && hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = rsComparator.duplicate(rs1, on1);
-				col2 = rsComparator.duplicate(rs2, on2);
+				col1 = ResultSetComparator.duplicate(rs1, on1);
+				col2 = ResultSetComparator.duplicate(rs2, on2);
 				int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
 				int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
 
@@ -446,7 +452,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				while (hasNext1) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
-					col1 = rsComparator.duplicate(rs1, on1);
+					col1 = ResultSetComparator.duplicate(rs1, on1);
 					int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
 
 					if (dResult1 == 0) {
@@ -478,7 +484,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				while (hasNext2) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
-					col2 = rsComparator.duplicate(rs2, on2);
+					col2 = ResultSetComparator.duplicate(rs2, on2);
 					int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
 
 					if (dResult2 == 0) {

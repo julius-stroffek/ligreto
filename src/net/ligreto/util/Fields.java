@@ -1,7 +1,15 @@
 package net.ligreto.util;
 
-
+/**
+ * Encapsulates the array of {@code Field} objects. It is required to be
+ * for effective hashing.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class Fields {
+	
+	/** The array of field values. */
 	protected Field[] fields = null;
 	
 	@Override
@@ -18,9 +26,35 @@ public class Fields {
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Fields) {
-			return true; // TODO: FIX ME
+			Fields f = (Fields) o;
+			if (fields == null && f.fields == null)
+				return true;
+			if (fields == null || f.fields == null)
+				return false;
+			if (fields.length != f.fields.length)
+				return false;
+			for (int i=0; i < fields.length; i++) {
+				if (!fields[i].equals(f.fields[i])) {
+					return false;
+				}
+			}
+			return true;
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * @return the fields
+	 */
+	public Field[] getFields() {
+		return fields;
+	}
+
+	/**
+	 * @param fields the fields to set
+	 */
+	public void setFields(Field[] fields) {
+		this.fields = fields;
 	}
 }

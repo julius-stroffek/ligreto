@@ -6,13 +6,28 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 
-/** This class holds the information about duplicate column from the result set. */
+/**
+ * This class is used to copy the column values from the database result
+ * set and store them for later usage. It is mainly used for finding
+ * duplicate entries with the same join columns and aggregated result
+ * calculation.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class Field {
+
+	/** The column type that correspond to java.sql.Types definitions. */
+	public int columnType;
+	
+	/** The column value. */
+	public Object columnValue;
+
 	/**
 	 * Creates the instance from the result set. 
 	 * @throws SQLException
 	 */
-	Field(ResultSet rs, int index) throws SQLException {
+	public Field(ResultSet rs, int index) throws SQLException {
 		columnType = rs.getMetaData().getColumnType(index);
 		switch (columnType) {
 		case Types.BOOLEAN:
@@ -48,10 +63,57 @@ public class Field {
 		if (rs.wasNull())
 			columnValue = null;
 	}
-	
-	/** The column type that correspond to java.sql.Types definitions. */
-	public int columnType;
-	
-	/** The column value. */
-	public Object columnValue;
+
+	/**
+	 * Function required for effective hashing.
+	 */
+	public int hashCode() {
+		return columnValue != null ? columnValue.hashCode() : 0;
+	}
+
+	/**
+	 * Function required for effective hashing.
+	 */
+	public boolean equals(Object o) {
+		if (o instanceof Field) {
+			Field f = (Field) o;
+			if (columnType != f.columnType)
+				return false;
+			if (columnValue == null && f.columnValue == null)
+				return true;
+			if (columnValue == null || f.columnValue == null)
+				return false;
+			return columnValue.equals(f.columnValue);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @return the columnType
+	 */
+	public int getColumnType() {
+		return columnType;
+	}
+
+	/**
+	 * @param columnType the columnType to set
+	 */
+	public void setColumnType(int columnType) {
+		this.columnType = columnType;
+	}
+
+	/**
+	 * @return the columnValue
+	 */
+	public Object getColumnValue() {
+		return columnValue;
+	}
+
+	/**
+	 * @param columnValue the columnValue to set
+	 */
+	public void setColumnValue(Object columnValue) {
+		this.columnValue = columnValue;
+	}
 }

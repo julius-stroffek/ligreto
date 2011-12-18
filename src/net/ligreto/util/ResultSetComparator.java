@@ -180,7 +180,7 @@ public class ResultSetComparator {
 		return 0;
 	}
 
-	public Field[] duplicate(ResultSet rs, int[] on) throws SQLException {
+	public static Field[] duplicate(ResultSet rs, int[] on) throws SQLException {
 		Field[] result = new Field[on.length];
 
 		for (int i=0; i < on.length; i++) {

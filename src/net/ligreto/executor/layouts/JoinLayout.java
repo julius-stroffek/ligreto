@@ -159,8 +159,10 @@ public abstract class JoinLayout {
 
 	/**
 	 * The method executed before providing any data to the layout object.
+	 * @throws SQLException 
+	 * @throws LigretoException 
 	 */
-	public void start() {
+	public void start() throws SQLException, LigretoException {
 	}
 
 	/**
