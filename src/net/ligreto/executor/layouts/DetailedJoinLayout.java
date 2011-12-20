@@ -12,7 +12,7 @@ import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.MiscUtils;
-import net.ligreto.util.ResultSetUtils;
+import net.ligreto.util.JdbcUtils;
 
 public class DetailedJoinLayout extends JoinLayout {
 
@@ -54,12 +54,12 @@ public class DetailedJoinLayout extends JoinLayout {
 		int rs1Length = rs1.getMetaData().getColumnCount();
 		int rs2Length = rs2.getMetaData().getColumnCount();
 		
-		for (int i=0, i1=0, i2=0; i1 < rs1Length && i2 < rs2Length; i++, i1++, i2++) {
+		for (int i=0, i1=1, i2=1; i1 <= rs1Length && i2 <= rs2Length; i++, i1++, i2++) {
 			// Find the next column in the first result set that
 			// is not part of 'on' nor 'exclude' column list
 			boolean col1Found = false;
-			while (i1 < rs1Length) {
-				if (MiscUtils.arrayContains(on1, i1+1) || MiscUtils.arrayContains(excl1, i1 + 1)) {
+			while (i1 <= rs1Length) {
+				if (MiscUtils.arrayContains(on1, i1) || MiscUtils.arrayContains(excl1, i1)) {
 					i1++;
 				} else {
 					col1Found = true;
@@ -69,8 +69,8 @@ public class DetailedJoinLayout extends JoinLayout {
 			// Find the next column in the second result set that
 			// is not part of 'on' nor 'exclude' column list
 			boolean col2Found = false;
-			while (i2 < rs1Length) {
-				if (MiscUtils.arrayContains(on2, i2+1) || MiscUtils.arrayContains(excl2, i2 + 1)) {
+			while (i2 <= rs1Length) {
+				if (MiscUtils.arrayContains(on2, i2) || MiscUtils.arrayContains(excl2, i2)) {
 					i2++;
 				} else {
 					col2Found = true;
@@ -81,15 +81,15 @@ public class DetailedJoinLayout extends JoinLayout {
 				switch (resultType) {
 				case LEFT:
 					reportBuilder.nextRow();
-					reportBuilder.setHeaderColumn(0, rs1.getMetaData().getColumnName(i1 + 1), HeaderType.ROW);
+					reportBuilder.setHeaderColumn(0, rs1.getMetaData().getColumnName(i1), HeaderType.ROW);
 					reportBuilder.setHighlightArray(higherArray);
 					reportBuilder.setColumnPosition(1);
 					reportBuilder.setJoinOnColumns(rs1, on1);
 					reportBuilder.setColumnPosition(onLength + 1);
-					reportBuilder.setColumn(0, rs1, i1 + 1);
+					reportBuilder.setColumn(0, rs1, i1);
 					reportBuilder.setColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
-					if (ResultSetUtils.getResultSetNumericObject(rs1, i1 + 1) != null) {
-						reportBuilder.setColumn(2, rs1, i1 + 1);
+					if (JdbcUtils.getNumericObject(rs1, i1) != null) {
+						reportBuilder.setColumn(2, rs1, i1);
 						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
 						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
@@ -97,15 +97,15 @@ public class DetailedJoinLayout extends JoinLayout {
 					break;
 				case RIGHT:
 					reportBuilder.nextRow();
-					reportBuilder.setHeaderColumn(0, rs2.getMetaData().getColumnName(i2 + 1), HeaderType.ROW);
+					reportBuilder.setHeaderColumn(0, rs2.getMetaData().getColumnName(i2), HeaderType.ROW);
 					reportBuilder.setHighlightArray(lowerArray);
 					reportBuilder.setColumnPosition(1);
 					reportBuilder.setJoinOnColumns(rs2, on2);
 					reportBuilder.setColumnPosition(onLength + 1);
 					reportBuilder.setColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
-					reportBuilder.setColumn(1, rs2, i2 + 1);
-					if (ResultSetUtils.getResultSetNumericObject(rs2, i2 + 1) != null) {
-						reportBuilder.setColumn(2, rs2, i2 + 1);
+					reportBuilder.setColumn(1, rs2, i2);
+					if (JdbcUtils.getNumericObject(rs2, i2) != null) {
+						reportBuilder.setColumn(2, rs2, i2);
 						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
 						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
@@ -113,8 +113,8 @@ public class DetailedJoinLayout extends JoinLayout {
 					break;
 				case INNER:
 					if (!joinNode.getDiffs() || cmpArray[i] != 0) {
-						String colName = rs1.getMetaData().getColumnName(i1 + 1);
-						String col2Name = rs1.getMetaData().getColumnName(i2 + 1);
+						String colName = rs1.getMetaData().getColumnName(i1);
+						String col2Name = rs1.getMetaData().getColumnName(i2);
 						if (! colName.equalsIgnoreCase(col2Name)) {
 							colName = colName + " / " + col2Name;
 						}
@@ -128,10 +128,10 @@ public class DetailedJoinLayout extends JoinLayout {
 						} else if (cmpArray[i] > 0) {
 							reportBuilder.setHighlightArray(higherArray);
 						}
-						reportBuilder.setColumn(0, rs1, i1 + 1);
-						reportBuilder.setColumn(1, rs2, i2 + 1);
-						reportBuilder.setColumn(2, calculateDifference(i1 + 1, i2 + 1), CellFormat.UNCHANGED);
-						reportBuilder.setColumn(3, calculateRelativeDifference(i1 + 1, i2 + 1), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+						reportBuilder.setColumn(0, rs1, i1);
+						reportBuilder.setColumn(1, rs2, i2);
+						reportBuilder.setColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
+						reportBuilder.setColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 
 					}
 					break;
@@ -184,9 +184,14 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	private Object calculateDifference(int i1, int i2) throws SQLException, LigretoException {
-		Object columnValue1 = ResultSetUtils.getResultSetNumericObject(rs1, i1);
-		Object columnValue2 = ResultSetUtils.getResultSetNumericObject(rs2, i2);
-
+		Object columnValue1 = JdbcUtils.getNumericObject(rs1, i1);
+		Object columnValue2 = JdbcUtils.getNumericObject(rs2, i2);
+		
+		if (columnValue1 instanceof String)
+			columnValue1 = null;
+		if (columnValue2 instanceof String)
+			columnValue2 = null;
+			
 		// If one of the values is not number, report just 'yes'/'no'
 		if (columnValue1 == null || columnValue2 == null) {
 			String str1 = rs1.getString(i1);
@@ -236,8 +241,8 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	private Object calculateRelativeDifference(int i1, int i2) throws SQLException {
-		Object columnValue1 = ResultSetUtils.getResultSetNumericObject(rs1, i1);
-		Object columnValue2 = ResultSetUtils.getResultSetNumericObject(rs2, i2);
+		Object columnValue1 = JdbcUtils.getNumericObject(rs1, i1);
+		Object columnValue2 = JdbcUtils.getNumericObject(rs2, i2);
 		
 		// If one of the values is not number, report just empty string
 		if (columnValue1 == null || columnValue2 == null) {

@@ -82,6 +82,7 @@ public class PtpExecutor extends Executor {
 			log.error("Error processing the PTP transfer.", e);
 			throw new LigretoException("Error processing the PTP transfer: " + ptpNode.getName(), e);
 		}
+		result.info(log, "PTP");
 		return result;
 	}
 
@@ -134,6 +135,7 @@ public class PtpExecutor extends Executor {
 				} else {
 					tgtCnn.setAutoCommit(true);
 					while (rs.next()) {
+						result.addRow(transferNode.getResult());
 						transferRow(rs);
 					}
 				}

@@ -95,8 +95,12 @@ public class LigretoNode extends Node {
 		return dataSourceMap.get(name);
 	}
 	
-	public String getQuery(String name) {
-		return substituteParams(queryMap.get(name));
+	public String getQuery(String name) throws LigretoException {
+		String query = queryMap.get(name);
+		if (query == null) {
+			throw new LigretoException("The referenced query was not defined: " + name);
+		}
+		return substituteParams(query);
 	}
 
 	public LigretoParameters getLigretoParameters() {

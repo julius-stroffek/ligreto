@@ -7,7 +7,7 @@ package net.ligreto.util;
  * @author Julius Stroffek
  *
  */
-public class Fields {
+public class Fields implements Comparable<Object> {
 	
 	/** The array of field values. */
 	protected Field[] fields = null;
@@ -56,5 +56,19 @@ public class Fields {
 	 */
 	public void setFields(Field[] fields) {
 		this.fields = fields;
+	}
+
+	@Override
+	public int compareTo(Object obj) {
+		if (!(obj instanceof Fields))
+			throw new IllegalArgumentException("Could not compare Fields against other objects.");
+		Fields fObj = (Fields) obj;
+		int result = 0;
+		for (int i=0; i < fields.length; i++) {
+			result = fields[i].compareTo(fObj.getFields()[i]);
+			if (result != 0)
+				break;
+		}
+		return result;
 	}
 }

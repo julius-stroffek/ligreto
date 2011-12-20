@@ -21,6 +21,13 @@ public class AggregationResult {
 	}
 	
 	/**
+	 * @return The number of columns this objects stores the result for.
+	 */
+	public int getColumnCount() {
+		return columnCount;
+	}
+	
+	/**
 	 * @param i Column index.
 	 * @return The column result object.
 	 */

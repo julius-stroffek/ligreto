@@ -3,6 +3,8 @@
  */
 package net.ligreto.parser.nodes;
 
+import net.ligreto.exceptions.LigretoException;
+
 /**
  * @author Julius Stroffek
  *
@@ -51,8 +53,9 @@ public class SqlNode extends Node {
 	
 	/**
 	 * @return The query with all the substitutions already done.
+	 * @throws LigretoException 
 	 */
-	public String getQuery() {
+	public String getQuery() throws LigretoException {
 		String result = queryName != null ? ligretoNode.getQuery(queryName) : query.toString();		
 		return ligretoNode.substituteParams(result);
 	}

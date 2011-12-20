@@ -81,13 +81,13 @@ public class Database {
 						log.info("Executing the SQL statement on \"" + name + "\" data source:");
 						log.info(sqlNode.getQuery());
 						stm = cnn.createStatement();
-						stm.executeQuery(sqlNode.getQuery());
+						stm.execute(sqlNode.getQuery());
 						break;
 					case CALL:
 						log.info("Executing the SQL callable statement on \"" + name + "\" data source:");
 						log.info(sqlNode.getQuery());
 						cstm = cnn.prepareCall(sqlNode.getQuery());
-						cstm.executeQuery();
+						cstm.execute();
 						break;
 					default:
 						throw new DataSourceInitException("Unknown query type.");
@@ -109,7 +109,7 @@ public class Database {
 						cstm.close();
 				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new DataSourceInitException("Failed to initialize the connection by custom SQL statements.", e);
 		}
 		

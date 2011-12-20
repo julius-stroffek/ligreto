@@ -348,12 +348,17 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				throw new LigretoException("Unexpected value of JoinLayoutType.");
 			}
 
+			// The comparator instance
+			ResultSetComparator rsComparator = new ResultSetComparator(comparator);
+
 			// Setup other parameters required for the join layout
 			joinLayout.setJoinNode(joinNode);
 			joinLayout.setResultStatus(result);
 			joinLayout.setOnColumns(on1, on2);
 			joinLayout.setExcludeColumns(excl1, excl2);
+			joinLayout.setGroupByColumns(joinNode.getGroupBy());
 			joinLayout.setResultSets(rs1, rs2);
+			joinLayout.setComparator(rsComparator);
 			joinLayout.setColumnCount(rs1ColCount);
 			joinLayout.start();
 			
@@ -364,7 +369,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
-			ResultSetComparator rsComparator = new ResultSetComparator(comparator);
 			Field[] pCol1 = null;
 			Field[] pCol2 = null;
 			Field[] col1 = null;

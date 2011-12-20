@@ -2,6 +2,7 @@ package net.ligreto.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.ResultSet;
 
 /**
  * Holds the aggregated comparison result for one column across multiple rows.
@@ -10,8 +11,9 @@ import java.math.BigInteger;
  * 
  */
 public class ColumnAggregationResult {
-	/** Indicates whether there was 100% match between all the rows. */
-	protected boolean match = false;
+
+	/** The number of differences encountered. */
+	protected int differenceCount = 0;
 
 	/** The absolute difference in value across all the rows. */
 	protected double difference = 0;
@@ -19,8 +21,14 @@ public class ColumnAggregationResult {
 	/** The sum of all the absolute values across all the rows. */
 	protected double totalValue = 0;
 
-	/** The relative difference calculated across all the rows. */
-	protected double relativeDifference = 0;
+	/**
+	 * The relative difference calculated across all the rows. Negative
+	 * value means that relative difference does not make sense.
+	 */
+	protected double relativeDifference = -1;
+	
+	/** The relative number of differences encountered. */
+	protected double differenceRatio = 0;
 
 	/** The number of rows this object holds the result for. */
 	protected long rowCount = 0;
@@ -37,27 +45,34 @@ public class ColumnAggregationResult {
 	public ColumnAggregationResult(Object value1, Object value2) {
 		rowCount = 1;
 		if (value1 == null && value2 == null) {
-			match = true;
+			differenceCount = 0;
 		} else if (value1 != null && value2 != null) {
-			match = false;
+			differenceCount = value1.equals(value2) ? 0 : 1;
 			double dValue1 = getDoubleValue(value1);
 			double dValue2 = getDoubleValue(value2);
-			difference = dValue2 - dValue1;
-			totalValue = dValue1;
+			difference = Math.abs(dValue2 - dValue1);
+			totalValue = Math.abs(dValue1);
 			relativeDifference = Math.abs(difference / totalValue);
 		} else if (value1 != null) {
-			match = false;
+			differenceCount = 1;
 			relativeDifference = 1;
-			difference = getDoubleValue(value1);
+			difference = Math.abs(getDoubleValue(value1));
 			totalValue = difference;
 		} else if (value2 != null) {
-			match = false;
+			differenceCount = 1;
 			relativeDifference = 1;
-			difference = getDoubleValue(value2);
+			difference = Math.abs(getDoubleValue(value2));
 			totalValue = difference;
 		}
+		differenceRatio = differenceCount / (double)rowCount;
 	}
 	
+	/**
+	 * Constructs the object representing the difference between the given objects.
+	 */
+	public ColumnAggregationResult(ResultSetComparator rsComparator, ResultSet rs1, int i1, ResultSet rs2, int i2) {
+	}
+
 	/**
 	 * Returns the double representation of the specified numeric object.
 	 * 
@@ -92,26 +107,27 @@ public class ColumnAggregationResult {
 	 * Merges the aggregated result information of two objects.
 	 */
 	public void merge(ColumnAggregationResult other) {
-		relativeDifference = ((rowCount * relativeDifference) + (other.rowCount * other.relativeDifference))
-				/ (rowCount + other.rowCount);
+		differenceCount += other.differenceCount;
 		rowCount += other.rowCount;
 		difference += other.difference;
 		totalValue += other.totalValue;
+		relativeDifference = difference / (double)totalValue;
+		differenceRatio = differenceCount / (double)rowCount;
 	}
 	
 	/**
 	 * @return the match
 	 */
-	public boolean getMatch() {
-		return match;
+	public int getDifferenceCount() {
+		return differenceCount;
 	}
 
 	/**
-	 * @param match
-	 *            the match to set
+	 * @param differenceCount
+	 *            the differenceCount to set
 	 */
-	public void setMatch(boolean match) {
-		this.match = match;
+	public void setDifferenceCount(int differenceCount) {
+		this.differenceCount = differenceCount;
 	}
 
 	/**
@@ -157,6 +173,20 @@ public class ColumnAggregationResult {
 	 */
 	public void setRelativeDifference(double relativeDifference) {
 		this.relativeDifference = relativeDifference;
+	}
+
+	/**
+	 * @return the differenceRatio
+	 */
+	public double getDifferenceRatio() {
+		return differenceRatio;
+	}
+
+	/**
+	 * @param differenceRatio the differenceRatio to set
+	 */
+	public void setDifferenceRatio(double differenceRatio) {
+		this.differenceRatio = differenceRatio;
 	}
 
 	/**

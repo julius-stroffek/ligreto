@@ -9,6 +9,7 @@ import java.text.Collator;
 import java.util.Comparator;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.exceptions.LigretoException;
 
@@ -23,6 +24,9 @@ public class ResultSetComparator {
 	/** The collator object used for comparisons. */
 	protected Comparator<Object> comparator;
 	
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(ResultSetComparator.class);
+
 	public ResultSetComparator() {
 		comparator = Collator.getInstance();
 	}
@@ -106,6 +110,10 @@ public class ResultSetComparator {
 		int ct1 = rs1.getMetaData().getColumnType(on1);
 		int ct2 = rs2.getMetaData().getColumnType(on2);
 		if (ct1 != ct2) {
+			log.debug(
+				"Data types differ, using string comparison: "
+				+ JdbcUtils.getJdbcTypeName(ct1) + "; " + JdbcUtils.getJdbcTypeName(ct2)
+			);
 			result = compare(rs1.getString(on1), rs2.getString(on2));
 		} else {
 			switch (ct1) {
@@ -128,7 +136,13 @@ public class ResultSetComparator {
 			case Types.DECIMAL:
 			case Types.NUMERIC:
 				result = compare(rs1.getBigDecimal(on1), rs2.getBigDecimal(on2));
+				break;
+			case Types.CHAR:
+			case Types.VARCHAR:
+				result = compare(rs1.getString(on1), rs2.getString(on2));
+				break;
 			default:
+				log.debug("Unknown data type used, using string comparison: " + JdbcUtils.getJdbcTypeName(ct1));
 				result = compare(rs1.getString(on1), rs2.getString(on2));
 				break;
 			}

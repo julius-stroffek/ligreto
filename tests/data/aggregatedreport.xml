@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Aggregated Report" options="autoFilter,autoSize,headerStyle">
+		<output file="aggregatedreport.xlsx"/>
+		<data>
+			<join on="1,3" group-by="3" target="aggregated!A1" type="full" layout="aggregated">
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+			<join on="1,3" target="detailed!A1" type="full" layout="detailed">
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+			<join on="1,3" target="interlaced!A1" type="full" layout="interlaced">
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

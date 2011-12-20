@@ -42,7 +42,7 @@
 <!ELEMENT join (sql,sql+)>
 <!ATTLIST join target CDATA #IMPLIED>
 <!ATTLIST join type (full|left|right|inner) "full">
-<!ATTLIST join diffs (true|false) "false">
+<!ATTLIST join diffs CDATA "false"> <!-- values: [true|false]; CDATA is only due to possible parameter use. -->
 <!ATTLIST join interlaced (true|false) #IMPLIED>
 <!ATTLIST join highlight (true|false) "true">
 <!ATTLIST join header (true|false) "true">

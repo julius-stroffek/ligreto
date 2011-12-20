@@ -10,6 +10,7 @@ import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.util.ResultSetComparator;
 
 /**
  * Provides the interface for implementing various join layouts that could be used
@@ -53,6 +54,9 @@ public abstract class JoinLayout {
 	/** The second result set. */
 	protected ResultSet rs2 = null;
 	
+	/** The comaprator used to compare result sets. */
+	protected ResultSetComparator comparator;
+		
 	/** The length of the on1 and on2 arrays which have to be the same. */
 	protected int onLength = -1;
 	
@@ -70,7 +74,7 @@ public abstract class JoinLayout {
 	
 	/** The global ligreto parameters. */
 	protected LigretoParameters ligretoParameters;
-		
+	
 	/** Constructs the layout having the specified report builder. */
 	protected JoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
 		this.reportBuilder = reportBuilder;
@@ -145,6 +149,20 @@ public abstract class JoinLayout {
 		this.rs2 = rs2;
 	}
 	
+	/**
+	 * @return the comparator
+	 */
+	public ResultSetComparator getComparator() {
+		return comparator;
+	}
+
+	/**
+	 * @param comparator the comparator to set
+	 */
+	public void setComparator(ResultSetComparator comparator) {
+		this.comparator = comparator;
+	}
+
 	public void setColumnCount(int columnCount) {
 		rsColCount = columnCount;	
 		// Create the arrays to be used to highlight
@@ -167,7 +185,9 @@ public abstract class JoinLayout {
 
 	/**
 	 * The method executed after providing all data to the layout object.
+	 * @throws IOException 
+	 * @throws SQLException 
 	 */
-	public void finish() {
+	public void finish() throws IOException, SQLException {
 	}
 }

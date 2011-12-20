@@ -53,18 +53,18 @@ public class NumericTypesTest {
 		} catch (SQLException e) {
 			// do nothing
 		}
-		stm1.execute("create table num_table1 (Id int, first_name varchar(32), num_int int, num_float float, num_double double, num_decimal1 decimal(31,11), num_decimal2 decimal(31,0), num_decimal3 decimal(31,31))");
-		stm2.execute("create table num_table2 (Id int, first_name varchar(32), num_int int, num_float float, num_double double, num_decimal1 decimal(31,11), num_decimal2 decimal(31,0), num_decimal3 decimal(31,31))");
-		stm1.execute("insert into num_table1 values (1, 'Martin', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
-		stm2.execute("insert into num_table2 values (1, 'Martin', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
-		stm1.execute("insert into num_table1 values (2, 'Zdenek', -65537, -0.00012345, -0.0001234567, -12345678901234567890.12345678901, -1234567890123456789012345678901, -0.1234567890123456789012345678901)");
-		stm2.execute("insert into num_table2 values (2, 'Zdenek', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
-		stm1.execute("insert into num_table1 values (3, 'Karel', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
-		stm2.execute("insert into num_table2 values (3, 'Karel', -65537, -0.00012345, -0.0001234567, -12345678901234567890.12345678901, -1234567890123456789012345678901, -0.1234567890123456789012345678901)");
-		stm1.execute("insert into num_table1 values (4, 'Miro', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
-		stm2.execute("insert into num_table2 values (5, 'Stefan', -65537, -0.00012345, -0.0001234567, -12345678901234567890.12345678901, -1234567890123456789012345678901, -0.1234567890123456789012345678901)");
-		stm1.execute("insert into num_table1 values (6, 'Jarek', 65500, 0.000123, 0.0001234567, 1234567890123456789.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
-		stm2.execute("insert into num_table2 values (6, 'Jarek', 65537, 0.00012345, 0.0002234567, 12345678901234567890.12345678901, 123456789023456789012345678901, 0.134567890123456789012345678901)");
+		stm1.execute("create table num_table1 (Id int, etype char(1), first_name varchar(32), num_int int, num_float float, num_double double, num_decimal1 decimal(31,11), num_decimal2 decimal(31,0), num_decimal3 decimal(31,31))");
+		stm2.execute("create table num_table2 (Id int, etype char(1), first_name varchar(32), num_int int, num_float float, num_double double, num_decimal1 decimal(31,11), num_decimal2 decimal(31,0), num_decimal3 decimal(31,31))");
+		stm1.execute("insert into num_table1 values (1, 'M', 'Martin', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
+		stm2.execute("insert into num_table2 values (1, 'M', 'Martin', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
+		stm1.execute("insert into num_table1 values (2, 'Z', 'Zdenek', -65537, -0.00012345, -0.0001234567, -12345678901234567890.12345678901, -1234567890123456789012345678901, -0.1234567890123456789012345678901)");
+		stm2.execute("insert into num_table2 values (2, 'Z', 'Zdenek', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
+		stm1.execute("insert into num_table1 values (3, 'M', 'Karel', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
+		stm2.execute("insert into num_table2 values (3, 'M', 'Karel', -65537, -0.00012345, -0.0001234567, -12345678901234567890.12345678901, -1234567890123456789012345678901, -0.1234567890123456789012345678901)");
+		stm1.execute("insert into num_table1 values (4, 'Z', 'Miro', 65537, 0.00012345, 0.0001234567, 12345678901234567890.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
+		stm2.execute("insert into num_table2 values (5, 'M', 'Stefan', -65537, -0.00012345, -0.0001234567, -12345678901234567890.12345678901, -1234567890123456789012345678901, -0.1234567890123456789012345678901)");
+		stm1.execute("insert into num_table1 values (6, 'M', 'Jarek', 65500, 0.000123, 0.0001234567, 1234567890123456789.12345678901, 1234567890123456789012345678901, 0.1234567890123456789012345678901)");
+		stm2.execute("insert into num_table2 values (6, 'Z', 'Jarek', 65537, 0.00012345, 0.0002234567, 12345678901234567890.12345678901, 123456789023456789012345678901, 0.134567890123456789012345678901)");
 
 		cnn1.close();
 		cnn2.close();
@@ -83,11 +83,25 @@ public class NumericTypesTest {
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
 		ResultStatus result = executor.execute();
-		Assert.assertEquals(12, result.getResultRowCount()); // 12 is the expected number of rows in the result
-		
+		Assert.assertEquals(17, result.getResultRowCount()); // 17 is the expected number of rows in the result
+				
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("numericjoinreport.xlsx")),
 				new XSSFWorkbook(new FileInputStream("desired/numericjoinreport.xlsx"))
+		).areSame());
+	}
+	
+	@Test
+	public void testNumericTypesInAggregatedJoin() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		LigretoNode ligreto = Parser.parse("numericaggregatedreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		
+		ResultStatus result = executor.execute();
+		Assert.assertEquals(17, result.getResultRowCount()); // 17 is the expected number of rows in the result
+		
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("numericaggregatedreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/numericaggregatedreport.xlsx"))
 		).areSame());
 	}
 }

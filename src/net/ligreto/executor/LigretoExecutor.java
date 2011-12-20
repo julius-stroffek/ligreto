@@ -15,7 +15,6 @@ import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.ReportBuilder;
-import net.ligreto.exceptions.DataSourceException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.ReportNode;
@@ -36,7 +35,7 @@ public class LigretoExecutor extends Executor {
 		ligretoNode = aLigretoNode;
 	}
 	
-	protected void executeSqlNodes(Iterable<SqlNode> sqls) throws DataSourceException, ClassNotFoundException, SQLException {
+	protected void executeSqlNodes(Iterable<SqlNode> sqls) throws ClassNotFoundException, SQLException, LigretoException {
 		for (SqlNode sqlQuery : sqls) {
 			Connection cnn = null;
 			Statement stm = null;
@@ -57,6 +56,7 @@ public class LigretoExecutor extends Executor {
 		Database.getInstance(ligretoNode);
 		result.merge(executePTPs());
 		result.merge(executeReports());
+		result.info(log, "LIGRETO");
 		return result;
 	}
 	
@@ -71,7 +71,6 @@ public class LigretoExecutor extends Executor {
 		for (ReportNode reportNode : ligretoNode.reports()) {
 			result.merge(executeReport(reportNode));
 		}
-		result.info(log, "LIGRETO");
 		return result;
 	}
 	
