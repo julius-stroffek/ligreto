@@ -97,7 +97,7 @@ public class NumericTypesTest {
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
 		ResultStatus result = executor.execute();
-		Assert.assertEquals(17, result.getResultRowCount()); // 17 is the expected number of rows in the result
+		Assert.assertEquals(12, result.getResultRowCount()); // 12 is the expected number of rows in the result
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("numericaggregatedreport.xlsx")),

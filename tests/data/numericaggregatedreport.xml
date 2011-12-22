@@ -24,7 +24,7 @@
 	<report name="Numeric Types Report" options="autoFilter,autoSize,headerStyle">
 		<output file="numericaggregatedreport.xlsx"/>
 		<data>
-			<join on="1,2" group-by="2" target="detailed!B2" type="full" layout="aggregated">
+			<join on="1,2" group-by="2" target="aggregated!B2" type="full" layout="aggregated">
 				<sql data-source="Source1">select * from num_table1</sql>
 				<sql data-source="Source3">select * from num_table3</sql>
 			</join>

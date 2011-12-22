@@ -243,7 +243,14 @@ public class JoinNode extends Node {
 	 * @param groupBy the comma separated list of column indices to be used for aggregating results
 	 */
 	public void setGroupBy(String groupBy) {
-		this.groupBy = groupBy;
+		// If the list is empty, we will always store null
+		if (groupBy != null) {
+			this.groupBy = groupBy.trim();
+		} else {
+			this.groupBy = null;
+		}
+		if ("".equals(groupBy))
+			this.groupBy = null;
 	}
 
 	/**

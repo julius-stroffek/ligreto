@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 public class AggregatedReportTest {
 
 	/** The number of rows to be tested. */
-	public static final long rowCount = 12;
+	public static final long rowCount = 1000;
 	
 	/** The number of rows to be tested. */
 	public static final long commitInterval = 6;

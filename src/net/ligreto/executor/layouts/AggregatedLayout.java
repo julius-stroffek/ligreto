@@ -14,9 +14,10 @@ import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.AggregationResult;
 import net.ligreto.util.ColumnAggregationResult;
+import net.ligreto.util.Field;
 import net.ligreto.util.Fields;
+import net.ligreto.util.LigretoComparator;
 import net.ligreto.util.MiscUtils;
-import net.ligreto.util.ResultSetComparator;
 
 /**
  * The layout doing group by aggregation on the calculated comparison results. The output
@@ -52,15 +53,16 @@ public class AggregatedLayout extends JoinLayout {
 		reportBuilder.nextRow();
 		reportBuilder.setHeaderColumn(0, "Field Name", HeaderType.TOP);
 		reportBuilder.setColumnPosition(1, 1, null);
-		reportBuilder.dumpJoinOnHeader(rs1, groupBy);
+		if (groupByLength > 0)
+			reportBuilder.dumpJoinOnHeader(rs1, groupBy);
 		reportBuilder.setColumnPosition(groupByLength + 1, 1, null);
 
 		reportBuilder.setHeaderColumn(0, "# of Diffs", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(1, "Difference Ratio", HeaderType.TOP);
+		reportBuilder.setHeaderColumn(1, "Ratio of Diffs", HeaderType.TOP);
 		reportBuilder.setHeaderColumn(2, "Relative Difference", HeaderType.TOP);
 		reportBuilder.setHeaderColumn(3, "Difference", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(4, "Row Count", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(5, "Value", HeaderType.TOP);
+		reportBuilder.setHeaderColumn(4, "# of Rows", HeaderType.TOP);
+		reportBuilder.setHeaderColumn(5, "Total Value", HeaderType.TOP);
 	}
 
 	@Override
@@ -139,22 +141,22 @@ public class AggregatedLayout extends JoinLayout {
 		switch (resultType) {
 		case INNER:
 		case LEFT:
-			fields.setFields(ResultSetComparator.duplicate(rs1, groupBy));
+			fields.setFields(LigretoComparator.duplicate(rs1, groupBy));
 			break;
 		case RIGHT:
-			fields.setFields(ResultSetComparator.duplicate(rs2, groupBy));
+			fields.setFields(LigretoComparator.duplicate(rs2, groupBy));
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 		}
 
 		// Loop trough all the columns in the result sets.
-		for (int i = 0, i1 = 0, i2 = 0; i1 < rs1Length && i2 < rs2Length; i++, i1++, i2++) {
+		for (int i = 0, i1 = 1, i2 = 1; i1 <= rs1Length && i2 <= rs2Length; i++, i1++, i2++) {
 			// Find the next column in the first result set that
 			// is not part of 'on', 'exclude' nor 'group by' column list
 			boolean col1Found = false;
-			while (i1 < rs1Length) {
-				if (noResultColumns1.containsKey(i1+1)) {
+			while (i1 <= rs1Length) {
+				if (noResultColumns1.containsKey(i1)) {
 					i1++;
 				} else {
 					col1Found = true;
@@ -164,8 +166,8 @@ public class AggregatedLayout extends JoinLayout {
 			// Find the next column in the second result set that
 			// is not part of 'on', 'exclude' nor 'group by' column list
 			boolean col2Found = false;
-			while (i2 < rs1Length) {
-				if (noResultColumns2.containsKey(i2+1)) {
+			while (i2 <= rs1Length) {
+				if (noResultColumns2.containsKey(i2)) {
 					i2++;
 				} else {
 					col2Found = true;
@@ -173,19 +175,19 @@ public class AggregatedLayout extends JoinLayout {
 				}
 			}
 			if (col1Found && col2Found) {
-				Object columnValue1, columnValue2;
+				Field columnValue1, columnValue2;
 				switch (resultType) {
 				case LEFT:
-					columnValue1 = rs1.getObject(i1);
+					columnValue1 = new Field(rs1, i1);
 					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
 					break;
 				case RIGHT:
-					columnValue2 = rs2.getObject(i2);
+					columnValue2 = new Field(rs2, i2);
 					result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
 					break;
 				case INNER:
-					columnValue1 = rs1.getObject(i1);
-					columnValue2 = rs2.getObject(i2);
+					columnValue1 = new Field(rs1, i1);
+					columnValue2 = new Field(rs2, i2);
 					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
 					break;
 				default:
@@ -228,7 +230,7 @@ public class AggregatedLayout extends JoinLayout {
 				reportBuilder.setColumn(0, cResult.getDifferenceCount(), CellFormat.UNCHANGED);
 				reportBuilder.setColumn(1, cResult.getDifferenceRatio(), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				reportBuilder.setColumn(2,
-					cResult.getRelativeDifference() >= 0 ? cResult.getRelativeDifference() : "",
+					Double.isNaN(cResult.getRelativeDifference()) ? "" : cResult.getRelativeDifference(),
 					CellFormat.PERCENTAGE_3_DECIMAL_DIGITS
 				);
 				reportBuilder.setColumn(3, cResult.getDifference(), CellFormat.UNCHANGED);

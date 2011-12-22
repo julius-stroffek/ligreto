@@ -123,27 +123,6 @@ public class Field implements Comparable<Object> {
 			throw new IllegalArgumentException("Could not compare Field against other objects.");
 		
 		Field f = (Field) obj;
-		
-		Object o1 = getColumnValue();
-		Object o2 = f.getColumnValue();
-		
-		// deal with null values first
-		if (o1 == null && o2 == null)
-			return 0;
-		if (o1 == null)
-			return -1;
-		if (o2 == null)
-			return 1;
-		
-		// Compare strings if classes do not match
-		if (o1.getClass() != o2.getClass()) {
-			return o1.toString().compareTo(o2.toString());
-		}
-		
-		@SuppressWarnings("rawtypes")
-		Comparable comp1 = (Comparable) o1;
-		@SuppressWarnings("unchecked")
-		int result = comp1.compareTo(o2);
-		return result;
+		return LigretoComparator.getInstance().compare(this, f);
 	}
 }

@@ -10,7 +10,6 @@ import net.ligreto.builders.BuilderInterface;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
-import net.ligreto.util.ResultSetComparator;
 
 /**
  * Provides the interface for implementing various join layouts that could be used
@@ -53,9 +52,6 @@ public abstract class JoinLayout {
 	
 	/** The second result set. */
 	protected ResultSet rs2 = null;
-	
-	/** The comaprator used to compare result sets. */
-	protected ResultSetComparator comparator;
 		
 	/** The length of the on1 and on2 arrays which have to be the same. */
 	protected int onLength = -1;
@@ -115,14 +111,26 @@ public abstract class JoinLayout {
 		dumpRow(null, resultType);
 	}
 
+	/**
+	 * @param joinNode
+	 * 				The join node to set.
+	 */
 	public void setJoinNode(JoinNode joinNode) {
 		this.joinNode = joinNode;
 	}
 
+	/**
+	 * @param resultStatus
+	 * 				The result status to set.
+	 */
 	public void setResultStatus(ResultStatus resultStatus) {
 		this.resultStatus = resultStatus;
 	}
 
+	/**
+	 * @param on1 The join columns for first result set to set.
+	 * @param on2 The join columns for second result set to set.
+	 */
 	public void setOnColumns(int[] on1, int[] on2) {
 		this.on1 = on1;
 		this.on2 = on2;
@@ -131,6 +139,10 @@ public abstract class JoinLayout {
 		onLength = on1.length;
 	}
 	
+	/**
+	 * @param groupBy
+	 * 			The group by columns to set.
+	 */
 	public void setGroupByColumns(int[] groupBy) {
 		this.groupBy = groupBy;
 		if (groupBy != null)
@@ -139,30 +151,28 @@ public abstract class JoinLayout {
 			groupByLength = 0;
 	}
 
+	/**
+	 * @param excl1 The exclude columns for the first result set to set.
+	 * @param excl2 The exclude columns for the second result set to set.
+	 */
 	public void setExcludeColumns(int[] excl1, int[] excl2) {
 		this.excl1 = excl1;
 		this.excl2 = excl2;
 	}
 
+	/**
+	 * @param rs1 The first result set to set.
+	 * @param rs2 The second result set to set.
+	 */
 	public void setResultSets(ResultSet rs1, ResultSet rs2) {
 		this.rs1 = rs1;
 		this.rs2 = rs2;
 	}
 	
 	/**
-	 * @return the comparator
+	 * @param columnCount
+	 * 				The column count to set.
 	 */
-	public ResultSetComparator getComparator() {
-		return comparator;
-	}
-
-	/**
-	 * @param comparator the comparator to set
-	 */
-	public void setComparator(ResultSetComparator comparator) {
-		this.comparator = comparator;
-	}
-
 	public void setColumnCount(int columnCount) {
 		rsColCount = columnCount;	
 		// Create the arrays to be used to highlight

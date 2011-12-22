@@ -34,7 +34,7 @@ import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
 import net.ligreto.util.Field;
 import net.ligreto.util.MiscUtils;
-import net.ligreto.util.ResultSetComparator;
+import net.ligreto.util.LigretoComparator;
 
 /**
  * Provides execution code for join like comparison.
@@ -349,7 +349,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 
 			// The comparator instance
-			ResultSetComparator rsComparator = new ResultSetComparator(comparator);
+			LigretoComparator rsComparator = LigretoComparator.getInstance();
+			rsComparator.setComparator(comparator);
 
 			// Setup other parameters required for the join layout
 			joinLayout.setJoinNode(joinNode);
@@ -358,7 +359,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			joinLayout.setExcludeColumns(excl1, excl2);
 			joinLayout.setGroupByColumns(joinNode.getGroupBy());
 			joinLayout.setResultSets(rs1, rs2);
-			joinLayout.setComparator(rsComparator);
 			joinLayout.setColumnCount(rs1ColCount);
 			joinLayout.start();
 			
@@ -376,10 +376,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext1 && hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = ResultSetComparator.duplicate(rs1, on1);
-				col2 = ResultSetComparator.duplicate(rs2, on2);
-				int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
-				int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
+				col1 = LigretoComparator.duplicate(rs1, on1);
+				col2 = LigretoComparator.duplicate(rs2, on2);
+				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
+				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
@@ -418,7 +418,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = rsComparator.compare(rs1, on1, rs2, on2);
+				int cResult = rsComparator.compareAsDataSource(rs1, on1, rs2, on2);
 				switch (cResult) {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
@@ -431,7 +431,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = rsComparator.compareOthers(rs1, on1, excl1, rs2, on2, excl2);
+					int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
 					
 					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
 						result.addRow(joinNode.getResult());
@@ -456,8 +456,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				while (hasNext1) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
-					col1 = ResultSetComparator.duplicate(rs1, on1);
-					int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
+					col1 = LigretoComparator.duplicate(rs1, on1);
+					int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 
 					if (dResult1 == 0) {
 						log.error("Duplicate entries found.");
@@ -488,8 +488,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				while (hasNext2) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
-					col2 = ResultSetComparator.duplicate(rs2, on2);
-					int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
+					col2 = LigretoComparator.duplicate(rs2, on2);
+					int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 
 					if (dResult2 == 0) {
 						log.error("Duplicate entries found.");

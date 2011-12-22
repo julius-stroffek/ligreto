@@ -25,7 +25,7 @@ public class ColumnAggregationResult {
 	 * The relative difference calculated across all the rows. Negative
 	 * value means that relative difference does not make sense.
 	 */
-	protected double relativeDifference = -1;
+	protected double relativeDifference = Double.NaN;
 	
 	/** The relative number of differences encountered. */
 	protected double differenceRatio = 0;
@@ -42,7 +42,12 @@ public class ColumnAggregationResult {
 	/**
 	 * Constructs the object representing the difference between the given objects.
 	 */
-	public ColumnAggregationResult(Object value1, Object value2) {
+	public ColumnAggregationResult(Field field1, Field field2) {
+		Object value1 = null, value2 = null;
+		if (field1 != null)
+			value1 = field1.getColumnValue();
+		if (field2 != null)
+			value2 = field2.getColumnValue();
 		rowCount = 1;
 		if (value1 == null && value2 == null) {
 			differenceCount = 0;
@@ -52,25 +57,23 @@ public class ColumnAggregationResult {
 			double dValue2 = getDoubleValue(value2);
 			difference = Math.abs(dValue2 - dValue1);
 			totalValue = Math.abs(dValue1);
-			relativeDifference = Math.abs(difference / totalValue);
 		} else if (value1 != null) {
 			differenceCount = 1;
-			relativeDifference = 1;
 			difference = Math.abs(getDoubleValue(value1));
 			totalValue = difference;
 		} else if (value2 != null) {
 			differenceCount = 1;
-			relativeDifference = 1;
 			difference = Math.abs(getDoubleValue(value2));
 			totalValue = difference;
 		}
+		relativeDifference = Math.abs(difference / totalValue);
 		differenceRatio = differenceCount / (double)rowCount;
 	}
 	
 	/**
 	 * Constructs the object representing the difference between the given objects.
 	 */
-	public ColumnAggregationResult(ResultSetComparator rsComparator, ResultSet rs1, int i1, ResultSet rs2, int i2) {
+	public ColumnAggregationResult(LigretoComparator rsComparator, ResultSet rs1, int i1, ResultSet rs2, int i2) {
 	}
 
 	/**

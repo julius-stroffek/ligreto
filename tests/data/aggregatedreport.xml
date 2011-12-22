@@ -11,10 +11,26 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report name="Aggregated Report" options="autoFilter,autoSize,headerStyle">
+	<report name="Aggregated Report" options="autoFilter,autoSize,headerStyle" type="excel.stream">
 		<output file="aggregatedreport.xlsx"/>
 		<data>
-			<join on="1,3" group-by="3" target="aggregated!A1" type="full" layout="aggregated">
+			<join on="1,3" group-by="3" target="aggregated1!A1" type="full" layout="aggregated">
+				<sql data-source="Source1">select * from aggregation_table1 where id &lt; 24</sql>
+				<sql data-source="Source2">select * from aggregation_table2 where id &lt; 24</sql>
+			</join>
+			<join on="1,3" group-by="3" target="aggregated2!A1" type="full" layout="aggregated">
+				<sql data-source="Source1">select * from aggregation_table1 where id &lt; 140</sql>
+				<sql data-source="Source2">select * from aggregation_table2 where id &lt; 140</sql>
+			</join>
+			<join on="1,3" group-by="3" target="aggregated3!A1" type="full" layout="aggregated">
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+			<join on="1,3" group-by="" target="aggregated4!A1" type="full" layout="aggregated">
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+			<join on="1,3" target="aggregated5!A1" type="full" layout="aggregated">
 				<sql data-source="Source1">select * from aggregation_table1</sql>
 				<sql data-source="Source2">select * from aggregation_table2</sql>
 			</join>
