@@ -70,7 +70,7 @@ public class DataSourceNode extends Node {
 	public Properties getParameters() {
 		return parameters;
 	}
-	
+		
 	/**
 	 * This function will assign the specified value to parameters used to get the connection.
 	 * 

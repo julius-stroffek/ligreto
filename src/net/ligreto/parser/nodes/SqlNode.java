@@ -3,7 +3,9 @@
  */
 package net.ligreto.parser.nodes;
 
+import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.util.MiscUtils;
 
 /**
  * @author Julius Stroffek
@@ -104,9 +106,10 @@ public class SqlNode extends Node {
 
 	/**
 	 * @param header the header to set
+	 * @throws InvalidValueException 
 	 */
-	public void setHeader(String header) {
-		this.header = Boolean.parseBoolean(header);
+	public void setHeader(String header) throws InvalidValueException {
+		this.header = MiscUtils.parseBoolean(header);
 	}
 
 	/**
@@ -123,8 +126,8 @@ public class SqlNode extends Node {
 		this.append = append;
 	}
 
-	public void setAppend(String append) {
-		this.append = Boolean.parseBoolean(append);
+	public void setAppend(String append) throws InvalidValueException {
+		this.append = MiscUtils.parseBoolean(append);
 	}
 
 	public boolean getResult() {
@@ -135,9 +138,9 @@ public class SqlNode extends Node {
 		this.result = result;
 	}
 
-	public void setResult(String result) {
+	public void setResult(String result) throws InvalidValueException {
 		if (result != null) {
-			this.result = Boolean.parseBoolean(result);
+			this.result = MiscUtils.parseBoolean(result);
 		} else {
 			this.result = false;
 		}

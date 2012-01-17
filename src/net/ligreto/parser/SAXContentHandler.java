@@ -7,6 +7,7 @@ import java.util.Stack;
 
 import net.ligreto.exceptions.AssertionException;
 import net.ligreto.exceptions.InvalidFormatException;
+import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
 
@@ -94,6 +95,11 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		if (value != null) {
 			value = ligretoNode.substituteParams(value);
 		}
+		return value;
+	}
+	
+	protected String getAttributeValueWithParams(Attributes atts, String name) {
+		String value = atts.getValue(name);
 		return value;
 	}
 	
@@ -208,8 +214,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					objectStack.push(ObjectType.PARAM);
 					paramValue = new StringBuilder();
 					paramName = getAttributeValue(atts, "name");
-					if (getAttributeValue(atts, "value") != null) {
-						paramValue.append(getAttributeValue(atts, "value"));
+					if (getAttributeValueWithParams(atts, "value") != null) {
+						paramValue.append(getAttributeValueWithParams(atts, "value"));
 					}
 				} else if ("report".equals(localName)) {
 					objectStack.push(ObjectType.REPORT);
@@ -235,13 +241,13 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 			case DATA_SOURCE:
 				if ("driver".equals(localName)) {
-					dataSource.setDriverClass(getAttributeValue(atts, "value"));
+					dataSource.setDriverClass(getAttributeValueWithParams(atts, "value"));
 					objectStack.push(ObjectType.NONE);
 				} else if ("uri".equals(localName)) {
-					dataSource.setUri(getAttributeValue(atts, "value"));
+					dataSource.setUri(getAttributeValueWithParams(atts, "value"));
 					objectStack.push(ObjectType.NONE);
 				} else if ("param".equals(localName)) {
-					dataSource.setParameter(getAttributeValue(atts, "name"), getAttributeValue(atts, "value"));
+					dataSource.setParameter(getAttributeValue(atts, "name"), getAttributeValueWithParams(atts, "value"));
 					objectStack.push(ObjectType.NONE);
 				} else if ("init".equals(localName)) {
 					objectStack.push(ObjectType.INIT);
@@ -500,6 +506,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack.");
 			}
 		} catch (InvalidFormatException e) {
+			throw new SAXException("Error parsing input file.", e);
+		} catch (InvalidValueException e) {
 			throw new SAXException("Error parsing input file.", e);
 		}
 	}

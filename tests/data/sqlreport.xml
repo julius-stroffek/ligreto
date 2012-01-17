@@ -5,6 +5,7 @@
 	<param name="enddt">2010-11-30</param>
 	<param name="dummy" value="sysibm.sysdummy1"/>
 	<param name="refdummy" value="${dummy}"/> 
+	<param name="createParam" value="true"/>
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
@@ -13,6 +14,17 @@
 				<sql exceptions="ignore">Failed statement!</sql>
 				<sql>select * from ${refdummy}</sql>
 				<sql type="call">select * from ${dummy}</sql>
+			</init>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:tmp_db"/>
+			<param name="create" value="${createParam}"/>
+			<init>
+				<sql exceptions="ignore">create table new_table (id varchar(10), name varchar(64))</sql>
+				<sql>delete from new_table</sql>
+				<sql>insert into new_table values ('1', 'Mickey Mouse')</sql>
+				<sql>insert into new_table values ('2', 'Duck Donald')</sql>
 			</init>
 		</data-source>
 	</data-sources>
@@ -29,6 +41,7 @@
 			<sql target="Append Sheet!A1" data-source="Source1" append="true" header="false">select * from test_table</sql>
 			<sql target="Overwrite Sheet!A1" data-source="Source1" header="true">select * from test_table</sql>
 			<sql target="Overwrite Sheet!A1" data-source="Source1" header="true">select * from test_table</sql>
+			<sql target="Connection Params!A1" data-source="Source2" header="true">select * from new_table</sql>
 		</data>
 	</report>
 </ligreto>

@@ -1,8 +1,10 @@
-package net.ligreto.util;
+package net.ligreto.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.ResultSet;
+
+import net.ligreto.util.LigretoComparator;
 
 /**
  * Holds the aggregated comparison result for one column across multiple rows.
@@ -32,6 +34,9 @@ public class ColumnAggregationResult {
 
 	/** The number of rows this object holds the result for. */
 	protected long rowCount = 0;
+	
+	/** Indicates whether the column is of a numeric type. */
+	protected boolean numeric = false;
 
 	/**
 	 * Constructs the object holding zero in all the result values.
@@ -42,7 +47,7 @@ public class ColumnAggregationResult {
 	/**
 	 * Constructs the object representing the difference between the given objects.
 	 */
-	public ColumnAggregationResult(Field field1, Field field2) {
+	public ColumnAggregationResult(Column field1, Column field2) {
 		Object value1 = null, value2 = null;
 		if (field1 != null)
 			value1 = field1.getColumnValue();
@@ -68,6 +73,15 @@ public class ColumnAggregationResult {
 		}
 		relativeDifference = Math.abs(difference / totalValue);
 		differenceRatio = differenceCount / (double)rowCount;
+		if (field1 != null && field2 != null) {
+			numeric = field1.isNumeric() && field2.isNumeric();
+		} else if (field1 != null) {
+			numeric = field1.isNumeric();
+		} else if (field2 != null) {
+			numeric = field2.isNumeric();
+		} else {
+			numeric = false;
+		}
 	}
 	
 	/**
@@ -205,5 +219,19 @@ public class ColumnAggregationResult {
 	 */
 	public void setRowCount(long rowCount) {
 		this.rowCount = rowCount;
+	}
+	
+	/**
+	 * @return the numeric
+	 */
+	public boolean isNumeric() {
+		return numeric;
+	}
+
+	/**
+	 * @param numeric the numeric to set
+	 */
+	public void setNumeric(boolean numeric) {
+		this.numeric = numeric;
 	}
 }

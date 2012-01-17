@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import net.ligreto.data.Column;
 import net.ligreto.exceptions.LigretoException;
 
 /**
@@ -266,64 +267,64 @@ public class LigretoComparator {
 		return 0;
 	}
 
-	public static Field[] duplicate(ResultSet rs, int[] on) throws SQLException {
+	public static Column[] duplicate(ResultSet rs, int[] on) throws SQLException {
 		if (on == null) {
-			return new Field[0];
+			return new Column[0];
 		}
-		Field[] result = new Field[on.length];
+		Column[] result = new Column[on.length];
 
 		for (int i=0; i < on.length; i++) {
-			result[i] = new Field(rs, on[i]);
+			result[i] = new Column(rs, on[i]);
 		}
 		return result;
 	}
 
-	public int compareAsDataSource(Field field1, Field field2) throws LigretoException {
+	public int compareAsDataSource(Column field1, Column field2) throws LigretoException {
 		int result = 0;
 		// Take care of the null values first
-		boolean isNull1 = field1.columnValue == null;
-		boolean isNull2 = field2.columnValue == null;
+		boolean isNull1 = field1.getColumnValue() == null;
+		boolean isNull2 = field2.getColumnValue() == null;
 		result = compareNullsAsDataSource(isNull1, isNull2);
 		if (result != 0)
 			return result;
 
-		switch (field1.columnType) {
+		switch (field1.getColumnType()) {
 		case Types.BOOLEAN:
-			result = compare((Boolean) field1.columnValue, (Boolean) field2.columnValue);
+			result = compare((Boolean) field1.getColumnValue(), (Boolean) field2.getColumnValue());
 			break;
 		case Types.BIGINT:
 		case Types.INTEGER:
-			result = compare((Long) field1.columnValue, (Long) field2.columnValue);
+			result = compare((Long) field1.getColumnValue(), (Long) field2.getColumnValue());
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:
-			result = compare((Double) field1.columnValue, (Double) field2.columnValue);
+			result = compare((Double) field1.getColumnValue(), (Double) field2.getColumnValue());
 			break;
 		case Types.DATE:
 		case Types.TIMESTAMP:
 		case Types.TIME:
-			result = compare((Timestamp) field1.columnValue, (Timestamp) field2.columnValue);
+			result = compare((Timestamp) field1.getColumnValue(), (Timestamp) field2.getColumnValue());
 			break;
 		case Types.DECIMAL:
 		case Types.NUMERIC:
-			result = compare((BigDecimal) field1.columnValue, (BigDecimal) field2.columnValue);
+			result = compare((BigDecimal) field1.getColumnValue(), (BigDecimal) field2.getColumnValue());
 			break;
 		default:
-			result = compareAsDataSource((String) field1.columnValue, (String) field2.columnValue);
+			result = compareAsDataSource((String) field1.getColumnValue(), (String) field2.getColumnValue());
 			break;
 		}
 		return result;
 	}
 
-	public int compareAsDataSource(Field[] fields1, Field[] fields2) throws LigretoException {
+	public int compareAsDataSource(Column[] fields1, Column[] fields2) throws LigretoException {
 		int result = 0;
 		if (fields1.length != fields2.length) {
 			throw new LigretoException("The field arrays to compare have different lengths.");
 		}
 		
 		for (int i=0; i < fields1.length; i++) {
-			if (fields1[i].columnType != fields2[i].columnType) {
-				throw new LigretoException("The fields to compare have different types.");
+			if (fields1[i].getColumnType() != fields2[i].getColumnType()) {
+				throw new LigretoException("The columns to compare have different types.");
 			}
 			result = compareAsDataSource(fields1[i], fields2[i]);
 			if (result != 0)
@@ -337,52 +338,52 @@ public class LigretoComparator {
 		return result;
 	}
 
-	public int compare(Field field1, Field field2) {
+	public int compare(Column field1, Column field2) {
 		int result = 0;
 		// Take care of the null values first
-		boolean isNull1 = field1.columnValue == null;
-		boolean isNull2 = field2.columnValue == null;
+		boolean isNull1 = field1.getColumnValue() == null;
+		boolean isNull2 = field2.getColumnValue() == null;
 		result = compareNulls(isNull1, isNull2);
 		if (result != 0)
 			return result;
 
-		switch (field1.columnType) {
+		switch (field1.getColumnType()) {
 		case Types.BOOLEAN:
-			result = compare((Boolean) field1.columnValue, (Boolean) field2.columnValue);
+			result = compare((Boolean) field1.getColumnValue(), (Boolean) field2.getColumnValue());
 			break;
 		case Types.BIGINT:
 		case Types.INTEGER:
-			result = compare((Long) field1.columnValue, (Long) field2.columnValue);
+			result = compare((Long) field1.getColumnValue(), (Long) field2.getColumnValue());
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:
-			result = compare((Double) field1.columnValue, (Double) field2.columnValue);
+			result = compare((Double) field1.getColumnValue(), (Double) field2.getColumnValue());
 			break;
 		case Types.DATE:
 		case Types.TIMESTAMP:
 		case Types.TIME:
-			result = compare((Timestamp) field1.columnValue, (Timestamp) field2.columnValue);
+			result = compare((Timestamp) field1.getColumnValue(), (Timestamp) field2.getColumnValue());
 			break;
 		case Types.DECIMAL:
 		case Types.NUMERIC:
-			result = compare((BigDecimal) field1.columnValue, (BigDecimal) field2.columnValue);
+			result = compare((BigDecimal) field1.getColumnValue(), (BigDecimal) field2.getColumnValue());
 			break;
 		default:
-			result = compare((String) field1.columnValue, (String) field2.columnValue);
+			result = compare((String) field1.getColumnValue(), (String) field2.getColumnValue());
 			break;
 		}
 		return result;
 	}
 
-	public int compare(Field[] fields1, Field[] fields2) throws LigretoException {
+	public int compare(Column[] fields1, Column[] fields2) throws LigretoException {
 		int result = 0;
 		if (fields1.length != fields2.length) {
 			throw new LigretoException("The field arrays to compare have different lengths.");
 		}
 		
 		for (int i=0; i < fields1.length; i++) {
-			if (fields1[i].columnType != fields2[i].columnType) {
-				throw new LigretoException("The fields to compare have different types.");
+			if (fields1[i].getColumnType() != fields2[i].getColumnType()) {
+				throw new LigretoException("The columns to compare have different types.");
 			}
 			result = compare(fields1[i], fields2[i]);
 			if (result != 0)
@@ -483,11 +484,11 @@ public class LigretoComparator {
 		return 0;
 	}
 
-	public void error(Log log, Field[] col) {
+	public void error(Log log, Column[] col) {
 		log.error("Key columns:");
 		for (int c=0; c < col.length; c++) {
-			if (col[c] != null && col[c].columnValue != null) {
-				log.error(col[c].columnValue.toString());
+			if (col[c] != null && col[c].getColumnValue() != null) {
+				log.error(col[c].getColumnValue().toString());
 			} else {
 				log.error("<null>");
 			}

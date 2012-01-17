@@ -25,6 +25,9 @@ public class LigretoParameters {
 	/** The string shown instead of the missing record. */
 	protected String missingString = "<missing>";
 	
+	/** The string displayed in case of NaN value. */
+	protected String nanString = "NaN";
+	
 	/** The collator implementation to be used. */
 	protected String collatorClass = null;
 	
@@ -56,6 +59,22 @@ public class LigretoParameters {
 
 	public void setMissingString(String missingString) {
 		this.missingString = missingString;
+	}
+
+	public String getNanString() {
+		return nanString;
+	}
+
+	public String getNanStringAsString() {
+		return nanString;
+	}
+
+	public void setNanString(String nanString) {
+		this.nanString = nanString;
+	}
+
+	public void setNanStringAsString(String nanString) {
+		this.nanString = nanString;
 	}
 
 	public String getCollatorClass() {

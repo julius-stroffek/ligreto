@@ -1,5 +1,8 @@
 package net.ligreto.parser.nodes;
 
+import net.ligreto.exceptions.InvalidValueException;
+import net.ligreto.util.MiscUtils;
+
 public class TransferNode extends Node {
 
 	protected TargetNode targetNode;
@@ -54,10 +57,11 @@ public class TransferNode extends Node {
 
 	/**
 	 * @param result the result to set parsed to boolean
+	 * @throws InvalidValueException 
 	 */
-	public void setResult(String result) {
+	public void setResult(String result) throws InvalidValueException {
 		if (result != null) {
-			this.result = Boolean.parseBoolean(result);
+			this.result = MiscUtils.parseBoolean(result);
 		} else {
 			this.result = false;
 		}

@@ -10,12 +10,12 @@ import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.data.AggregationResult;
+import net.ligreto.data.ColumnAggregationResult;
+import net.ligreto.data.Column;
+import net.ligreto.data.Row;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.util.AggregationResult;
-import net.ligreto.util.ColumnAggregationResult;
-import net.ligreto.util.Field;
-import net.ligreto.util.Fields;
 import net.ligreto.util.LigretoComparator;
 import net.ligreto.util.MiscUtils;
 
@@ -37,7 +37,7 @@ import net.ligreto.util.MiscUtils;
  */
 public class AggregatedLayout extends JoinLayout {
 
-	protected HashMap<Fields, AggregationResult> aggregationMap = new HashMap<Fields, AggregationResult>();
+	protected HashMap<Row, AggregationResult> aggregationMap = new HashMap<Row, AggregationResult>();
 	protected HashMap<Integer, Void> noResultColumns1 = new HashMap<Integer, Void>();
 	protected HashMap<Integer, Void> noResultColumns2 = new HashMap<Integer, Void>();
 	int[] resultColumns1 = null;
@@ -51,7 +51,7 @@ public class AggregatedLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
 		reportBuilder.nextRow();
-		reportBuilder.setHeaderColumn(0, "Field Name", HeaderType.TOP);
+		reportBuilder.setHeaderColumn(0, "Column Name", HeaderType.TOP);
 		reportBuilder.setColumnPosition(1, 1, null);
 		if (groupByLength > 0)
 			reportBuilder.dumpJoinOnHeader(rs1, groupBy);
@@ -136,15 +136,15 @@ public class AggregatedLayout extends JoinLayout {
 		int rs2Length = rs2.getMetaData().getColumnCount();
 		
 		// Get the value of group by columns first
-		Fields fields = new Fields();
+		Row row = new Row();
 		AggregationResult result = new AggregationResult(resultCount);
 		switch (resultType) {
 		case INNER:
 		case LEFT:
-			fields.setFields(LigretoComparator.duplicate(rs1, groupBy));
+			row.setFields(LigretoComparator.duplicate(rs1, groupBy));
 			break;
 		case RIGHT:
-			fields.setFields(LigretoComparator.duplicate(rs2, groupBy));
+			row.setFields(LigretoComparator.duplicate(rs2, groupBy));
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
@@ -175,19 +175,19 @@ public class AggregatedLayout extends JoinLayout {
 				}
 			}
 			if (col1Found && col2Found) {
-				Field columnValue1, columnValue2;
+				Column columnValue1, columnValue2;
 				switch (resultType) {
 				case LEFT:
-					columnValue1 = new Field(rs1, i1);
+					columnValue1 = new Column(rs1, i1);
 					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
 					break;
 				case RIGHT:
-					columnValue2 = new Field(rs2, i2);
+					columnValue2 = new Column(rs2, i2);
 					result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
 					break;
 				case INNER:
-					columnValue1 = new Field(rs1, i1);
-					columnValue2 = new Field(rs2, i2);
+					columnValue1 = new Column(rs1, i1);
+					columnValue2 = new Column(rs2, i2);
 					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
 					break;
 				default:
@@ -200,18 +200,18 @@ public class AggregatedLayout extends JoinLayout {
 		
 		// We have all the columns processed, so we will either merge the new results with
 		// the previous one or we will store a new result into the aggregation map.
-		AggregationResult previousResult = aggregationMap.get(fields);
+		AggregationResult previousResult = aggregationMap.get(row);
 		if (previousResult != null) {
 			previousResult.merge(result);
 		} else {
-			aggregationMap.put(fields, result);
+			aggregationMap.put(row, result);
 		}
 	}
 
 	@Override
 	public void finish() throws IOException, SQLException {
-		TreeSet<Fields> treeSet = new TreeSet<Fields>(aggregationMap.keySet());
-		for (Fields f : treeSet) {
+		TreeSet<Row> treeSet = new TreeSet<Row>(aggregationMap.keySet());
+		for (Row f : treeSet) {
 			AggregationResult result = aggregationMap.get(f);
 			for (int i=0; i < result.getColumnCount(); i++) {
 				ColumnAggregationResult cResult = result.getColumnResult(i);
@@ -229,11 +229,17 @@ public class AggregatedLayout extends JoinLayout {
 				reportBuilder.setColumnPosition(1 + f.getFields().length);
 				reportBuilder.setColumn(0, cResult.getDifferenceCount(), CellFormat.UNCHANGED);
 				reportBuilder.setColumn(1, cResult.getDifferenceRatio(), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
-				reportBuilder.setColumn(2,
-					Double.isNaN(cResult.getRelativeDifference()) ? "" : cResult.getRelativeDifference(),
-					CellFormat.PERCENTAGE_3_DECIMAL_DIGITS
-				);
-				reportBuilder.setColumn(3, cResult.getDifference(), CellFormat.UNCHANGED);
+
+				// Dump the difference metrics if we have numeric column
+				if (cResult.isNumeric()) {
+					reportBuilder.setColumn(2,
+							Double.isNaN(cResult.getRelativeDifference()) ? ligretoParameters.getNanString() : cResult.getRelativeDifference(),
+									CellFormat.PERCENTAGE_3_DECIMAL_DIGITS
+					);
+					reportBuilder.setColumn(3, cResult.getDifference(), CellFormat.UNCHANGED);
+				}
+				
+				// Dump the other column values
 				reportBuilder.setColumn(4, cResult.getRowCount(), CellFormat.UNCHANGED);
 				reportBuilder.setColumn(5, cResult.getTotalValue(), CellFormat.UNCHANGED);
 			}

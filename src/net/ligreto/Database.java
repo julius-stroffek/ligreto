@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,12 +61,13 @@ public class Database {
 		if (node == null) {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
 		}
-		Class.forName(node.getDriverClass());
+		Class.forName(ligretoNode.substituteParams(node.getDriverClass()));
 		
 		// Create the connection
 		Connection cnn;
 		try {
-			cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), node.getParameters());
+			Properties params = ligretoNode.substitueParams(node.getParameters());
+			cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), params);
 		} catch (SQLException e) {
 			throw new DataSourceException("Could not connect to data source: " + name, e);
 		}

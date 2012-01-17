@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.ligreto.exceptions.InvalidFormatException;
+import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.util.MiscUtils;
 
 /**
@@ -154,9 +155,10 @@ public class JoinNode extends Node {
 
 	/**
 	 * @param diffs the diffs to set
+	 * @throws InvalidValueException 
 	 */
-	public void setDiffs(String diffs) {
-		this.diffs = Boolean.parseBoolean(diffs);
+	public void setDiffs(String diffs) throws InvalidValueException {
+		this.diffs = MiscUtils.parseBoolean(diffs);
 	}
 
 	/**
@@ -175,9 +177,10 @@ public class JoinNode extends Node {
 
 	/**
 	 * @param highlight the highlight to set
+	 * @throws InvalidValueException 
 	 */
-	public void setHighlight(String highlight) {
-		this.highlight = Boolean.parseBoolean(highlight);
+	public void setHighlight(String highlight) throws InvalidValueException {
+		this.highlight = MiscUtils.parseBoolean(highlight);
 	}
 
 	/**
@@ -203,9 +206,10 @@ public class JoinNode extends Node {
 
 	/**
 	 * @param header the header to set
+	 * @throws InvalidValueException 
 	 */
-	public void setHeader(String header) {
-		this.header = Boolean.parseBoolean(header);
+	public void setHeader(String header) throws InvalidValueException {
+		this.header = MiscUtils.parseBoolean(header);
 	}
 
 	/**
@@ -224,9 +228,10 @@ public class JoinNode extends Node {
 	/**
 	 * @param append the append to set which indicates whether the newly added
 	 *        data should be appended to the target location.
+	 * @throws InvalidValueException 
 	 */
-	public void setAppend(String append) {
-		this.append = Boolean.parseBoolean(append);
+	public void setAppend(String append) throws InvalidValueException {
+		this.append = MiscUtils.parseBoolean(append);
 	}
 
 	
@@ -269,10 +274,11 @@ public class JoinNode extends Node {
 
 	/**
 	 * @param result the result to set parsed to boolean
+	 * @throws InvalidValueException 
 	 */
-	public void setResult(String result) {
+	public void setResult(String result) throws InvalidValueException {
 		if (result != null) {
-			this.result = Boolean.parseBoolean(result);
+			this.result = MiscUtils.parseBoolean(result);
 		} else {
 			this.result = false;
 		}

@@ -83,17 +83,17 @@ public class Ligreto {
 		String[] params = cmd.getOptionValues("D");
 		try {
 			LigretoNode ligretoNode = new LigretoNode();
-			for (int i=0; i < files.length; i++) {
-				Parser.parse(files[i], ligretoNode);
-			}
 			if (params != null) {
 				for (int j=0; j < params.length; j++) {
 					if (params[j].indexOf('=') >=0) {
 						String paramName = params[j].substring(0, params[j].indexOf('='));
 						String paramValue = params[j].substring(params[j].indexOf('=') + 1);
-						ligretoNode.addParam(paramName, paramValue);
+						ligretoNode.addLockedParam(paramName, paramValue);
 					}
 				}
+			}
+			for (int i=0; i < files.length; i++) {
+				Parser.parse(files[i], ligretoNode);
 			}
 			LigretoExecutor executor = new LigretoExecutor(ligretoNode);
 			result = executor.execute().getResultRowCount();

@@ -3,7 +3,9 @@ package net.ligreto.parser.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.ReportException;
+import net.ligreto.util.MiscUtils;
 
 /**
  * @author Julius Stroffek
@@ -132,9 +134,9 @@ public class ReportNode extends Node {
 		this.result = result;
 	}
 
-	public void setResult(String result) {
+	public void setResult(String result) throws InvalidValueException {
 		if (result != null) {
-			this.result = Boolean.parseBoolean(result);
+			this.result = MiscUtils.parseBoolean(result);
 		} else {
 			this.result = false;
 		}

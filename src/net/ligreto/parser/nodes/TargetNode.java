@@ -1,5 +1,8 @@
 package net.ligreto.parser.nodes;
 
+import net.ligreto.exceptions.InvalidValueException;
+import net.ligreto.util.MiscUtils;
+
 public class TargetNode extends Node {
 
 	protected String table;
@@ -86,25 +89,28 @@ public class TargetNode extends Node {
 	/**
 	 * Parses the string value into <code>create</code> field
 	 * @param create The string value to parse
+	 * @throws InvalidValueException 
 	 */
-	public void setCreate(String create) {
-		this.create = Boolean.parseBoolean(create);	
+	public void setCreate(String create) throws InvalidValueException {
+		this.create = MiscUtils.parseBoolean(create);	
 	}
 
 	/**
 	 * Parses the string value into <code>truncate</code> field
 	 * @param recreate The string value to parse
+	 * @throws InvalidValueException 
 	 */
-	public void setRecreate(String recreate) {
-		this.recreate = Boolean.parseBoolean(recreate);
+	public void setRecreate(String recreate) throws InvalidValueException {
+		this.recreate = MiscUtils.parseBoolean(recreate);
 	}
 
 	/**
 	 * Parses the string value into <code>truncate</code> field
 	 * @param truncate The string value to parse
+	 * @throws InvalidValueException 
 	 */
-	public void setTruncate(String truncate) {
-		this.truncate = Boolean.parseBoolean(truncate);	
+	public void setTruncate(String truncate) throws InvalidValueException {
+		this.truncate = MiscUtils.parseBoolean(truncate);	
 	}
 
 	/**

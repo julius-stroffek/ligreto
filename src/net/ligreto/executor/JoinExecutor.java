@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
+import net.ligreto.data.Column;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateJoinColumnsException;
 import net.ligreto.exceptions.LigretoException;
@@ -32,7 +33,6 @@ import net.ligreto.executor.layouts.NormalJoinLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
-import net.ligreto.util.Field;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.LigretoComparator;
 
@@ -369,10 +369,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
-			Field[] pCol1 = null;
-			Field[] pCol2 = null;
-			Field[] col1 = null;
-			Field[] col2 = null;
+			Column[] pCol1 = null;
+			Column[] pCol2 = null;
+			Column[] col1 = null;
+			Column[] col2 = null;
 			while (hasNext1 && hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing

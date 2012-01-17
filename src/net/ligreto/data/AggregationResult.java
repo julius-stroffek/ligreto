@@ -1,4 +1,4 @@
-package net.ligreto.util;
+package net.ligreto.data;
 
 /**
  * Holds the aggregated comparison result across multiple rows and columns.

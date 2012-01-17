@@ -1,10 +1,12 @@
-package net.ligreto.util;
+package net.ligreto.data;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+
+import net.ligreto.util.LigretoComparator;
 
 /**
  * This class is used to copy the column values from the database result
@@ -15,20 +17,24 @@ import java.sql.Types;
  * @author Julius Stroffek
  *
  */
-public class Field implements Comparable<Object> {
+public class Column implements Comparable<Object> {
 
 	/** The column type that correspond to java.sql.Types definitions. */
-	public int columnType;
+	protected int columnType;
 	
 	/** The column value. */
-	public Object columnValue;
+	protected Object columnValue;
+	
+	/** Indicates whether this field is of a numeric type. */
+	protected boolean numeric;
 
 	/**
 	 * Creates the instance from the result set. 
 	 * @throws SQLException
 	 */
-	public Field(ResultSet rs, int index) throws SQLException {
+	public Column(ResultSet rs, int index) throws SQLException {
 		columnType = rs.getMetaData().getColumnType(index);
+		numeric = false;
 		switch (columnType) {
 		case Types.BOOLEAN:
 			columnValue = new Boolean(rs.getBoolean(index));
@@ -36,20 +42,32 @@ public class Field implements Comparable<Object> {
 		case Types.BIGINT:
 		case Types.INTEGER:
 			columnValue = new Long(rs.getLong(index));
+			numeric = true;
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:
 			columnValue = new Double(rs.getDouble(index));
+			numeric = true;
 			break;
 		case Types.DATE:
 		case Types.TIMESTAMP:
 		case Types.TIME:
-			columnValue = new Timestamp(rs.getTimestamp(index).getTime());
+			Timestamp ts = rs.getTimestamp(index);
+			if (ts != null) {
+				columnValue = new Timestamp(ts.getTime());
+			} else {
+				columnValue = null;
+			}
 			break;
 		case Types.DECIMAL:
 		case Types.NUMERIC:
 			BigDecimal bd = rs.getBigDecimal(index);
-			columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
+			if (bd != null) {
+				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
+			} else {
+				columnValue = null;
+			}
+			numeric = true;
 			break;
 		default:
 			columnType = Types.VARCHAR;
@@ -75,8 +93,8 @@ public class Field implements Comparable<Object> {
 	 * Function required for effective hashing.
 	 */
 	public boolean equals(Object o) {
-		if (o instanceof Field) {
-			Field f = (Field) o;
+		if (o instanceof Column) {
+			Column f = (Column) o;
 			if (columnType != f.columnType)
 				return false;
 			if (columnValue == null && f.columnValue == null)
@@ -117,12 +135,26 @@ public class Field implements Comparable<Object> {
 		this.columnValue = columnValue;
 	}
 
+	/**
+	 * @return the numeric
+	 */
+	public boolean isNumeric() {
+		return numeric;
+	}
+
+	/**
+	 * @param numeric the numeric to set
+	 */
+	public void setNumeric(boolean numeric) {
+		this.numeric = numeric;
+	}
+
 	@Override
 	public int compareTo(Object obj) {
-		if (!(obj instanceof Field))
-			throw new IllegalArgumentException("Could not compare Field against other objects.");
+		if (!(obj instanceof Column))
+			throw new IllegalArgumentException("Could not compare Column against other objects.");
 		
-		Field f = (Field) obj;
+		Column f = (Column) obj;
 		return LigretoComparator.getInstance().compare(this, f);
 	}
 }

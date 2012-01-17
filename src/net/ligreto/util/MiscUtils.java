@@ -5,6 +5,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import net.ligreto.exceptions.InvalidFormatException;
+import net.ligreto.exceptions.InvalidValueException;
 
 public class MiscUtils {
 	/**
@@ -65,5 +66,17 @@ public class MiscUtils {
 				return i;
 		}
 		return -1;
+	}
+	
+	public static boolean parseBoolean(String aBoolean) throws InvalidValueException {
+		if ("true".equals(aBoolean))
+			return true;
+		if ("yes".equals(aBoolean))
+			return true;
+		if ("false".equals(aBoolean))
+			return false;
+		if ("no".equals(aBoolean))
+			return false;
+		throw new InvalidValueException("Invalid string specified as boolean value: " + aBoolean);
 	}
 }

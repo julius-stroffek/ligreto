@@ -17,7 +17,7 @@
 <!ATTLIST report type CDATA "excel">
 <!ATTLIST report locale CDATA #IMPLIED>
 <!ATTLIST report options CDATA #IMPLIED>
-<!ATTLIST report result (true|false) "true">
+<!ATTLIST report result CDATA "true"> 		<!--(true|false)-->
 
 <!ELEMENT output EMPTY>
 <!ATTLIST output file CDATA #REQUIRED>
@@ -32,29 +32,28 @@
 <!ATTLIST sql on CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
-<!ATTLIST sql header (true|false) "true">
-<!ATTLIST sql append (true|false) "false">
-<!ATTLIST sql type (statement|call) "statement">
-<!ATTLIST sql exceptions (ignore|dump|fail) "fail">
+<!ATTLIST sql header CDATA "true">			<!--(true|false)-->
+<!ATTLIST sql append CDATA "false">			<!--(true|false)-->
+<!ATTLIST sql type CDATA "statement">		<!--(statement|call)-->
+<!ATTLIST sql exceptions CDATA "fail">		<!--(ignore|dump|fail)-->
 <!ATTLIST sql exclude CDATA #IMPLIED>
-<!ATTLIST sql result (true|false) "true">
+<!ATTLIST sql result CDATA "true">			<!--(true|false)-->
 
 <!ELEMENT join (sql,sql+)>
 <!ATTLIST join target CDATA #IMPLIED>
-<!ATTLIST join type (full|left|right|inner) "full">
-<!ATTLIST join diffs CDATA "false"> <!-- values: [true|false]; CDATA is only due to possible parameter use. -->
-<!ATTLIST join interlaced (true|false) #IMPLIED>
-<!ATTLIST join highlight (true|false) "true">
-<!ATTLIST join header (true|false) "true">
-<!ATTLIST join append (true|false) "false">
-<!-- Color string is in a form of #RRGGBB -->
-<!ATTLIST join hlColor CDATA "#d02020">
+<!ATTLIST join type CDATA "full">			<!--(full|left|right|inner)-->
+<!ATTLIST join diffs CDATA "false"> 		<!--(true|false)-->
+<!ATTLIST join interlaced CDATA #IMPLIED>	<!--(true|false)-->
+<!ATTLIST join highlight CDATA "true">		<!--(true|false)-->
+<!ATTLIST join header CDATA "true">			<!--(true|false)-->
+<!ATTLIST join append CDATA "false">		<!--(true|false)-->
+<!ATTLIST join hlColor CDATA "#d02020">		<!-- #RRGGBB -->
 <!ATTLIST join on CDATA #IMPLIED>
 <!ATTLIST join exclude CDATA #IMPLIED>
 <!ATTLIST join locale CDATA #IMPLIED>
-<!ATTLIST join collation (ignore|dump|fail) "fail">
-<!ATTLIST join result (true|false) "true">
-<!ATTLIST join layout (normal|interlaced|detailed|aggregated) "interlaced">
+<!ATTLIST join collation CDATA "fail">		<!--(ignore|dump|fail)-->
+<!ATTLIST join result CDATA "true">			<!--(true|false)-->
+<!ATTLIST join layout CDATA "interlaced">	<!--(normal|interlaced|detailed|aggregated)-->
 <!ATTLIST join group-by CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
@@ -65,14 +64,14 @@
 <!ELEMENT postprocess (sql+)>
 
 <!ELEMENT transfer (target,sql)>
-<!ATTLIST transfer result (true|false) "true">
+<!ATTLIST transfer result CDATA "true">		<!--(true|false)-->
 
 <!ELEMENT target EMPTY>
 <!ATTLIST target data-source CDATA #IMPLIED>
 <!ATTLIST target table CDATA #IMPLIED>
-<!ATTLIST target create (true|false) "false">
-<!ATTLIST target recreate (true|false) "false">
-<!ATTLIST target truncate (true|false) "false">
+<!ATTLIST target create CDATA "false">		<!--(true|false)-->
+<!ATTLIST target recreate CDATA "false">	<!--(true|false)-->
+<!ATTLIST target truncate CDATA "false">	<!--(true|false)-->
 <!ATTLIST target commitInterval CDATA #IMPLIED>
 
 <!ELEMENT queries (query*)>
