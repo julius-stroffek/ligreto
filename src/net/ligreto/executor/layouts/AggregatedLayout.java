@@ -237,11 +237,11 @@ public class AggregatedLayout extends JoinLayout {
 									CellFormat.PERCENTAGE_3_DECIMAL_DIGITS
 					);
 					reportBuilder.setColumn(3, cResult.getDifference(), CellFormat.UNCHANGED);
+					reportBuilder.setColumn(5, cResult.getTotalValue(), CellFormat.UNCHANGED);
 				}
 				
 				// Dump the other column values
 				reportBuilder.setColumn(4, cResult.getRowCount(), CellFormat.UNCHANGED);
-				reportBuilder.setColumn(5, cResult.getTotalValue(), CellFormat.UNCHANGED);
 			}
 		}
 	}
