@@ -39,7 +39,7 @@ public interface BuilderInterface {
 	 * The first result set column index is 1.
 	 * </p>
 	 */
-	public abstract void setColumn(int i, ResultSet rs, int rsi) throws SQLException;
+	public abstract void dumpColumn(int i, ResultSet rs, int rsi) throws SQLException;
 
 	/**
 	 * This method will set the value in the output report at the i-th position
@@ -53,7 +53,7 @@ public interface BuilderInterface {
 	 * The first output column index is 1.
 	 * </p>
 	 */
-	public abstract void setColumn(int i, ResultSet rs) throws SQLException;
+	public abstract void dumpColumn(int i, ResultSet rs) throws SQLException;
 
 	/** Set up the template file. */
 	public abstract void setTemplate(String template);
@@ -105,7 +105,7 @@ public interface BuilderInterface {
 	 * The method will automatically determine the highlight color to be used.
 	 * </p>
 	 */
-	public abstract void setColumn(int i, Object o, CellFormat cellFormat);
+	public abstract void dumpColumn(int i, Object o, CellFormat cellFormat);
 	
 	/**
 	 * Store the specified object into the result column of the current row.
@@ -115,7 +115,7 @@ public interface BuilderInterface {
 	 * @param cellFormat The change in the cell formatting.
 	 * @param highlight Indicates whether to highlight the cell content.
 	 */
-	public abstract void setColumn(int i, Object o, CellFormat cellFormat, boolean highlight);
+	public abstract void dumpColumn(int i, Object o, CellFormat cellFormat, boolean highlight);
 
 	/**
 	 * Sets up the report type specific options. 
@@ -131,7 +131,7 @@ public interface BuilderInterface {
 	 * @param o The object which value should be stored.
 	 * @param rgb The text color to use.
 	 */
-	public abstract void setColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
+	public abstract void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
 
 	/**
 	 * Store the specified object into the result column of the header row.
@@ -139,7 +139,7 @@ public interface BuilderInterface {
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
 	 */
-	public abstract void setHeaderColumn(int i, Object o, HeaderType headerType);
+	public abstract void dumpHeaderColumn(int i, Object o, HeaderType headerType);
 
 	/**
 	 * This method will setup the 
@@ -149,19 +149,30 @@ public interface BuilderInterface {
 	 */
 	public abstract void setTarget(String target, boolean append) throws InvalidTargetException;
 
+	/**
+	 * The function called before the building of the report is started, i.e. any of the
+	 * dump functions is called.
+	 * 
+	 * @throws IOException
+	 * @throws LigretoException
+	 */
 	public abstract void start() throws IOException, LigretoException;
 
+	/**
+	 * The method that will write the output to the required destination, i.e. file.
+	 * @throws IOException
+	 */
 	public abstract void writeOutput() throws IOException;
 
 	public abstract void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException;
 
-	public abstract void dumpJoinOnHeader(ResultSet rs, int[] on) throws SQLException;
+	public abstract void dumpJoinOnHeader(ResultSet rs, int[] on, String dataSourceDesc) throws SQLException;
 
-	public abstract void dumpOtherHeader(ResultSet rs, int[] on, int[] excl) throws SQLException;
+	public abstract void dumpOtherHeader(ResultSet rs, int[] on, int[] excl, String dataSourceDesc) throws SQLException;
 
-	public abstract void setJoinOnColumns(ResultSet rs, int[] on) throws SQLException;
+	public abstract void dumpJoinOnColumns(ResultSet rs, int[] on) throws SQLException;
 
-	public abstract void setOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException;
+	public abstract void dumpOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException;
 
 	/**
 	 * Sets the difference highlighting option

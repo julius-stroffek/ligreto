@@ -166,20 +166,20 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet, int)
 	 */
 	@Override
-	public void setColumn(int i, ResultSet rs, int rsi) throws SQLException {
+	public void dumpColumn(int i, ResultSet rs, int rsi) throws SQLException {
 		Object o = rs.getObject(rsi);
 		if (rs.wasNull() || o == null) {
 			o = ligretoParameters.getNullString();
 		}
-		setColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
+		dumpColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet)
 	 */
 	@Override
-	public void setColumn(int i, ResultSet rs) throws SQLException {
-		setColumn(i-1, rs, i);
+	public void dumpColumn(int i, ResultSet rs) throws SQLException {
+		dumpColumn(i-1, rs, i);
 	}
 
 	/* (non-Javadoc)
@@ -243,13 +243,13 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.lang.Object)
 	 */
 	@Override
-	public void setColumn(int i, Object o, CellFormat cellFormat) {
-		setColumn(i, o, getHlColor(i), cellFormat);
+	public void dumpColumn(int i, Object o, CellFormat cellFormat) {
+		dumpColumn(i, o, getHlColor(i), cellFormat);
 	}
 	
 	@Override
-	public void setColumn(int i, Object o, CellFormat cellFormat, boolean highlight) {
-		setColumn(i, o, highlight && this.highlight ? rgbHlColor : null, cellFormat);
+	public void dumpColumn(int i, Object o, CellFormat cellFormat, boolean highlight) {
+		dumpColumn(i, o, highlight && this.highlight ? rgbHlColor : null, cellFormat);
 	}
 
 	/* (non-Javadoc)
@@ -262,19 +262,19 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.lang.Object, short[])
 	 */
 	@Override
-	public abstract void setColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
+	public abstract void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
 	
 	/* (non-Javadoc)
 	 * @see net.ligreto.builders.BuilderInterface#setHeaderColumn(int, java.lang.Object, net.ligreto.builders.ReportBuilder.HeaderType)
 	 */
 	@Override
-	public void setHeaderColumn(int i, Object o, HeaderType headerType) {
+	public void dumpHeaderColumn(int i, Object o, HeaderType headerType) {
 		switch (headerType) {
 		case TOP:
-			setColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
+			dumpColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
 			break;
 		case ROW:
-			setColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
+			dumpColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
 			break;
 		default:
 			throw new RuntimeException("Unexpected value of HeaderType enumeration.");
@@ -306,7 +306,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 		nextRow();
 		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				setHeaderColumn(columnStep*c++, rsmd.getColumnLabel(i), HeaderType.TOP);
+				dumpHeaderColumn(columnStep*c++, rsmd.getColumnLabel(i), HeaderType.TOP);
 			}
 		}
 	}
@@ -315,10 +315,16 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#dumpJoinOnHeader(java.sql.ResultSet, int[])
 	 */
 	@Override
-	public void dumpJoinOnHeader(ResultSet rs, int[] on) throws SQLException {
+	public void dumpJoinOnHeader(ResultSet rs, int[] on, String dataSourceDesc) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=0; i < on.length; i++) {
-			setHeaderColumn(columnStep*i, rsmd.getColumnLabel(on[i]), HeaderType.TOP);
+			dumpHeaderColumn(
+				columnStep*i,
+				dataSourceDesc != null
+					? rsmd.getColumnLabel(on[i]) + " (" + dataSourceDesc + ")"
+					: rsmd.getColumnLabel(on[i]),
+				HeaderType.TOP
+			);
 		}
 	}
 
@@ -326,7 +332,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#dumpOtherHeader(java.sql.ResultSet, int[], int[])
 	 */
 	@Override
-	public void dumpOtherHeader(ResultSet rs, int[] on, int[] excl) throws SQLException {
+	public void dumpOtherHeader(ResultSet rs, int[] on, int[] excl, String dataSourceDesc) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int rsLength = rsmd.getColumnCount();
 		int idx = 0;
@@ -340,7 +346,13 @@ public abstract class ReportBuilder implements BuilderInterface {
 			}
 			
 			if (!skip) {
-				setHeaderColumn(columnStep*idx, rsmd.getColumnLabel(i+1), HeaderType.TOP);
+				dumpHeaderColumn(
+					columnStep*idx,
+					dataSourceDesc != null
+						? rsmd.getColumnLabel(i+1) + " (" + dataSourceDesc + ")"
+						: rsmd.getColumnLabel(i+1),
+					HeaderType.TOP
+				);
 				idx++;
 			}
 		}
@@ -350,9 +362,9 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setJoinOnColumns(java.sql.ResultSet, int[])
 	 */
 	@Override
-	public void setJoinOnColumns(ResultSet rs, int[] on) throws SQLException {
+	public void dumpJoinOnColumns(ResultSet rs, int[] on) throws SQLException {
 		for (int i=0; i < on.length; i++) {
-			setColumn(i, rs, on[i]);
+			dumpColumn(i, rs, on[i]);
 		}
 	}
 
@@ -360,7 +372,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setOtherColumns(java.sql.ResultSet, int[], int[])
 	 */
 	@Override
-	public void setOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException {
+	public void dumpOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException {
 		int rsLength = rs.getMetaData().getColumnCount();
 		int idx = 0;
 		for (int i=0; i < rsLength; i++) {
@@ -373,7 +385,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 			}
 			
 			if (!skip) {
-				setColumn(idx, rs, i+1);
+				dumpColumn(idx, rs, i+1);
 				idx++;
 			}
 		}

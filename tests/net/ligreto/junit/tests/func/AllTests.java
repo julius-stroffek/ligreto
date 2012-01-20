@@ -18,6 +18,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	SqlReportTest.class,
 	DateTimeReportTest.class,
 	JoinReportTest.class,
+	KeyReportTest.class,
 	ResultReportTest.class,
 	NumericTypesTest.class,
 	AggregatedReportTest.class,

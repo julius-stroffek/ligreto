@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
-import net.ligreto.Database;
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.BuilderInterface.CellFormat;
@@ -35,18 +34,16 @@ public class DetailedJoinLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
 		reportBuilder.nextRow();
-		reportBuilder.setHeaderColumn(0, "Column Name", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(0, "Column Name", HeaderType.TOP);
 		reportBuilder.setColumnPosition(1, 1, null);
-		reportBuilder.dumpJoinOnHeader(rs1, on1);
+		reportBuilder.dumpJoinOnHeader(rs1, on1, null);
 		reportBuilder.setColumnPosition(onLength + 1, 1, null);
 		
-		String dSrc0 =  joinNode.getSqlQueries().get(0).getDataSource();
-		String dSrc1 =  joinNode.getSqlQueries().get(1).getDataSource();		
-		reportBuilder.setHeaderColumn(0, Database.getInstance().getDataSourceNode(dSrc0).getDescription(), HeaderType.TOP);
-		reportBuilder.setHeaderColumn(1, Database.getInstance().getDataSourceNode(dSrc1).getDescription(), HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(0, dataSourceDesc1, HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(1, dataSourceDesc2, HeaderType.TOP);
 		
-		reportBuilder.setHeaderColumn(2, "Difference", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(3, "Relative", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(2, "Difference", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(3, "Relative", HeaderType.TOP);
 	}
 
 	@Override
@@ -81,34 +78,34 @@ public class DetailedJoinLayout extends JoinLayout {
 				switch (resultType) {
 				case LEFT:
 					reportBuilder.nextRow();
-					reportBuilder.setHeaderColumn(0, rs1.getMetaData().getColumnName(i1), HeaderType.ROW);
+					reportBuilder.dumpHeaderColumn(0, rs1.getMetaData().getColumnName(i1), HeaderType.ROW);
 					reportBuilder.setHighlightArray(higherArray);
 					reportBuilder.setColumnPosition(1);
-					reportBuilder.setJoinOnColumns(rs1, on1);
+					reportBuilder.dumpJoinOnColumns(rs1, on1);
 					reportBuilder.setColumnPosition(onLength + 1);
-					reportBuilder.setColumn(0, rs1, i1);
-					reportBuilder.setColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
+					reportBuilder.dumpColumn(0, rs1, i1);
+					reportBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
 					if (JdbcUtils.getNumericObject(rs1, i1) != null) {
-						reportBuilder.setColumn(2, rs1, i1);
-						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+						reportBuilder.dumpColumn(2, rs1, i1);
+						reportBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
-						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
+						reportBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
 					}
 					break;
 				case RIGHT:
 					reportBuilder.nextRow();
-					reportBuilder.setHeaderColumn(0, rs2.getMetaData().getColumnName(i2), HeaderType.ROW);
+					reportBuilder.dumpHeaderColumn(0, rs2.getMetaData().getColumnName(i2), HeaderType.ROW);
 					reportBuilder.setHighlightArray(lowerArray);
 					reportBuilder.setColumnPosition(1);
-					reportBuilder.setJoinOnColumns(rs2, on2);
+					reportBuilder.dumpJoinOnColumns(rs2, on2);
 					reportBuilder.setColumnPosition(onLength + 1);
-					reportBuilder.setColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
-					reportBuilder.setColumn(1, rs2, i2);
+					reportBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
+					reportBuilder.dumpColumn(1, rs2, i2);
 					if (JdbcUtils.getNumericObject(rs2, i2) != null) {
-						reportBuilder.setColumn(2, rs2, i2);
-						reportBuilder.setColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+						reportBuilder.dumpColumn(2, rs2, i2);
+						reportBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 					} else {
-						reportBuilder.setColumn(2, "yes", CellFormat.UNCHANGED);
+						reportBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
 					}
 					break;
 				case INNER:
@@ -119,19 +116,19 @@ public class DetailedJoinLayout extends JoinLayout {
 							colName = colName + " / " + col2Name;
 						}
 						reportBuilder.nextRow();
-						reportBuilder.setHeaderColumn(0, colName, HeaderType.ROW);
+						reportBuilder.dumpHeaderColumn(0, colName, HeaderType.ROW);
 						reportBuilder.setColumnPosition(1);
-						reportBuilder.setJoinOnColumns(rs1, on1);
+						reportBuilder.dumpJoinOnColumns(rs1, on1);
 						reportBuilder.setColumnPosition(onLength + 1);
 						if (cmpArray[i] < 0) {
 							reportBuilder.setHighlightArray(lowerArray);
 						} else if (cmpArray[i] > 0) {
 							reportBuilder.setHighlightArray(higherArray);
 						}
-						reportBuilder.setColumn(0, rs1, i1);
-						reportBuilder.setColumn(1, rs2, i2);
-						reportBuilder.setColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
-						reportBuilder.setColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+						reportBuilder.dumpColumn(0, rs1, i1);
+						reportBuilder.dumpColumn(1, rs2, i2);
+						reportBuilder.dumpColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
+						reportBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 
 					}
 					break;

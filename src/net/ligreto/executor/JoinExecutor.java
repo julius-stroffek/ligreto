@@ -21,7 +21,7 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.data.Column;
 import net.ligreto.exceptions.CollationException;
-import net.ligreto.exceptions.DuplicateJoinColumnsException;
+import net.ligreto.exceptions.DuplicateKeyColumnsException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.executor.layouts.AggregatedLayout;
@@ -29,6 +29,7 @@ import net.ligreto.executor.layouts.DetailedJoinLayout;
 import net.ligreto.executor.layouts.InterlacedJoinLayout;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
+import net.ligreto.executor.layouts.KeyJoinLayout;
 import net.ligreto.executor.layouts.NormalJoinLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.SqlNode;
@@ -185,17 +186,19 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			if (on1.length != on2.length)
 				throw new LigretoException("All queries in the join have to have the same number of \"on\" columns.");
 			
-			// Things are all right, so we will continue...
-			qry1.append(" order by ");
-			qry2.append(" order by ");
-			for (int i=0; i < on1.length; i++) {
-				qry1.append(on1[i]);
-				qry1.append(",");
-				qry2.append(on2[i]);
-				qry2.append(",");
+			if (on1.length > 0) {
+				// Things are all right, so we will continue...
+				qry1.append(" order by ");
+				qry2.append(" order by ");
+				for (int i = 0; i < on1.length; i++) {
+					qry1.append(on1[i]);
+					qry1.append(",");
+					qry2.append(on2[i]);
+					qry2.append(",");
+				}
+				qry1.deleteCharAt(qry1.length() - 1);
+				qry2.deleteCharAt(qry2.length() - 1);
 			}
-			qry1.deleteCharAt(qry1.length() - 1);
-			qry2.deleteCharAt(qry2.length() - 1);
 			
 			switch (sqlQueries.get(0).getQueryType()) {
 			case STATEMENT:
@@ -331,21 +334,31 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			/* Create the proper implementation of the join layout. */
 			JoinLayout joinLayout;
-			switch (joinNode.getJoinLayoutType()) {
-			case NORMAL:
-				joinLayout = new NormalJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-				break;
-			case INTERLACED:
-				joinLayout = new InterlacedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-				break;
-			case DETAILED:
-				joinLayout = new DetailedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-				break;
-			case AGGREGATED:
-				joinLayout = new AggregatedLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-				break;
-			default:
-				throw new LigretoException("Unexpected value of JoinLayoutType.");
+			if (rs1ColCount == on1.length) {
+				if (joinNode.getJoinLayoutType() != JoinNode.JoinLayoutType.KEY) {
+					log.info("No columns to compare. Switching to KEY join layout.");
+				}
+				joinLayout = new KeyJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+			} else {
+				switch (joinNode.getJoinLayoutType()) {
+				case NORMAL:
+					joinLayout = new NormalJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+					break;
+				case INTERLACED:
+					joinLayout = new InterlacedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+					break;
+				case DETAILED:
+					joinLayout = new DetailedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+					break;
+				case AGGREGATED:
+					joinLayout = new AggregatedLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+					break;
+				case KEY:
+					joinLayout = new KeyJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
+					break;
+				default:
+					throw new LigretoException("Unexpected value of JoinLayoutType.");
+				}
 			}
 
 			// The comparator instance
@@ -384,12 +397,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col1);
-					throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+					throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult2 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col2);
-					throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+					throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
@@ -462,7 +475,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (dResult1 == 0) {
 						log.error("Duplicate entries found.");
 						rsComparator.error(log, col1);
-						throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+						throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
@@ -494,7 +507,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (dResult2 == 0) {
 						log.error("Duplicate entries found.");
 						rsComparator.error(log, col2);
-						throw new DuplicateJoinColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+						throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");

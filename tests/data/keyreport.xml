@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1" desc="Src1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2" desc="Src2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report options="autoFilter,autoSize ,headerStyle">
+		<output file="keyreport.xlsx"/>
+		<data>
+			<join on="1,2" target="keys!A1" layout="normal">
+				<sql data-source="Source1">select * from key_table1</sql>
+				<sql data-source="Source2">select * from key_table2</sql>
+			</join>
+			<join target="nokey1!A1" layout="normal">
+				<sql data-source="Source1">select 1024 as Col1 from sysibm.sysdummy1</sql>
+				<sql data-source="Source2">select 1025 as Col2 from sysibm.sysdummy1</sql>
+			</join>
+			<join target="nokey2!A1" layout="normal">
+				<sql data-source="Source1">select 1026 as Col1 from sysibm.sysdummy1</sql>
+				<sql data-source="Source2">select 1026 as Col2 from sysibm.sysdummy1</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

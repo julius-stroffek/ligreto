@@ -16,7 +16,7 @@ import net.ligreto.util.MiscUtils;
  */
 public class JoinNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER};
-	public enum JoinLayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED};
+	public enum JoinLayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY};
 	
 	protected JoinType joinType = JoinType.FULL;
 	protected JoinLayoutType joinLayoutType = JoinLayoutType.INTERLACED;
@@ -99,6 +99,8 @@ public class JoinNode extends Node {
 			this.joinLayoutType = JoinLayoutType.DETAILED;			
 		else if ("aggregated".equals(joinLayoutType))
 			this.joinLayoutType = JoinLayoutType.AGGREGATED;			
+		else if ("key".equals(joinLayoutType))
+			this.joinLayoutType = JoinLayoutType.KEY;			
 		else
 			throw new IllegalArgumentException("The join layout could not be \"" + joinLayoutType + "\"");
 	}
@@ -288,8 +290,9 @@ public class JoinNode extends Node {
 	 * @return the array of column indices to be used for join condition
 	 */
 	public int[] getOn() {
-		if (on == null)
-			return null;
+		if (on == null) {
+			return new int[0];
+		}
 		String[] sValues = ligretoNode.substituteParams(on).split(",");
 		int values[] = new int[sValues.length];
 		for (int i=0; i < values.length; i++) {

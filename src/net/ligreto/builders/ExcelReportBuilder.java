@@ -214,7 +214,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	@Override
-	public void setColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
+	public void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
 		Cell cell = createCell(row, actCol + i);
 		if (o instanceof Integer) {
 			cell.setCellValue(((Integer)o).intValue());
@@ -287,8 +287,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	@Override
-	public void setHeaderColumn(int i, Object o, HeaderType headerType) {
-		setColumn(i, o, CellFormat.UNCHANGED);
+	public void dumpHeaderColumn(int i, Object o, HeaderType headerType) {
+		dumpColumn(i, o, CellFormat.UNCHANGED);
 		
 		// Format the header column
 		if (headerStyle) {

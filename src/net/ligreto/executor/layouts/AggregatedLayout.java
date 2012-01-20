@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-import net.ligreto.Database;
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.BuilderInterface.CellFormat;
@@ -51,18 +50,18 @@ public class AggregatedLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
 		reportBuilder.nextRow();
-		reportBuilder.setHeaderColumn(0, "Column Name", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(0, "Column Name", HeaderType.TOP);
 		reportBuilder.setColumnPosition(1, 1, null);
 		if (groupByLength > 0)
-			reportBuilder.dumpJoinOnHeader(rs1, groupBy);
+			reportBuilder.dumpJoinOnHeader(rs1, groupBy, null);
 		reportBuilder.setColumnPosition(groupByLength + 1, 1, null);
 
-		reportBuilder.setHeaderColumn(0, "# of Diffs", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(1, "Ratio of Diffs", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(2, "Relative Difference", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(3, "Difference", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(4, "# of Rows", HeaderType.TOP);
-		reportBuilder.setHeaderColumn(5, "Total Value", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(0, "# of Diffs", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(1, "Ratio of Diffs", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(2, "Relative Difference", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(3, "Difference", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(4, "# of Rows", HeaderType.TOP);
+		reportBuilder.dumpHeaderColumn(5, "Total Value", HeaderType.TOP);
 	}
 
 	@Override
@@ -84,19 +83,17 @@ public class AggregatedLayout extends JoinLayout {
 				noResultColumns1.put(groupBy[i], null);
 				noResultColumns2.put(groupBy[i], null);
 				if (!MiscUtils.arrayContains(on1, groupBy[i])) {
-					String dSrc0 =  joinNode.getSqlQueries().get(0).getDataSource();
 					throw new LigretoException(
 						"Columns listed in group-by have to be also listed in 'on' columns in join; column: "
 						+ groupBy[i] + "; data source: "
-						+ Database.getInstance().getDataSourceNode(dSrc0).getDescription()
+						+ dataSourceDesc1
 					);
 				}
 				if (!MiscUtils.arrayContains(on2, groupBy[i])) {
-					String dSrc1 =  joinNode.getSqlQueries().get(1).getDataSource();		
 					throw new LigretoException(
 						"Columns listed in 'group-by' have to be also listed in 'on' columns in join; column: "
 						+ groupBy[i] + "; data source: "
-						+ Database.getInstance().getDataSourceNode(dSrc1).getDescription()
+						+ dataSourceDesc2
 					);
 				}
 			}
@@ -221,27 +218,27 @@ public class AggregatedLayout extends JoinLayout {
 					colName = colName + " / " + col2Name;
 				}
 				reportBuilder.nextRow();
-				reportBuilder.setHeaderColumn(0, colName, HeaderType.ROW);
+				reportBuilder.dumpHeaderColumn(0, colName, HeaderType.ROW);
 				reportBuilder.setColumnPosition(1);
 				for (int j=0; j < f.getFields().length; j++) {
-					reportBuilder.setColumn(j, f.getFields()[j].getColumnValue(), CellFormat.UNCHANGED);
+					reportBuilder.dumpColumn(j, f.getFields()[j].getColumnValue(), CellFormat.UNCHANGED);
 				}
 				reportBuilder.setColumnPosition(1 + f.getFields().length);
-				reportBuilder.setColumn(0, cResult.getDifferenceCount(), CellFormat.UNCHANGED);
-				reportBuilder.setColumn(1, cResult.getDifferenceRatio(), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+				reportBuilder.dumpColumn(0, cResult.getDifferenceCount(), CellFormat.UNCHANGED);
+				reportBuilder.dumpColumn(1, cResult.getDifferenceRatio(), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 
 				// Dump the difference metrics if we have numeric column
 				if (cResult.isNumeric()) {
-					reportBuilder.setColumn(2,
+					reportBuilder.dumpColumn(2,
 							Double.isNaN(cResult.getRelativeDifference()) ? ligretoParameters.getNanString() : cResult.getRelativeDifference(),
 									CellFormat.PERCENTAGE_3_DECIMAL_DIGITS
 					);
-					reportBuilder.setColumn(3, cResult.getDifference(), CellFormat.UNCHANGED);
-					reportBuilder.setColumn(5, cResult.getTotalValue(), CellFormat.UNCHANGED);
+					reportBuilder.dumpColumn(3, cResult.getDifference(), CellFormat.UNCHANGED);
+					reportBuilder.dumpColumn(5, cResult.getTotalValue(), CellFormat.UNCHANGED);
 				}
 				
 				// Dump the other column values
-				reportBuilder.setColumn(4, cResult.getRowCount(), CellFormat.UNCHANGED);
+				reportBuilder.dumpColumn(4, cResult.getRowCount(), CellFormat.UNCHANGED);
 			}
 		}
 	}

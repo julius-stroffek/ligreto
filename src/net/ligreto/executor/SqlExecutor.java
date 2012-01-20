@@ -67,7 +67,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		ResultSetMetaData rsmd = rs.getMetaData();				
 		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				reportBuilder.setColumn(c++, rs, i);
+				reportBuilder.dumpColumn(c++, rs, i);
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import net.ligreto.Database;
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
@@ -71,6 +72,12 @@ public abstract class JoinLayout {
 	/** The global ligreto parameters. */
 	protected LigretoParameters ligretoParameters;
 	
+	/** The description of 1st data source. */
+	protected String dataSourceDesc1 = null;
+	
+	/** The description of 2nd data source. */
+	protected String dataSourceDesc2 = null;
+	
 	/** Constructs the layout having the specified report builder. */
 	protected JoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
 		this.reportBuilder = reportBuilder;
@@ -114,9 +121,19 @@ public abstract class JoinLayout {
 	/**
 	 * @param joinNode
 	 * 				The join node to set.
+	 * @throws DataSourceNotDefinedException 
 	 */
-	public void setJoinNode(JoinNode joinNode) {
+	public void setJoinNode(JoinNode joinNode) throws DataSourceNotDefinedException {
 		this.joinNode = joinNode;
+		if (joinNode != null) {
+			String dSrc1 =  joinNode.getSqlQueries().get(0).getDataSource();
+			String dSrc2 =  joinNode.getSqlQueries().get(1).getDataSource();		
+			dataSourceDesc1 = Database.getInstance().getDataSourceNode(dSrc1).getDescription();
+			dataSourceDesc2 = Database.getInstance().getDataSourceNode(dSrc2).getDescription();
+		} else {
+			dataSourceDesc1 = null;
+			dataSourceDesc2 = null;
+		}
 	}
 
 	/**
