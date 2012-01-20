@@ -13,7 +13,7 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import net.ligreto.ResultStatus;
-import net.ligreto.exceptions.DuplicateKeyColumnsException;
+import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
@@ -115,7 +115,7 @@ public class KeyReportTest {
 			Throwable c2 = c1.getCause();
 			
 			// Check that we got the right exception with the proper cause
-			if (c2 instanceof DuplicateKeyColumnsException) {
+			if (c2 instanceof DuplicateKeyValuesException) {
 				exceptionThrown = true;
 			} else {
 				throw e;

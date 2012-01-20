@@ -21,7 +21,7 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.data.Column;
 import net.ligreto.exceptions.CollationException;
-import net.ligreto.exceptions.DuplicateKeyColumnsException;
+import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.executor.layouts.AggregatedLayout;
@@ -397,12 +397,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col1);
-					throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult2 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col2);
-					throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
@@ -475,7 +475,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (dResult1 == 0) {
 						log.error("Duplicate entries found.");
 						rsComparator.error(log, col1);
-						throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
@@ -507,7 +507,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (dResult2 == 0) {
 						log.error("Duplicate entries found.");
 						rsComparator.error(log, col2);
-						throw new DuplicateKeyColumnsException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
 					}
 					if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
