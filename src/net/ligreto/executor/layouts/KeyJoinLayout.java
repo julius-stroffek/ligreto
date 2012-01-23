@@ -22,7 +22,7 @@ public class KeyJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int[] cmpArray, JoinResultType resultType) throws SQLException, IOException {		
+	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws SQLException, IOException {		
 		reportBuilder.nextRow();
 		switch (resultType) {
 		case LEFT:

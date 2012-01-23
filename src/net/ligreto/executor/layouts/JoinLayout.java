@@ -95,6 +95,7 @@ public abstract class JoinLayout {
 	 * call the ResultSet.next() method on the result sets where the row was processed.
 	 * The method will highlight some of the columns based on the array specified
 	 * 
+	 * @param rowDiffs   The number of differences encountered in the current row.
 	 * @param highlightArray Determines which columns should be highlighted.
 	 * @param resultType Determines whether to dump the row from the first,
 	 *                   second or both result sets.
@@ -102,20 +103,21 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
-	public abstract void dumpRow(int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException;
+	public abstract void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException;
 	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
 	 * call the ResultSet.next() method on the result sets where the row was processed.
 	 * 
+	 * @param rowDiffs   The number of differences encountered in the current row.
 	 * @param resultType Determines whether to dump the row from the first,
 	 *                   second or both result sets.
 	 * @throws SQLException 
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
-	public void dumpRow(JoinResultType resultType) throws SQLException, LigretoException, IOException {
-		dumpRow(null, resultType);
+	public void dumpRow(int rowDiffs, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+		dumpRow(rowDiffs, null, resultType);
 	}
 
 	/**

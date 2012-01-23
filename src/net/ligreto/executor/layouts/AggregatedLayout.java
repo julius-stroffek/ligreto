@@ -128,7 +128,7 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+	public void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
 		int rs1Length = rs1.getMetaData().getColumnCount();
 		int rs2Length = rs2.getMetaData().getColumnCount();
 		

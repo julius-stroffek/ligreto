@@ -332,9 +332,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			reportBuilder.setHighlight(joinNode.getHighlight());
 			reportBuilder.setHlColor(joinNode.getHlColor());
 			
+			// Calculate the number of columns to compare
+			int otherColumnCount = rs1ColCount - on1.length;
+			
 			/* Create the proper implementation of the join layout. */
 			JoinLayout joinLayout;
-			if (rs1ColCount == on1.length) {
+			if (otherColumnCount == 0) {
 				if (joinNode.getJoinLayoutType() != JoinNode.JoinLayoutType.KEY) {
 					log.info("No columns to compare. Switching to KEY join layout.");
 				}
@@ -436,7 +439,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
 						result.addRow(joinNode.getResult());
-						joinLayout.dumpRow(JoinResultType.LEFT);	
+						joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);	
 					}
 					hasNext1 = rs1.next();
 					pCol1 = col1;
@@ -446,9 +449,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					// and there are no differences present.
 					int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
 					
-					if (!joinNode.getDiffs() || !MiscUtils.allZeros(cmpArray)) {
+					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
+					if (!joinNode.getDiffs() || rowDiffs > 0) {
 						result.addRow(joinNode.getResult());
-						joinLayout.dumpRow(cmpArray, JoinResultType.INNER);
+						joinLayout.dumpRow(rowDiffs, cmpArray, JoinResultType.INNER);
 					}
 					hasNext1 = rs1.next();
 					hasNext2 = rs2.next();
@@ -458,7 +462,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 1:
 					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
 						result.addRow(joinNode.getResult());
-						joinLayout.dumpRow(JoinResultType.RIGHT);							
+						joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);							
 					}
 					pCol2 = col2;
 					hasNext2 = rs2.next();
@@ -493,7 +497,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol1 = col1;
 
 					result.addRow(joinNode.getResult());
-					joinLayout.dumpRow(JoinResultType.LEFT);
+					joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
 					hasNext1 = rs1.next();
 				}
 			}
@@ -525,7 +529,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol2 = col2;
 					
 					result.addRow(joinNode.getResult());
-					joinLayout.dumpRow(JoinResultType.RIGHT);
+					joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
 					hasNext2 = rs2.next();
 				}
 			}

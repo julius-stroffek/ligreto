@@ -98,7 +98,7 @@ public class Ligreto {
 			LigretoExecutor executor = new LigretoExecutor(ligretoNode);
 			result = executor.execute().getResultRowCount();
 		} catch (SAXException e) {
-			e.printStackTrace();
+			// SAXException message should be already printed
 			System.exit(EXCEPTION_EXIT_STATUS);
 		} catch (IOException e) {
 			e.printStackTrace();

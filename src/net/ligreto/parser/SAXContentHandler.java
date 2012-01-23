@@ -10,6 +10,7 @@ import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
+import net.ligreto.executor.JoinExecutor;
 
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.JoinNode;
@@ -24,6 +25,8 @@ import net.ligreto.parser.nodes.TargetNode;
 import net.ligreto.parser.nodes.TransferNode;
 import net.ligreto.util.Pair;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -43,47 +46,50 @@ enum ObjectType {
  */
 public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandler {
 
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(SAXContentHandler.class);
+
 	/** The configuration where the results are stored. */
-	LigretoNode ligretoNode;
+	protected LigretoNode ligretoNode;
 
 	/**
 	 * The report configuration where the actual report configuration data are
 	 * stored to.
 	 */
-	ReportNode reportNode;
+	protected ReportNode reportNode;
 
 	/** The parsed data source object. */
-	DataSourceNode dataSource;
+	protected DataSourceNode dataSource;
 
 	/** The stack of object types being parsed. */
-	Stack<ObjectType> objectStack = new Stack<ObjectType>();
+	protected Stack<ObjectType> objectStack = new Stack<ObjectType>();
 
 	/** The name, query pair. */
-	Pair<String, StringBuilder> query;
+	protected Pair<String, StringBuilder> query;
 
 	/** The SQL query. */
-	SqlNode sql;
+	protected SqlNode sql;
 
 	/** The join node. */
-	JoinNode join;
+	protected JoinNode join;
 
 	/** The Pre-Process/Transfer/Post-Process node - PTP */
-	PtpNode ptpNode;
+	protected PtpNode ptpNode;
 
 	/** The Pre-Processing of PTP transfer */
-	PreprocessNode ptpPreprocess;
+	protected PreprocessNode ptpPreprocess;
 
 	/** The Post-Processing of PTP transfer */
-	PostprocessNode ptpPostprocess;
+	protected PostprocessNode ptpPostprocess;
 
 	/** The Transfer of PTP transfer */
-	TransferNode ptpTransfer;
+	protected TransferNode ptpTransfer;
 
 	/** The name of the parameter being parsed. */
-	String paramName;
+	protected String paramName;
 
 	/** The value of the parameter being parsed. */
-	StringBuilder paramValue;
+	protected StringBuilder paramValue;
 
 	/** Constructs the report configuration content handler. */
 	public SAXContentHandler(LigretoNode ligretoNode) {
@@ -506,30 +512,43 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack.");
 			}
 		} catch (InvalidFormatException e) {
-			throw new SAXException("Error parsing input file.", e);
+			throw new SAXException("Invalid format specified.", e);
 		} catch (InvalidValueException e) {
-			throw new SAXException("Error parsing input file.", e);
+			throw new SAXException("Wrong value specified.", e);
 		}
 	}
 
 	@Override
 	public void startPrefixMapping(String arg0, String arg1) throws SAXException {
-		// Auto-generated method stub
 	}
 
 	@Override
 	public void error(SAXParseException e) throws SAXException {
+		log.error("---");
+		log.error(e.getMessage());
+		log.error("Parser error occurred while processing");
+		log.error("url: '" + e.getSystemId() + "'");
+		log.error("line: " + e.getLineNumber() + "; column: " + e.getColumnNumber());
 		throw e;
 	}
 
 	@Override
 	public void fatalError(SAXParseException e) throws SAXException {
+		log.error("---");
+		log.error(e.getMessage());
+		log.error("Parser error occurred while processing");
+		log.error("url: '" + e.getSystemId() + "'");
+		log.error("line: " + e.getLineNumber() + "; column: " + e.getColumnNumber());
 		throw e;
 	}
 
 	@Override
 	public void warning(SAXParseException e) throws SAXException {
-		throw e;
+		log.warn("---");
+		log.warn(e.getMessage());
+		log.warn("Parser warning occurred while processing");
+		log.warn("url: '" + e.getSystemId() + "'");
+		log.warn("line: " + e.getLineNumber() + "; column: " + e.getColumnNumber());
 	}
 
 	@Override

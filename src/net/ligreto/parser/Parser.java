@@ -41,7 +41,8 @@ public class Parser {
 		parser.setContentHandler(handler);
 		parser.setErrorHandler(handler);
 		parser.setDTDHandler(handler);		
-		parser.parse(new InputSource(systemId));
+		parser.parse(systemId);
+		//parser.parse(new InputSource(systemId));
 		
 		return ligretoNode;
 	}

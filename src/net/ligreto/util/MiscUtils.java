@@ -38,6 +38,20 @@ public class MiscUtils {
 	
 	/**
 	 * 
+	 * @param diffs The array of integer numbers (result from comparison)
+	 * @return The number of non zero elements in the array.
+	 */
+	public static int countNonZeros(int[] diffs) {
+		int retValue = 0;
+		for (int i=0; i < diffs.length; i++) {
+			if (diffs[i] != 0)
+				retValue++;
+		}
+		return retValue;
+	}
+	
+	/**
+	 * 
 	 * @param rgb color in a form #RRGGBB where RR, GG and BB are hex numbers for red, green and blue.
 	 * @return parsed array of red, green and blue values
 	 * @throws InvalidFormatException 
