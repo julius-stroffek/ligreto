@@ -7,7 +7,7 @@ import net.ligreto.exceptions.LigretoException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 /**
@@ -26,26 +26,23 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 	public static final int FLUSH_ROW_INTERVAL = 500;
 	
 	/** The logger instance for the class. */
-	private Log log = LogFactory.getLog(ExcelReportBuilder.class);
+	private Log log = LogFactory.getLog(ExcelStreamReportBuilder.class);
+
+	@Override
+	protected ExcelStreamReportTarget createTarget(Sheet sheet, int baseRow, int baseCol) {
+		ExcelStreamReportTarget newTarget = new ExcelStreamReportTarget(this, sheet, baseRow, baseCol);
+		newTarget.setAutoFilter(isAutoFilter());
+		newTarget.setAutoSize(isAutoSize());
+		newTarget.setHeaderStyle(isHeaderStyle());
+		newTarget.setNoDateTimeFormat(isNoDateTimeFormat());
+		newTarget.setDataFormat(dataFormat);
+		newTarget.outputFormat = outputFormat;
+		return newTarget;
+	}
 
 	public ExcelStreamReportBuilder() {
 	}
 	
-	protected void flushRows() throws IOException {
-		SXSSFSheet ss = (SXSSFSheet) sheet;
-		finalizeTarget(true);
-		ss.flushRows();
-	}
-	
-	@Override
-	public void nextRow() throws IOException {
-		// Flush the rows if the number of produced rows matched the specified number
-		if ((actRow - baseRow) % FLUSH_ROW_INTERVAL == 0)
-			flushRows();
-		// Do the rest of the job
-		super.nextRow();
-	}
-
 	@Override
 	public void start() throws IOException, LigretoException {
 		out = new FileOutputStream(output);

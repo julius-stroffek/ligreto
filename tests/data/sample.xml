@@ -39,6 +39,11 @@
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>
+			<join type="full" exclude="last_cnhg_user,modified_date">
+				<layout target="Sheet2!C3" type="interlaced" highlight="true" hlColor="#040506"/>
+				<sql data-source="Test" on="1,2,3"></sql>
+				<sql data-source="Test2" on="1,2,3"></sql>
+			</join>
 			<sql query="Query1" target="Sheet1!C10"/>
 		</data>
 	</report>

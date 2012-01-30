@@ -39,7 +39,7 @@
 <!ATTLIST sql exclude CDATA #IMPLIED>
 <!ATTLIST sql result CDATA "true">			<!--(true|false)-->
 
-<!ELEMENT join (sql,sql+)>
+<!ELEMENT join (layout*,sql,layout*,sql+,layout*)>
 <!ATTLIST join target CDATA #IMPLIED>
 <!ATTLIST join type CDATA "full">			<!--(full|left|right|inner)-->
 <!ATTLIST join diffs CDATA "false"> 		<!--(true|false)-->
@@ -55,6 +55,17 @@
 <!ATTLIST join result CDATA "true">			<!--(true|false)-->
 <!ATTLIST join layout CDATA "interlaced">	<!--(normal|interlaced|detailed|aggregated|key)-->
 <!ATTLIST join group-by CDATA #IMPLIED>
+
+<!ELEMENT layout EMPTY>
+<!ATTLIST layout target CDATA #REQUIRED>
+<!ATTLIST layout type CDATA "full">			<!--(normal|interlaced|detailed|aggregated|key)-->
+<!ATTLIST layout diffs CDATA "false"> 		<!--(true|false)-->
+<!ATTLIST layout highlight CDATA "true">	<!--(true|false)-->
+<!ATTLIST layout header CDATA "true">		<!--(true|false)-->
+<!ATTLIST layout append CDATA "false">		<!--(true|false)-->
+<!ATTLIST layout hlColor CDATA "#d02020">	<!-- #RRGGBB -->
+<!ATTLIST layout result CDATA "true">		<!--(true|false)-->
+<!ATTLIST layout group-by CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>

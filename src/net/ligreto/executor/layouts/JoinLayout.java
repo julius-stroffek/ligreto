@@ -7,10 +7,12 @@ import java.sql.SQLException;
 import net.ligreto.Database;
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
-import net.ligreto.builders.BuilderInterface;
+import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.LayoutNode;
+import net.ligreto.parser.nodes.LayoutNode.LayoutType;
 
 /**
  * Provides the interface for implementing various join layouts that could be used
@@ -24,24 +26,27 @@ public abstract class JoinLayout {
 	/** Indicates the type of the result to be processed. */
 	public enum JoinResultType {LEFT, RIGHT, INNER};
 	
-	/** The report builder used for report generation of the layout. */
-	protected BuilderInterface reportBuilder;
+	/** The report target used for report generation of the layout. */
+	protected TargetInterface targetBuilder;
 	
 	/** The parser join node of the processed join. */
 	protected JoinNode joinNode = null;
+	
+	/** The parser layout node of the layout to create. */
+	protected LayoutNode layoutNode = null;
 	
 	/** The object holding the join result status. */
 	protected ResultStatus resultStatus = null;
 	
 	/** The column indices of the columns to be equal from the first result set. */
 	protected int[] on1 = null;
-
+	
 	/** The column indices of the columns to be equal from the second result set. */
 	protected int[] on2 = null;
 	
 	/** The column indices of the columns to be excluded from the comparison in the first result set. */
 	protected int[] excl1 = null;
-
+	
 	/** The column indices of the columns to be excluded from the comparison in the second result set. */
 	protected int[] excl2 = null;
 	
@@ -53,7 +58,7 @@ public abstract class JoinLayout {
 	
 	/** The second result set. */
 	protected ResultSet rs2 = null;
-		
+	
 	/** The length of the on1 and on2 arrays which have to be the same. */
 	protected int onLength = -1;
 	
@@ -65,7 +70,7 @@ public abstract class JoinLayout {
 	
 	/** The arrays showing all the elements from the first result set to be lower. */
 	protected int[] lowerArray = null;
-
+	
 	/** The arrays showing all the elements from the second result set to be higher. */
 	protected int[] higherArray = null;
 	
@@ -79,9 +84,34 @@ public abstract class JoinLayout {
 	protected String dataSourceDesc2 = null;
 	
 	/** Constructs the layout having the specified report builder. */
-	protected JoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
-		this.reportBuilder = reportBuilder;
+	protected JoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
+		this.targetBuilder = targetBuilder;
 		this.ligretoParameters = ligretoParameters;
+	}
+	
+	/**
+	 * Constructs the layout of the specified type.
+	 * 
+	 * @param layoutType The type of the layout to create.
+	 * @param reportBuilder The report builder used for report generation.
+	 * @param ligretoParameters The global ligreto parameters to use.
+	 * @return The created {@code JoinLayout} instance.
+	 */
+	public static JoinLayout createInstance(LayoutType layoutType, TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
+		switch (layoutType) {
+		case NORMAL:
+			return new NormalJoinLayout(targetBuilder, ligretoParameters);
+		case INTERLACED:
+			return new InterlacedJoinLayout(targetBuilder, ligretoParameters);
+		case DETAILED:
+			return new DetailedJoinLayout(targetBuilder, ligretoParameters);
+		case AGGREGATED:
+			return new AggregatedLayout(targetBuilder, ligretoParameters);
+		case KEY:
+			return new KeyJoinLayout(targetBuilder, ligretoParameters);
+		default:
+			throw new IllegalArgumentException("Unexpected value of JoinLayoutType.");
+		}
 	}
 
 	/** Dumps the join result header. 
@@ -118,6 +148,22 @@ public abstract class JoinLayout {
 	 */
 	public void dumpRow(int rowDiffs, JoinResultType resultType) throws SQLException, LigretoException, IOException {
 		dumpRow(rowDiffs, null, resultType);
+	}
+
+	/**
+	 * @return the layoutNode
+	 */
+	public LayoutNode getLayoutNode() {
+		return layoutNode;
+	}
+
+	/**
+	 * @param joinNode
+	 * 				The join node to set.
+	 * @throws DataSourceNotDefinedException 
+	 */
+	public void setLayoutNode(LayoutNode layoutNode) {
+		this.layoutNode = layoutNode;
 	}
 
 	/**
@@ -189,6 +235,13 @@ public abstract class JoinLayout {
 	}
 	
 	/**
+	 * @param ligretoParameters the ligretoParameters to set
+	 */
+	public void setLigretoParameters(LigretoParameters ligretoParameters) {
+		this.ligretoParameters = ligretoParameters;
+	}
+
+	/**
 	 * @param columnCount
 	 * 				The column count to set.
 	 */
@@ -218,5 +271,7 @@ public abstract class JoinLayout {
 	 * @throws SQLException 
 	 */
 	public void finish() throws IOException, SQLException {
+		targetBuilder.finish();
 	}
+
 }

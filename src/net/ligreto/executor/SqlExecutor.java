@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
+import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.util.MiscUtils;
@@ -35,6 +36,9 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	/** The <code>ReportBuilder</code> object used to process the results. */
 	protected BuilderInterface reportBuilder;
 	
+	/** The target builder. */
+	protected TargetInterface targetBuilder;
+	
 	/** The list of column indices to be excluded. */
 	protected int[] excl = new int[0];
 	
@@ -53,21 +57,21 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 			}
 		}
 		
-		reportBuilder.setTarget(sqlNode.getTarget(), sqlNode.isAppend());
+		targetBuilder = reportBuilder.getTargetBuilder(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
-			reportBuilder.dumpHeader(rs, excl);
+			targetBuilder.dumpHeader(rs, excl);
 		}
 		return true;
 	}
 	
 	@Override
 	public void processResultSetRow(ResultSet rs) throws Exception {
-		reportBuilder.nextRow();
-		reportBuilder.setColumnPosition(0);
+		targetBuilder.nextRow();
+		targetBuilder.setColumnPosition(0);
 		ResultSetMetaData rsmd = rs.getMetaData();				
 		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				reportBuilder.dumpColumn(c++, rs, i);
+				targetBuilder.dumpColumn(c++, rs, i);
 			}
 		}
 	}
@@ -112,6 +116,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 									result.addRow(sqlNode.getResult());
 									callBack.processResultSetRow(rs);
 								}
+								callBack.finalizeProcessing();
 							}
 						}
 					} catch (SQLException e) {
@@ -188,4 +193,8 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		this.reportBuilder = reportBuilder;
 	}
 
+	@Override
+	public void finalizeProcessing() throws Exception {
+		targetBuilder.finish();
+	}
 }

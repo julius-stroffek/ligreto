@@ -10,11 +10,11 @@ import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ReportException;
-import net.ligreto.executor.JoinExecutor;
 
 import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.JoinNode;
-import net.ligreto.parser.nodes.JoinNode.JoinLayoutType;
+import net.ligreto.parser.nodes.LayoutNode;
+import net.ligreto.parser.nodes.LayoutNode.LayoutType;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.PostprocessNode;
@@ -37,7 +37,7 @@ import org.xml.sax.SAXParseException;
 
 /** Object types being parsed by the parser. */
 enum ObjectType {
-	NONE, LIGRETO, DATA_SOURCE, INIT, INIT_SQL, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, JOIN_SQL, PARAM, PTP, PTP_PREPROCESS, PTP_PREPROCESS_SQL, PTP_TRANSFER, PTP_TRANSFER_SQL, PTP_POSTPROCESS, PTP_POSTPROCESS_SQL
+	NONE, LIGRETO, DATA_SOURCE, INIT, INIT_SQL, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, LAYOUT, JOIN_SQL, PARAM, PTP, PTP_PREPROCESS, PTP_PREPROCESS_SQL, PTP_TRANSFER, PTP_TRANSFER_SQL, PTP_POSTPROCESS, PTP_POSTPROCESS_SQL
 };
 
 /**
@@ -52,10 +52,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	/** The configuration where the results are stored. */
 	protected LigretoNode ligretoNode;
 
-	/**
-	 * The report configuration where the actual report configuration data are
-	 * stored to.
-	 */
+	/** The report configuration where the actual report configuration data are stored to. */
 	protected ReportNode reportNode;
 
 	/** The parsed data source object. */
@@ -72,6 +69,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	/** The join node. */
 	protected JoinNode join;
+	
+	/** The join layout. */
+	protected LayoutNode layout;
 
 	/** The Pre-Process/Transfer/Post-Process node - PTP */
 	protected PtpNode ptpNode;
@@ -169,6 +169,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			reportNode.addJoin(join);
 			join.setReportNode(reportNode);
 			join = null;
+			break;
+		case LAYOUT:
+			join.addLayout(layout);
+			layout = null;
 			break;
 		case PARAM:
 			try {
@@ -324,51 +328,58 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("join".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
-					if (getAttributeValue(atts, "target") != null) {
-						join.setTarget(getAttributeValue(atts, "target"));
-					}
 					if (getAttributeValue(atts, "type") != null) {
 						join.setJoinType(getAttributeValue(atts, "type"));
-					}
-					if (getAttributeValue(atts, "diffs") != null) {
-						join.setDiffs(getAttributeValue(atts, "diffs"));
-					}
-					if (getAttributeValue(atts, "layout") != null) {
-						join.setJoinLayoutType(getAttributeValue(atts, "layout"));
-					}
-					if (getAttributeValue(atts, "interlaced") != null) {
-						if (Boolean.parseBoolean(getAttributeValue(atts, "interlaced"))) {
-							join.setJoinLayoutType(JoinLayoutType.INTERLACED);
-						} else {
-							join.setJoinLayoutType(JoinLayoutType.NORMAL);
-						}
-					}
-					if (getAttributeValue(atts, "highlight") != null) {
-						join.setHighlight(getAttributeValue(atts, "highlight"));
-					}
-					if (getAttributeValue(atts, "hlColor") != null) {
-						join.setHlColor(getAttributeValue(atts, "hlColor"));
 					}
 					if (getAttributeValue(atts, "on") != null) {
 						join.setOn(getAttributeValue(atts, "on"));
 					}
-					if (getAttributeValue(atts, "group-by") != null) {
-						join.setGroupBy(getAttributeValue(atts, "group-by"));
-					}
 					if (getAttributeValue(atts, "exclude") != null) {
 						join.setExclude(getAttributeValue(atts, "exclude"));
-					}
-					if (getAttributeValue(atts, "header") != null) {
-						join.setHeader(getAttributeValue(atts, "header"));
-					}
-					if (getAttributeValue(atts, "append") != null) {
-						join.setAppend(getAttributeValue(atts, "append"));
 					}
 					join.setLocale(getAttributeValue(atts, "locale"));
 					if (getAttributeValue(atts, "collation") != null) {
 						join.setCollation(getAttributeValue(atts, "collation"));
 					}
-					join.setResult(getAttributeValue(atts, "result"));
+					if (getAttributeValue(atts, "target") != null) {
+						layout = new LayoutNode(ligretoNode);
+						if (getAttributeValue(atts, "target") != null) {
+							layout.setTarget(getAttributeValue(atts, "target"));
+						}
+						if (getAttributeValue(atts, "diffs") != null) {
+							layout.setDiffs(getAttributeValue(atts, "diffs"));
+						}
+						if (getAttributeValue(atts, "layout") != null) {
+							layout.setType(getAttributeValue(atts, "layout"));
+						}
+						if (getAttributeValue(atts, "interlaced") != null) {
+							if (Boolean.parseBoolean(getAttributeValue(atts, "interlaced"))) {
+								layout.setType(LayoutType.INTERLACED);
+							} else {
+								layout.setType(LayoutType.NORMAL);
+							}
+						}
+						if (getAttributeValue(atts, "highlight") != null) {
+							layout.setHighlight(getAttributeValue(atts, "highlight"));
+						}
+						if (getAttributeValue(atts, "hlColor") != null) {
+							layout.setHlColor(getAttributeValue(atts, "hlColor"));
+						}
+						if (getAttributeValue(atts, "group-by") != null) {
+							layout.setGroupBy(getAttributeValue(atts, "group-by"));
+						}
+						if (getAttributeValue(atts, "header") != null) {
+							layout.setHeader(getAttributeValue(atts, "header"));
+						}
+						if (getAttributeValue(atts, "append") != null) {
+							layout.setAppend(getAttributeValue(atts, "append"));
+						}
+						if (getAttributeValue(atts, "result") != null) {
+							layout.setResult(getAttributeValue(atts, "result"));
+						}
+						join.addLayout(layout);
+						layout = null;
+					}
 				}
 				break;
 			case JOIN:
@@ -398,6 +409,34 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "type") != null) {
 						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
+				} else if ("layout".equals(localName)) {
+					objectStack.push(ObjectType.LAYOUT);
+					layout = new LayoutNode(ligretoNode);
+					if (getAttributeValue(atts, "target") != null) {
+						layout.setTarget(getAttributeValue(atts, "target"));
+					}
+					if (getAttributeValue(atts, "type") != null) {
+						layout.setType(getAttributeValue(atts, "type"));
+					}
+					if (getAttributeValue(atts, "diffs") != null) {
+						layout.setDiffs(getAttributeValue(atts, "diffs"));
+					}
+					if (getAttributeValue(atts, "highlight") != null) {
+						layout.setHighlight(getAttributeValue(atts, "highlight"));
+					}
+					if (getAttributeValue(atts, "hlColor") != null) {
+						layout.setHlColor(getAttributeValue(atts, "hlColor"));
+					}
+					if (getAttributeValue(atts, "group-by") != null) {
+						layout.setGroupBy(getAttributeValue(atts, "group-by"));
+					}
+					if (getAttributeValue(atts, "header") != null) {
+						layout.setHeader(getAttributeValue(atts, "header"));
+					}
+					if (getAttributeValue(atts, "append") != null) {
+						layout.setAppend(getAttributeValue(atts, "append"));
+					}
+					layout.setResult(getAttributeValue(atts, "result"));
 				}
 				break;
 			case PTP:

@@ -9,6 +9,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -19,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
+import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.Column;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
@@ -32,6 +34,7 @@ import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 import net.ligreto.executor.layouts.KeyJoinLayout;
 import net.ligreto.executor.layouts.NormalJoinLayout;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
 import net.ligreto.util.MiscUtils;
@@ -55,7 +58,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	private Log log = LogFactory.getLog(JoinExecutor.class);
 
 	/** Iterable object holding the join nodes to be processed. */
-	Iterable<JoinNode> joinNodes;
+	protected Iterable<JoinNode> joinNodes;
 	
 	/** The callback object which handles the processing of each row returned. */
 	protected JoinResultCallBack callBack;
@@ -68,7 +71,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	
 	/** The collator to be used for join processing based on the specified locale. */
 	protected Comparator<Object> comparator;
-
+	
 	@Override
 	public boolean prepareProcessing(JoinNode joinNode, ResultSet rs1, ResultSet rs2) throws Exception {
 		throw new UnimplementedMethodException("Callback implementation is not done for join execution");
@@ -149,7 +152,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	
 	protected ResultStatus executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException, IOException {
 		ResultStatus result = new ResultStatus();
-		reportBuilder.setTarget(joinNode.getTarget(), joinNode.isAppend());
 		JoinNode.JoinType joinType = joinNode.getJoinType();
 		List<SqlNode> sqlQueries = joinNode.getSqlQueries();
 		
@@ -329,59 +331,76 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				lowerArray[i] = -1;
 				higherArray[i] = 1;
 			}
-			reportBuilder.setHighlight(joinNode.getHighlight());
-			reportBuilder.setHlColor(joinNode.getHlColor());
 			
 			// Calculate the number of columns to compare
 			int otherColumnCount = rs1ColCount - on1.length;
 			
-			/* Create the proper implementation of the join layout. */
-			JoinLayout joinLayout;
-			if (otherColumnCount == 0) {
-				if (joinNode.getJoinLayoutType() != JoinNode.JoinLayoutType.KEY) {
-					log.info("No columns to compare. Switching to KEY join layout.");
+			String firstTarget = null;
+			
+			// Build all the layouts
+			List<JoinLayout> layouts = new ArrayList<JoinLayout>();
+			for (LayoutNode layoutNode : joinNode.getLayouts()) {
+				// Remember the first target for error messages only
+				if (firstTarget != null) {
+					firstTarget = layoutNode.getTarget();
 				}
-				joinLayout = new KeyJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-			} else {
-				switch (joinNode.getJoinLayoutType()) {
-				case NORMAL:
-					joinLayout = new NormalJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-					break;
-				case INTERLACED:
-					joinLayout = new InterlacedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-					break;
-				case DETAILED:
-					joinLayout = new DetailedJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-					break;
-				case AGGREGATED:
-					joinLayout = new AggregatedLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-					break;
-				case KEY:
-					joinLayout = new KeyJoinLayout(reportBuilder, joinNode.getLigretoNode().getLigretoParameters());
-					break;
-				default:
-					throw new LigretoException("Unexpected value of JoinLayoutType.");
+				
+				/* Create the report target object first. */
+				TargetInterface targetBuilder = reportBuilder.getTargetBuilder(layoutNode.getTarget(), layoutNode.isAppend());
+				targetBuilder.setLigretoParameters(joinNode.getLigretoNode().getLigretoParameters());
+				targetBuilder.setHighlight(layoutNode.getHighlight());
+				targetBuilder.setHlColor(layoutNode.getHlColor());
+
+				/* Create the proper implementation of the join layout. */
+				JoinLayout joinLayout;
+				if (otherColumnCount == 0) {
+					if (layoutNode.getType() != LayoutNode.LayoutType.KEY) {
+						log.info("No columns to compare. Switching to KEY join layout.");
+					}
+					joinLayout = new KeyJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+				} else {
+					switch (layoutNode.getType()) {
+					case NORMAL:
+						joinLayout = new NormalJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+						break;
+					case INTERLACED:
+						joinLayout = new InterlacedJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+						break;
+					case DETAILED:
+						joinLayout = new DetailedJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+						break;
+					case AGGREGATED:
+						joinLayout = new AggregatedLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+						break;
+					case KEY:
+						joinLayout = new KeyJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+						break;
+					default:
+						throw new LigretoException("Unexpected value of JoinLayoutType.");
+					}
 				}
+				// Setup other parameters required for the join layout
+				joinLayout.setJoinNode(joinNode);
+				joinLayout.setLayoutNode(layoutNode);
+				joinLayout.setResultStatus(result);
+				joinLayout.setOnColumns(on1, on2);
+				joinLayout.setExcludeColumns(excl1, excl2);
+				joinLayout.setGroupByColumns(layoutNode.getGroupBy());
+				joinLayout.setResultSets(rs1, rs2);
+				joinLayout.setColumnCount(rs1ColCount);
+				joinLayout.setLigretoParameters(joinNode.getLigretoNode().getLigretoParameters());
+				joinLayout.start();
+				
+				// Dump the header row if requested
+				if (layoutNode.getHeader()) {
+					joinLayout.dumpHeader();
+				}
+				layouts.add(joinLayout);
 			}
 
 			// The comparator instance
 			LigretoComparator rsComparator = LigretoComparator.getInstance();
 			rsComparator.setComparator(comparator);
-
-			// Setup other parameters required for the join layout
-			joinLayout.setJoinNode(joinNode);
-			joinLayout.setResultStatus(result);
-			joinLayout.setOnColumns(on1, on2);
-			joinLayout.setExcludeColumns(excl1, excl2);
-			joinLayout.setGroupByColumns(joinNode.getGroupBy());
-			joinLayout.setResultSets(rs1, rs2);
-			joinLayout.setColumnCount(rs1ColCount);
-			joinLayout.start();
-			
-			// Dump the header row if requested
-			if (joinNode.getHeader()) {
-				joinLayout.dumpHeader();
-			}
 			
 			boolean hasNext1 = rs1.next();
 			boolean hasNext2 = rs2.next();
@@ -400,18 +419,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col1);
-					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 				}
 				if (dResult2 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col2);
-					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
 				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
 					rsComparator.error(log, pCol1);
 					rsComparator.error(log, col1);
-					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 					switch (joinNode.getCollation()) {
 					case DUMP:
 						e.printStackTrace();
@@ -424,7 +443,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					log.error("Wrong collation found.");
 					rsComparator.error(log, pCol2);
 					rsComparator.error(log, col2);
-					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
 					switch (joinNode.getCollation()) {
 					case DUMP:
 						e.printStackTrace();
@@ -438,8 +457,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				switch (cResult) {
 				case -1:
 					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
-						result.addRow(joinNode.getResult());
-						joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);	
+						for (JoinLayout joinLayout : layouts) {
+							result.addRow(joinLayout.getLayoutNode().getResult());
+							joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
+						}
 					}
 					hasNext1 = rs1.next();
 					pCol1 = col1;
@@ -450,10 +471,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
 					
 					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
-					if (!joinNode.getDiffs() || rowDiffs > 0) {
-						result.addRow(joinNode.getResult());
-						joinLayout.dumpRow(rowDiffs, cmpArray, JoinResultType.INNER);
+					for (JoinLayout joinLayout : layouts) {
+						if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
+							result.addRow(joinLayout.getLayoutNode().getResult());
+							joinLayout.dumpRow(rowDiffs, cmpArray, JoinResultType.INNER);
+						}
 					}
+					
 					hasNext1 = rs1.next();
 					hasNext2 = rs2.next();
 					pCol1 = col1;
@@ -461,8 +485,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				case 1:
 					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
-						result.addRow(joinNode.getResult());
-						joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);							
+						for (JoinLayout joinLayout : layouts) {
+							result.addRow(joinLayout.getLayoutNode().getResult());
+							joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
+						}						
 					}
 					pCol2 = col2;
 					hasNext2 = rs2.next();
@@ -479,13 +505,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (dResult1 == 0) {
 						log.error("Duplicate entries found.");
 						rsComparator.error(log, col1);
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 					}
 					if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
 						rsComparator.error(log, pCol1);
 						rsComparator.error(log, col1);
-						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), joinNode.getTarget()));
+						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 						switch (joinNode.getCollation()) {
 						case DUMP:
 							e.printStackTrace();
@@ -496,8 +522,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 					pCol1 = col1;
 
-					result.addRow(joinNode.getResult());
-					joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
+					for (JoinLayout joinLayout : layouts) {
+						result.addRow(joinLayout.getLayoutNode().getResult());
+						joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
+					}
 					hasNext1 = rs1.next();
 				}
 			}
@@ -511,13 +539,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					if (dResult2 == 0) {
 						log.error("Duplicate entries found.");
 						rsComparator.error(log, col2);
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
 					}
 					if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 						log.error("Wrong collation found.");
 						rsComparator.error(log, pCol2);
 						rsComparator.error(log, col2);
-						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), joinNode.getTarget()));
+						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
 						switch (joinNode.getCollation()) {
 						case DUMP:
 							e.printStackTrace();
@@ -528,13 +556,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 					pCol2 = col2;
 					
-					result.addRow(joinNode.getResult());
-					joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
+					for (JoinLayout joinLayout : layouts) {
+						result.addRow(joinLayout.getLayoutNode().getResult());
+						joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
+					}
 					hasNext2 = rs2.next();
 				}
 			}
-			joinLayout.finish();
-		} finally {
+			for (JoinLayout joinLayout : layouts) {
+				joinLayout.finish();
+			}
+		}
+		finally {
 			Database.close(cnn1, stm1, cstm1, rs1);
 			Database.close(cnn2, stm2, cstm2, rs2);
 		}

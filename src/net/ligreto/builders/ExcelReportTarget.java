@@ -1,13 +1,18 @@
 package net.ligreto.builders;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Date;
 import java.util.Hashtable;
 
-import net.ligreto.exceptions.InvalidTargetException;
-import net.ligreto.exceptions.LigretoException;
+import net.ligreto.builders.BuilderInterface.CellFormat;
+import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.builders.ExcelReportBuilder.OutputFormat;
 import net.ligreto.exceptions.UnimplementedMethodException;
 
 import org.apache.commons.logging.Log;
@@ -21,7 +26,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -43,57 +48,21 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * </ul>
  * 
  * @author Julius Stroffek
- *
+ * 
  */
-public class ExcelReportBuilder extends ReportBuilder {
-
-	/**
-	 * This class represents the target in the result spread sheet
-	 * which is than used for hashing to associate any information
-	 * with the corresponding target.
-	 */
-	protected class TargetInfo {
-		int sheet;
-		int row;
-		int column;
-		int lastRow;
-		
-		public TargetInfo(int sheet, int row, int column) {
-			this.sheet = sheet;
-			this.row = row;
-			this.column = column;
-			this.lastRow = this.row - 1;
-		}
-		
-		@Override
-		public int hashCode() {
-			return sheet + row + column;
-		}
-		
-		@Override
-		public boolean equals(Object object) {
-			if (object instanceof TargetInfo) {
-				TargetInfo info = (TargetInfo) object;
-				return sheet == info.sheet && row == info.row && column == info.column;
-			}
-			return false;
-		}
-	}
+public class ExcelReportTarget extends ReportTarget {
 	
 	/**
-	 * The hash map that stores the last free row number for the specified target.
+	 * The information about the target location.
 	 * It is used for append operation on the target.
 	 */
-	HashMap<TargetInfo, TargetInfo> targetMap = new HashMap<TargetInfo, TargetInfo>();
-	
-	/** The output file type enumeration. */
-	protected enum OutputFormat {HSSF, XSSF, SXSSF};
+	protected ExcelReportBuilder.TargetInfo targetInfo;
 	
 	/** The output file format. */
-	protected OutputFormat outputFormat = OutputFormat.XSSF;
+	OutputFormat outputFormat = OutputFormat.XSSF;
 
 	/** The logger instance for the class. */
-	private Log log = LogFactory.getLog(ExcelReportBuilder.class);
+	private Log log = LogFactory.getLog(ExcelReportTarget.class);
 	
 	/** The output stream where the output file will be written to. */
 	protected FileOutputStream out;
@@ -126,11 +95,26 @@ public class ExcelReportBuilder extends ReportBuilder {
 	protected boolean noDateTimeFormat = false;
 	
 	/** Maximal column width for auto sized columns. */
-	protected int maxColumnWidth = 20480; 
+	protected int maxColumnWidth = 20480;
+	
+	/** Keep the report builder as ExcelReportBuilder as well to avoid type-cast. */
+	protected ExcelReportBuilder reportBuilder;
 	
 	/** Holds the highest column index used for actual target. */
 	int lastColumnIndex = -1;
 	
+	/** Creates the target instance bound to ExcelReportBuilder. */
+	public  ExcelReportTarget(ExcelReportBuilder reportBuilder, Sheet sheet, int baseRow, int baseCol) {
+		super(reportBuilder);
+		this.reportBuilder = reportBuilder;
+		this.sheet = sheet;
+		this.wb = sheet.getWorkbook();
+		this.baseRow = baseRow;
+		this.baseCol = baseCol;
+		actRow = baseRow-1;
+		actCol = baseCol;
+	}
+
 	/**
 	 * @return the autoFilter
 	 */
@@ -188,65 +172,39 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	/**
-	 * This method will create the target builder.
-	 * 
-	 * @param reportBuilder
-	 * @param sheet
-	 * @param baseRow
-	 * @param baseCol
-	 * @return
+	 * @return the targetInfo
 	 */
-	@Override
-	protected ExcelReportTarget createTarget(Sheet sheet, int baseRow, int baseCol) {
-		ExcelReportTarget newTarget = new ExcelReportTarget(this, sheet, baseRow, baseCol);
-		newTarget.setAutoFilter(isAutoFilter());
-		newTarget.setAutoSize(isAutoSize());
-		newTarget.setHeaderStyle(isHeaderStyle());
-		newTarget.setNoDateTimeFormat(isNoDateTimeFormat());
-		newTarget.setDataFormat(dataFormat);
-		newTarget.outputFormat = outputFormat;
-		return newTarget;
+	public ExcelReportBuilder.TargetInfo getTargetInfo() {
+		return targetInfo;
 	}
-	
+
+	/**
+	 * @param targetInfo the targetInfo to set
+	 */
+	public void setTargetInfo(ExcelReportBuilder.TargetInfo targetInfo) {
+		this.targetInfo = targetInfo;
+	}
+
+	/**
+	 * @return the dataFormat
+	 */
+	public DataFormat getDataFormat() {
+		return dataFormat;
+	}
+
+	/**
+	 * @param dataFormat the dataFormat to set
+	 */
+	public void setDataFormat(DataFormat dataFormat) {
+		this.dataFormat = dataFormat;
+	}
+
 	@Override
-	public  TargetInterface getTargetBuilder(String target, boolean append) throws InvalidTargetException {
-		ExcelReportTarget newTarget = null;
-		CellReference ref = new CellReference(target);
-		Sheet sheet;
-		if (ref.getSheetName() != null) {
-			sheet = wb.getSheet(ref.getSheetName());
-			if (sheet == null) {
-				sheet = wb.createSheet(ref.getSheetName());
-			}
-		} else {
-			if (this.sheet == null) {
-				this.sheet = wb.createSheet("Sheet1");
-			}
-			sheet = this.sheet;
-		}
-		int rowNum = ref.getRow();
-		int colNum = ref.getCol();
-		if (sheet != null) {
-			TargetInfo info = new TargetInfo(wb.getSheetIndex(sheet), rowNum, colNum);
-			newTarget = createTarget(sheet, rowNum, colNum);
-			TargetInfo prevInfo = targetMap.get(info);
-			if (append &&  prevInfo != null) {
-				newTarget.setActRow(prevInfo.lastRow);
-				log.info(
-						"Moved from the specified target row \""
-						+ prevInfo.row
-						+ "\" to next row \""
-						+ (prevInfo.lastRow + 1)
-						+ "\" due to append."
-					);
-				info = prevInfo;
-			}			
-			newTarget.setTargetInfo(info);
-			targetMap.put(info, info);
-		} else {
-			throw new InvalidTargetException("The target reference is invalid: \"" + target + "\"");
-		}
-		return newTarget;
+	public void nextRow() throws IOException {
+		super.nextRow();
+		row = sheet.getRow(actRow);
+		if (row == null)
+			row = sheet.createRow(actRow);
 	}
 	
 	/**
@@ -270,7 +228,92 @@ public class ExcelReportBuilder extends ReportBuilder {
 		
 		return cell;
 	}
+
+	@Override
+	public void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
+		Cell cell = createCell(row, actCol + i);
+		if (o instanceof Integer) {
+			cell.setCellValue(((Integer)o).intValue());
+		} else if (o instanceof Long) {
+			cell.setCellValue(((Long)o).longValue());
+		} else if (o instanceof Double) {
+			cell.setCellValue(((Double)o).doubleValue());
+		} else if (o instanceof Float) {
+			cell.setCellValue(((Float)o).floatValue());
+		} else if (o instanceof BigDecimal) {
+			cell.setCellValue(((BigDecimal)o).toString());
+		} else if (o instanceof Date) {
+			cell.setCellValue(((Date)o));
+			if (!noDateTimeFormat) {
+				setDataFormat(cell, "yyyy-mm-dd");
+			}
+		} else if (o instanceof Timestamp) {
+			cell.setCellValue(((Timestamp)o));
+			if (!noDateTimeFormat) {
+				setDataFormat(cell, "yyyy-mm-dd hh:mm:ss");
+			}
+		} else if (o instanceof Time) {
+			cell.setCellValue(((Time)o));
+			if (!noDateTimeFormat) {
+				setDataFormat(cell, "hh:mm:ss");
+			}
+		} else {
+			cell.setCellValue(o.toString());
+		}
+		if (rgb != null) {
+			setCellColor(cell, rgb);
+		}
+		switch (cellFormat) {
+		case UNCHANGED:
+			break;
+		case PERCENTAGE_NO_DECIMAL_DIGITS:
+			setDataFormat(cell, "0%");
+			break;
+		case PERCENTAGE_2_DECIMAL_DIGITS:
+			setDataFormat(cell, "0.00%");
+			break;
+		case PERCENTAGE_3_DECIMAL_DIGITS:
+			setDataFormat(cell, "0.000%");
+			break;
+		default:
+			throw new RuntimeException("Unexpected value of CellFormat enumeration.");
+		}
+	}
+	
+	@Override
+	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException {
+		super.dumpHeader(rs, excl);
+		flush(false, false);
+	}
+	
+	/**
+	 * Assigns the specified format to the specified cell and makes sure that the style
+	 * is not duplicated if the same style already exists.
+	 * 
+	 * @param cell Cell where the format should be assigned
+	 * @param formatString Format string to be used
+	 */
+	private void setDataFormat(Cell cell, String formatString) {
+		CellStyle cellStyle = cell.getCellStyle();
+		short oldFormat = cellStyle.getDataFormat();
+		cellStyle.setDataFormat(dataFormat.getFormat(formatString));
+		CellStyle newStyle = cloneStyle(cellStyle);
+		cellStyle.setDataFormat(oldFormat);
+		cell.setCellStyle(newStyle);
+	}
+
+	@Override
+	public void dumpHeaderColumn(int i, Object o, HeaderType headerType) {
+		dumpColumn(i, o, CellFormat.UNCHANGED);
 		
+		// Format the header column
+		if (headerStyle) {
+			// We can call createCell as the cell already exists and it will be returned
+			Cell cell = createCell(row, actCol + i);
+			setHeaderStyle(cell, headerType);
+		}
+	}
+	
 	/**
 	 * This function will set the cell style for the header row.
 	 * 
@@ -615,73 +658,33 @@ public class ExcelReportBuilder extends ReportBuilder {
 		log.debug("The number of workbook fonts:" + wb.getNumberOfFonts());
 	}
 	
-	@Override
-	public void writeOutput() throws IOException {		
-		reportExcelStatisctics();
-		log.info("Writing the result into the file: " + output);
-		wb.write(out);
-	}
-
-	@Override
-	public void start() throws IOException, LigretoException {
-		out = new FileOutputStream(output);
-
-		// Alter the output format if necessary
-		if (System.getProperty("excel97") != null) {
-			outputFormat = OutputFormat.HSSF;
-		}		
-		
-		// Read the template file if the template was specified
-		if (template != null) {
-			log.info("Reading a template file: " + template);
-			switch (outputFormat) {
-			case HSSF:
-				wb = new HSSFWorkbook(new FileInputStream(template));
-				hssfColors = HSSFColor.getTripletHash();
-				break;
-			case XSSF:
-				wb = new XSSFWorkbook(new FileInputStream(template));
-				break;
-			}
-		} else {
-			log.info("Creating the empty workbook.");
-			switch (outputFormat) {
-			case HSSF:
-				wb = new HSSFWorkbook();
-				hssfColors = HSSFColor.getTripletHash();
-				break;
-			case XSSF:
-				wb = new XSSFWorkbook();
-				break;
-			}
+	/**
+	 * The method called to flush the target - i.e. create auto-filter, etc.
+	 */
+	protected void flush(boolean lastFlush, boolean increaseSizeOnly) {
+		if (lastFlush && autoFilter && lastColumnIndex > baseCol) {
+			sheet.setAutoFilter(new CellRangeAddress(baseRow, actRow, baseCol, lastColumnIndex));
 		}
 		
-		// Create the data format object
-		dataFormat = wb.createDataFormat();
-		
-		if (wb.getNumberOfSheets() > 0) {
-			sheet = wb.getSheetAt(wb.getActiveSheetIndex());
-		} else {
-			sheet = null;
+		if (autoSize && lastColumnIndex > baseCol) {
+			for (int i=baseCol; i <= lastColumnIndex; i++) {
+				int columnWidth = sheet.getColumnWidth(i);
+				sheet.autoSizeColumn(i);
+				int newColumnWidth = sheet.getColumnWidth(i) + 1024;
+				if (increaseSizeOnly && columnWidth > newColumnWidth) {
+					newColumnWidth = columnWidth;
+				}
+				if (newColumnWidth > maxColumnWidth) {
+					newColumnWidth = maxColumnWidth;
+				}
+				sheet.setColumnWidth(i, newColumnWidth);
+			}
 		}
-		reportExcelStatisctics();
-		log.info("The output will be written to \"" + output + "\".");
 	}
 	
 	@Override
-	public void setOptions(Iterable<String> options) throws LigretoException {
-		for (String o : options) {
-			if ("autoFilter".equals(o)) {
-				autoFilter = true;
-			} else if ("autoSize".equals(o)) {
-				autoSize = true;
-			} else if ("headerStyle".equals(o)) {	
-				headerStyle = true;
-			} else if ("noDateTimeFormat".equals(o)) {
-				noDateTimeFormat = true;
-			} else {
-				throw new LigretoException("Unsupported option specified: '" + o + "'");
-			}
-		}
+	public void finish() throws IOException {
+		flush(true, false);
+		targetInfo.lastRow = actRow;
 	}
 }

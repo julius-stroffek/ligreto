@@ -4,33 +4,33 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import net.ligreto.LigretoParameters;
-import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.BuilderInterface.CellFormat;
+import net.ligreto.builders.TargetInterface;
 
 public class KeyJoinLayout extends JoinLayout {
 
-	public KeyJoinLayout(BuilderInterface reportBuilder, LigretoParameters ligretoParameters) {
-		super(reportBuilder, ligretoParameters);
+	public KeyJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
+		super(targetBuilder, ligretoParameters);
 	}
 
 	@Override
 	public void dumpHeader() throws SQLException, IOException {
-		reportBuilder.nextRow();
-		reportBuilder.dumpJoinOnHeader(rs1, on1, dataSourceDesc1);
-		reportBuilder.setColumnPosition(onLength, 1, null);
-		reportBuilder.dumpJoinOnHeader(rs2, on2, dataSourceDesc2);
+		targetBuilder.nextRow();
+		targetBuilder.dumpJoinOnHeader(rs1, on1, dataSourceDesc1);
+		targetBuilder.setColumnPosition(onLength, 1, null);
+		targetBuilder.dumpJoinOnHeader(rs2, on2, dataSourceDesc2);
 	}
 
 	@Override
 	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws SQLException, IOException {		
-		reportBuilder.nextRow();
+		targetBuilder.nextRow();
 		switch (resultType) {
 		case LEFT:
-			reportBuilder.setHighlightArray(higherArray);
-			reportBuilder.dumpJoinOnColumns(rs1, on1);
-			reportBuilder.setColumnPosition(onLength, 1, null);
+			targetBuilder.setHighlightArray(higherArray);
+			targetBuilder.dumpJoinOnColumns(rs1, on1);
+			targetBuilder.setColumnPosition(onLength, 1, null);
 			for (int i=0; i < onLength; i++) {
-				reportBuilder.dumpColumn(
+				targetBuilder.dumpColumn(
 					2*i, ligretoParameters.getMissingString(),
 					CellFormat.UNCHANGED, true
 				);
@@ -38,18 +38,18 @@ public class KeyJoinLayout extends JoinLayout {
 			break;
 		case RIGHT:
 			for (int i=0; i < onLength; i++) {
-				reportBuilder.dumpColumn(
+				targetBuilder.dumpColumn(
 					2*i, ligretoParameters.getMissingString(),
 					CellFormat.UNCHANGED, true
 				);
 			}
-			reportBuilder.setColumnPosition(onLength, 1, higherArray);
-			reportBuilder.dumpJoinOnColumns(rs2, on2);
+			targetBuilder.setColumnPosition(onLength, 1, higherArray);
+			targetBuilder.dumpJoinOnColumns(rs2, on2);
 			break;
 		case INNER:
-			reportBuilder.dumpJoinOnColumns(rs1, on1);
-			reportBuilder.setColumnPosition(onLength, 1, null);
-			reportBuilder.dumpJoinOnColumns(rs2, on2);
+			targetBuilder.dumpJoinOnColumns(rs1, on1);
+			targetBuilder.setColumnPosition(onLength, 1, null);
+			targetBuilder.dumpJoinOnColumns(rs2, on2);
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
