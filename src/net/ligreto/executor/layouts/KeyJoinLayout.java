@@ -31,7 +31,7 @@ public class KeyJoinLayout extends JoinLayout {
 			targetBuilder.setColumnPosition(onLength, 1, null);
 			for (int i=0; i < onLength; i++) {
 				targetBuilder.dumpColumn(
-					2*i, ligretoParameters.getMissingString(),
+					i, ligretoParameters.getMissingString(),
 					CellFormat.UNCHANGED, true
 				);
 			}
@@ -39,7 +39,7 @@ public class KeyJoinLayout extends JoinLayout {
 		case RIGHT:
 			for (int i=0; i < onLength; i++) {
 				targetBuilder.dumpColumn(
-					2*i, ligretoParameters.getMissingString(),
+					i, ligretoParameters.getMissingString(),
 					CellFormat.UNCHANGED, true
 				);
 			}

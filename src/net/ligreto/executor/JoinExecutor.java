@@ -456,7 +456,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				int cResult = rsComparator.compareAsDataSource(rs1, on1, rs2, on2);
 				switch (cResult) {
 				case -1:
-					if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
+					if (joinType == JoinNode.JoinType.LEFT
+							|| joinType == JoinNode.JoinType.FULL
+							|| joinType == JoinNode.JoinType.COMPLEMENT)
+					{
 						for (JoinLayout joinLayout : layouts) {
 							result.addRow(joinLayout.getLayoutNode().getResult());
 							joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
@@ -466,15 +469,21 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol1 = col1;
 					break;
 				case 0:
-					// We will break if we are supposed to produce only differences
-					// and there are no differences present.
-					int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
+					if (joinType == JoinNode.JoinType.LEFT
+							|| joinType == JoinNode.JoinType.RIGHT
+							|| joinType == JoinNode.JoinType.INNER
+							|| joinType == JoinNode.JoinType.FULL)
+					{
+						// We will break if we are supposed to produce only differences
+						// and there are no differences present.
+						int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
 					
-					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
-					for (JoinLayout joinLayout : layouts) {
-						if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
-							result.addRow(joinLayout.getLayoutNode().getResult());
-							joinLayout.dumpRow(rowDiffs, cmpArray, JoinResultType.INNER);
+						int rowDiffs = MiscUtils.countNonZeros(cmpArray);
+						for (JoinLayout joinLayout : layouts) {
+							if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
+								result.addRow(joinLayout.getLayoutNode().getResult());
+								joinLayout.dumpRow(rowDiffs, cmpArray, JoinResultType.INNER);
+							}
 						}
 					}
 					
@@ -484,7 +493,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol2 = col2;
 					break;
 				case 1:
-					if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
+					if (joinType == JoinNode.JoinType.RIGHT
+							|| joinType == JoinNode.JoinType.FULL
+							|| joinType == JoinNode.JoinType.COMPLEMENT)
+					{
 						for (JoinLayout joinLayout : layouts) {
 							result.addRow(joinLayout.getLayoutNode().getResult());
 							joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
@@ -495,7 +507,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				}				
 			}
-			if (joinType == JoinNode.JoinType.LEFT || joinType == JoinNode.JoinType.FULL) {
+			if (joinType == JoinNode.JoinType.LEFT
+					|| joinType == JoinNode.JoinType.FULL
+					|| joinType == JoinNode.JoinType.COMPLEMENT)
+			{
 				while (hasNext1) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing
@@ -529,7 +544,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					hasNext1 = rs1.next();
 				}
 			}
-			if (joinType == JoinNode.JoinType.RIGHT || joinType == JoinNode.JoinType.FULL) {
+			if (joinType == JoinNode.JoinType.RIGHT
+					|| joinType == JoinNode.JoinType.FULL
+					|| joinType == JoinNode.JoinType.COMPLEMENT)
+			{
 				while (hasNext2) {
 					// Compare the subsequent rows in each result set and see whether they match
 					// the collation we are using here for processing

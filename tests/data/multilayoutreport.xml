@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Multi Layout Report" options="autoFilter,autoSize,headerStyle" type="excel.stream">
+		<output file="multilayoutreport.xlsx"/>
+		<data>
+			<join on="1,3" type="full" layout="aggregated">
+				<layout target="interlaced!A1" type="interlaced" group-by="3"/>
+				<layout target="aggregated!A1" type="aggregated" group-by="3"/>
+				<layout target="keys!A1" type="key"/>
+				<layout target="summary!A1" type="aggregated"/>
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+			<join on="1,3" type="complement" layout="aggregated">
+				<layout target="compl_interlaced!A1" type="interlaced" group-by="3"/>
+				<layout target="compl_aggregated!A1" type="aggregated" group-by="3"/>
+				<layout target="compl_keys!A1" type="key"/>
+				<layout target="compl_summary!A1" type="aggregated"/>
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

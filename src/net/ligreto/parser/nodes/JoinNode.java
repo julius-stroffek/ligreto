@@ -11,7 +11,7 @@ import java.util.List;
  *
  */
 public class JoinNode extends Node {
-	public enum JoinType {FULL, LEFT, RIGHT, INNER};
+	public enum JoinType {FULL, LEFT, RIGHT, INNER, COMPLEMENT};
 	
 	protected JoinType joinType = JoinType.FULL;
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
@@ -56,6 +56,8 @@ public class JoinNode extends Node {
 			this.joinType = JoinType.RIGHT;
 		else if ("inner".equals(joinType))
 			this.joinType = JoinType.INNER;
+		else if ("complement".equals(joinType))
+			this.joinType = JoinType.COMPLEMENT;
 		else
 			throw new IllegalArgumentException("The join type could not be \"" + joinType + "\"");
 	}

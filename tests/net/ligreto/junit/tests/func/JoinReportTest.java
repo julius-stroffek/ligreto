@@ -132,7 +132,7 @@ public class JoinReportTest {
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
 		ResultStatus result = executor.execute();
-		Assert.assertEquals(77, result.getResultRowCount()); // 77 is the expected number of rows in the result
+		Assert.assertEquals(81, result.getResultRowCount()); // 81 is the expected number of rows in the result
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),

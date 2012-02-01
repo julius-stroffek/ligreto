@@ -129,4 +129,15 @@ public class AggregatedReportTest {
 				new XSSFWorkbook(new FileInputStream("desired/aggregatedreport.xlsx"))
 		).areSame());		
 	}
+	
+	@Test
+	public void testMultipleLayoutsReport() throws SAXException, IOException, LigretoException {
+		LigretoNode ligreto = Parser.parse("multilayoutreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		executor.execute();
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("multilayoutreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/multilayoutreport.xlsx"))
+		).areSame());		
+	}
 }
