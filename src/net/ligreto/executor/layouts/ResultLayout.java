@@ -5,13 +5,14 @@ import java.sql.SQLException;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
-import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
+import net.ligreto.exceptions.LigretoException;
+import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 
 public class ResultLayout extends AggregatedLayout {
 
-	public ResultLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
-		super(targetBuilder, ligretoParameters);
+	public ResultLayout(LigretoParameters ligretoParameters) {
+		super(null, ligretoParameters);
 	}
 
 	/**
@@ -43,5 +44,10 @@ public class ResultLayout extends AggregatedLayout {
 	public ResultStatus getResultStatus() {
 		ResultStatus resultStatus = new ResultStatus();
 		return resultStatus;
+	}
+	
+	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+		super.processRow(rowDiffs, highlightArray, resultType);
+		return false;
 	}
 }

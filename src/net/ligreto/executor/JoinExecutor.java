@@ -33,6 +33,7 @@ import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 import net.ligreto.executor.layouts.KeyJoinLayout;
 import net.ligreto.executor.layouts.NormalJoinLayout;
+import net.ligreto.executor.layouts.ResultLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
@@ -381,13 +382,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Setup other parameters required for the join layout
 				joinLayout.setJoinNode(joinNode);
 				joinLayout.setLayoutNode(layoutNode);
-				joinLayout.setResultStatus(result);
 				joinLayout.setOnColumns(on1, on2);
 				joinLayout.setExcludeColumns(excl1, excl2);
 				joinLayout.setGroupByColumns(layoutNode.getGroupBy());
+				joinLayout.setResultStatus(result);
 				joinLayout.setResultSets(rs1, rs2);
 				joinLayout.setColumnCount(rs1ColCount);
-				joinLayout.setLigretoParameters(joinNode.getLigretoNode().getLigretoParameters());
 				joinLayout.start();
 				
 				// Dump the header row if requested
@@ -396,7 +396,17 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 				layouts.add(joinLayout);
 			}
-
+			LayoutNode resultNode = new LayoutNode(joinNode.getLigretoNode());
+			ResultLayout resultLayout = new ResultLayout(joinNode.getLigretoNode().getLigretoParameters());
+			resultLayout.setJoinNode(joinNode);
+			resultLayout.setLayoutNode(resultNode);
+			resultLayout.setOnColumns(on1, on2);
+			resultLayout.setExcludeColumns(excl1, excl2);
+			resultLayout.setResultSets(rs1, rs2);
+			resultLayout.setColumnCount(rs1ColCount);
+			resultLayout.start();
+			layouts.add(resultLayout);
+			
 			// The comparator instance
 			LigretoComparator rsComparator = LigretoComparator.getInstance();
 			rsComparator.setComparator(comparator);
