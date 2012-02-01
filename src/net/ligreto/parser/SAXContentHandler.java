@@ -328,9 +328,6 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("join".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
-					if (getAttributeValue(atts, "type") != null) {
-						join.setJoinType(getAttributeValue(atts, "type"));
-					}
 					if (getAttributeValue(atts, "on") != null) {
 						join.setOn(getAttributeValue(atts, "on"));
 					}
@@ -345,6 +342,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						layout = new LayoutNode(ligretoNode);
 						if (getAttributeValue(atts, "target") != null) {
 							layout.setTarget(getAttributeValue(atts, "target"));
+						}
+						if (getAttributeValue(atts, "type") != null) {
+							layout.setJoinType(getAttributeValue(atts, "type"));
 						}
 						if (getAttributeValue(atts, "diffs") != null) {
 							layout.setDiffs(getAttributeValue(atts, "diffs"));
@@ -384,10 +384,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 			case JOIN:
 				if ("sql".equals(localName)) {
-					if (join.getSqlQueries().size() > 1
-							&& (join.getJoinType() == JoinNode.JoinType.LEFT || join.getJoinType() == JoinNode.JoinType.RIGHT)) {
+					if (join.getSqlQueries().size() > 1) {
 						throw new SAXException(new LigretoException(
-								"Left or right join could have only two sql queries specified."));
+								"There could be only two sql queries specified for the join."));
 					}
 					objectStack.push(ObjectType.JOIN_SQL);
 					sql = new SqlNode(ligretoNode);
@@ -417,6 +416,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (getAttributeValue(atts, "type") != null) {
 						layout.setType(getAttributeValue(atts, "type"));
+					}
+					if (getAttributeValue(atts, "join") != null) {
+						layout.setJoinType(getAttributeValue(atts, "join"));
 					}
 					if (getAttributeValue(atts, "diffs") != null) {
 						layout.setDiffs(getAttributeValue(atts, "diffs"));

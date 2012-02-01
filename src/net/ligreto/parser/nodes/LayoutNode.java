@@ -12,9 +12,11 @@ import net.ligreto.util.MiscUtils;
  *
  */
 public class LayoutNode extends Node {
+	public enum JoinType {FULL, LEFT, RIGHT, INNER, COMPLEMENT, LEFT_COMPLEMENT, RIGHT_COMPLEMENT};
 	public enum LayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY};
 	
 	protected LayoutType layoutType = LayoutType.INTERLACED;
+	protected JoinType joinType = JoinType.FULL;
 	protected String target;
 	protected short[] rgbHlColor;
 	protected boolean diffs = false;
@@ -61,6 +63,42 @@ public class LayoutNode extends Node {
 			throw new IllegalArgumentException("The join layout could not be \"" + layoutType + "\"");
 	}
 	
+	/**
+	 * @return the joinType
+	 */
+	public JoinType getJoinType() {
+		return joinType;
+	}
+
+	/**
+	 * @param joinType the joinType to set
+	 */
+	public void setJoinType(JoinType joinType) {
+		this.joinType = joinType;
+	}
+
+	/**
+	 * @param joinType the joinType to set as string
+	 */
+	public void setJoinType(String joinType) {
+		if ("full".equals(joinType))
+			this.joinType = JoinType.FULL;
+		else if ("left".equals(joinType))
+			this.joinType = JoinType.LEFT;
+		else if ("right".equals(joinType))
+			this.joinType = JoinType.RIGHT;
+		else if ("inner".equals(joinType))
+			this.joinType = JoinType.INNER;
+		else if ("complement".equals(joinType))
+			this.joinType = JoinType.COMPLEMENT;
+		else if ("left complement".equals(joinType))
+			this.joinType = JoinType.COMPLEMENT;
+		else if ("right complement".equals(joinType))
+			this.joinType = JoinType.COMPLEMENT;
+		else
+			throw new IllegalArgumentException("The join type could not be \"" + joinType + "\"");
+	}
+
 	/**
 	 * @return the target
 	 */

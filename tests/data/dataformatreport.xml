@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="ligreto.excelDateFormat"		value="NNNNMMMM D. YYYY" />
+	<param name="ligreto.excelTimestampFormat"	value="DD.MM.YYYY HH:MM:SS" />
+	<param name="ligreto.excelTimeFormat"		value="HH:MM AM/PM" />
+	<param name="ligreto.excelIntegerFormat"	value="# ##0,00" />
+	<param name="ligreto.excelFloatFormat"		value="0,00E+00" />
+	<param name="ligreto.excelBigDecimalFormat"	value="# ##0,00" />
+	<param name="ligreto.excelStringFormat"		value="@" />
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+	</data-sources>
+	<report options="autoFilter,autoSize,headerStyle">
+		<output file="dataformatreport.xlsx"/>
+		<data>
+			<sql data-source="Source1" target="A1" header="true">select * from data_test</sql>
+		</data>
+	</report>
+</ligreto>

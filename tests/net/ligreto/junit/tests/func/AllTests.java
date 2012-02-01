@@ -16,7 +16,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	ParserTest.class,
 	InitFailureTest.class,
 	SqlReportTest.class,
-	DateTimeReportTest.class,
+	DataFormatReportTest.class,
 	JoinReportTest.class,
 	KeyReportTest.class,
 	ResultReportTest.class,

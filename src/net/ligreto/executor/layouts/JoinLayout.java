@@ -133,6 +133,81 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
+	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+		switch (layoutNode.getJoinType()) {
+		case FULL:
+			dumpRow(rowDiffs, highlightArray, resultType);
+			return true;
+		case COMPLEMENT:
+			if (resultType == JoinResultType.LEFT || resultType == JoinResultType.RIGHT) {
+				dumpRow(rowDiffs, highlightArray, resultType);
+				return true;
+			}
+			break;
+		case LEFT:
+			if (resultType == JoinResultType.LEFT || resultType == JoinResultType.INNER) {
+				dumpRow(rowDiffs, highlightArray, resultType);
+				return true;
+			}
+			break;
+		case LEFT_COMPLEMENT:
+			if (resultType == JoinResultType.LEFT) {
+				dumpRow(rowDiffs, highlightArray, resultType);
+				return true;
+			}
+			break;
+		case RIGHT:
+			if (resultType == JoinResultType.RIGHT || resultType == JoinResultType.INNER) {
+				dumpRow(rowDiffs, highlightArray, resultType);
+				return true;
+			}
+			break;
+		case RIGHT_COMPLEMENT:
+			if (resultType == JoinResultType.RIGHT) {
+				dumpRow(rowDiffs, highlightArray, resultType);
+				return true;
+			}
+			break;
+		case INNER:
+			if (resultType == JoinResultType.INNER) {
+				dumpRow(rowDiffs, highlightArray, resultType);
+				return true;
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("Unexpected value of JoinType.");
+		}
+		return false;
+	}
+
+	/**
+	 * Will dump the result row from the corresponding result sets. The method will also
+	 * call the ResultSet.next() method on the result sets where the row was processed.
+	 * 
+	 * @param rowDiffs   The number of differences encountered in the current row.
+	 * @param resultType Determines whether to dump the row from the first,
+	 *                   second or both result sets.
+	 * @throws SQLException 
+	 * @throws LigretoException 
+	 * @throws IOException 
+	 */
+	public boolean processRow(int rowDiffs, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+		return processRow(rowDiffs, null, resultType);
+	}
+
+	/**
+	 * Will dump the result row from the corresponding result sets. The method will also
+	 * call the ResultSet.next() method on the result sets where the row was processed.
+	 * The method will highlight some of the columns based on the array specified
+	 * 
+	 * @param rowDiffs   The number of differences encountered in the current row.
+	 * @param highlightArray Determines which columns should be highlighted.
+	 * @param resultType Determines whether to dump the row from the first,
+	 *                   second or both result sets.
+	 * @throws SQLException 
+	 * @throws LigretoException 
+	 * @throws IOException 
+	 */
 	public abstract void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException;
 	
 	/**

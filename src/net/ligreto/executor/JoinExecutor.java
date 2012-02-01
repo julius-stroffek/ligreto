@@ -152,7 +152,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	
 	protected ResultStatus executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException, IOException {
 		ResultStatus result = new ResultStatus();
-		JoinNode.JoinType joinType = joinNode.getJoinType();
 		List<SqlNode> sqlQueries = joinNode.getSqlQueries();
 		
 		if (sqlQueries.size() < 2)
@@ -456,33 +455,24 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				int cResult = rsComparator.compareAsDataSource(rs1, on1, rs2, on2);
 				switch (cResult) {
 				case -1:
-					if (joinType == JoinNode.JoinType.LEFT
-							|| joinType == JoinNode.JoinType.FULL
-							|| joinType == JoinNode.JoinType.COMPLEMENT)
-					{
-						for (JoinLayout joinLayout : layouts) {
+					for (JoinLayout joinLayout : layouts) {
+						if (joinLayout.processRow(otherColumnCount, JoinResultType.LEFT)) {
 							result.addRow(joinLayout.getLayoutNode().getResult());
-							joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
 						}
 					}
 					hasNext1 = rs1.next();
 					pCol1 = col1;
 					break;
 				case 0:
-					if (joinType == JoinNode.JoinType.LEFT
-							|| joinType == JoinNode.JoinType.RIGHT
-							|| joinType == JoinNode.JoinType.INNER
-							|| joinType == JoinNode.JoinType.FULL)
-					{
-						// We will break if we are supposed to produce only differences
-						// and there are no differences present.
-						int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
+					// We will break if we are supposed to produce only differences
+					// and there are no differences present.
+					int[] cmpArray = rsComparator.compareOthersAsDataSource(rs1, on1, excl1, rs2, on2, excl2);
 					
-						int rowDiffs = MiscUtils.countNonZeros(cmpArray);
-						for (JoinLayout joinLayout : layouts) {
-							if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
+					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
+					for (JoinLayout joinLayout : layouts) {
+						if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
+							if (joinLayout.processRow(rowDiffs, cmpArray, JoinResultType.INNER)) {
 								result.addRow(joinLayout.getLayoutNode().getResult());
-								joinLayout.dumpRow(rowDiffs, cmpArray, JoinResultType.INNER);
 							}
 						}
 					}
@@ -493,94 +483,84 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol2 = col2;
 					break;
 				case 1:
-					if (joinType == JoinNode.JoinType.RIGHT
-							|| joinType == JoinNode.JoinType.FULL
-							|| joinType == JoinNode.JoinType.COMPLEMENT)
-					{
-						for (JoinLayout joinLayout : layouts) {
+					for (JoinLayout joinLayout : layouts) {
+						if (joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT)) {
 							result.addRow(joinLayout.getLayoutNode().getResult());
-							joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
-						}						
-					}
+						}
+					}						
 					pCol2 = col2;
 					hasNext2 = rs2.next();
 					break;
 				}				
 			}
-			if (joinType == JoinNode.JoinType.LEFT
-					|| joinType == JoinNode.JoinType.FULL
-					|| joinType == JoinNode.JoinType.COMPLEMENT)
-			{
-				while (hasNext1) {
-					// Compare the subsequent rows in each result set and see whether they match
-					// the collation we are using here for processing
-					col1 = LigretoComparator.duplicate(rs1, on1);
-					int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
+			while (hasNext1) {
+				// Compare the subsequent rows in each result set and see whether they match
+				// the collation we are using here for processing
+				col1 = LigretoComparator.duplicate(rs1, on1);
+				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 
-					if (dResult1 == 0) {
-						log.error("Duplicate entries found.");
-						rsComparator.error(log, col1);
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
-					}
-					if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
-						log.error("Wrong collation found.");
-						rsComparator.error(log, pCol1);
-						rsComparator.error(log, col1);
-						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
-						switch (joinNode.getCollation()) {
-						case DUMP:
-							e.printStackTrace();
-							break;
-						case FAIL:
-							throw e;
-						}
-					}
-					pCol1 = col1;
-
-					for (JoinLayout joinLayout : layouts) {
-						result.addRow(joinLayout.getLayoutNode().getResult());
-						joinLayout.dumpRow(otherColumnCount, JoinResultType.LEFT);
-					}
-					hasNext1 = rs1.next();
+				if (dResult1 == 0) {
+					log.error("Duplicate entries found.");
+					rsComparator.error(log, col1);
+					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 				}
-			}
-			if (joinType == JoinNode.JoinType.RIGHT
-					|| joinType == JoinNode.JoinType.FULL
-					|| joinType == JoinNode.JoinType.COMPLEMENT)
-			{
-				while (hasNext2) {
-					// Compare the subsequent rows in each result set and see whether they match
-					// the collation we are using here for processing
-					col2 = LigretoComparator.duplicate(rs2, on2);
-					int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
-
-					if (dResult2 == 0) {
-						log.error("Duplicate entries found.");
-						rsComparator.error(log, col2);
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
+					log.error("Wrong collation found.");
+					rsComparator.error(log, pCol1);
+					rsComparator.error(log, col1);
+					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
+					switch (joinNode.getCollation()) {
+					case DUMP:
+						e.printStackTrace();
+						break;
+					case FAIL:
+						throw e;
 					}
-					if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
-						log.error("Wrong collation found.");
-						rsComparator.error(log, pCol2);
-						rsComparator.error(log, col2);
-						CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
-						switch (joinNode.getCollation()) {
-						case DUMP:
-							e.printStackTrace();
-							break;
-						case FAIL:
-							throw e;
-						}
-					}
-					pCol2 = col2;
-					
-					for (JoinLayout joinLayout : layouts) {
-						result.addRow(joinLayout.getLayoutNode().getResult());
-						joinLayout.dumpRow(otherColumnCount, JoinResultType.RIGHT);
-					}
-					hasNext2 = rs2.next();
 				}
+				pCol1 = col1;
+
+				for (JoinLayout joinLayout : layouts) {
+					if (joinLayout.processRow(otherColumnCount, JoinResultType.LEFT)) {
+						result.addRow(joinLayout.getLayoutNode().getResult());
+					}
+				}
+				hasNext1 = rs1.next();
 			}
+
+			while (hasNext2) {
+				// Compare the subsequent rows in each result set and see whether they match
+				// the collation we are using here for processing
+				col2 = LigretoComparator.duplicate(rs2, on2);
+				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
+
+				if (dResult2 == 0) {
+					log.error("Duplicate entries found.");
+					rsComparator.error(log, col2);
+					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+				}
+				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
+					log.error("Wrong collation found.");
+					rsComparator.error(log, pCol2);
+					rsComparator.error(log, col2);
+					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+					switch (joinNode.getCollation()) {
+					case DUMP:
+						e.printStackTrace();
+						break;
+					case FAIL:
+						throw e;
+					}
+				}
+				pCol2 = col2;
+				
+				for (JoinLayout joinLayout : layouts) {
+					if (joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT)) {
+						result.addRow(joinLayout.getLayoutNode().getResult());
+					}
+				}
+				hasNext2 = rs2.next();
+			}
+
 			for (JoinLayout joinLayout : layouts) {
 				joinLayout.finish();
 			}

@@ -39,7 +39,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  *   <li>autoFilter</li>
  *   <li>autoSize</li>
  *   <li>formatHeader</li>
- *   <li>noDateTimeFormat</li>
+ *   <li>noDataFormat</li>
  * </ul>
  * 
  * @author Julius Stroffek
@@ -123,7 +123,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	protected boolean headerStyle = false;
 	
 	/** Indicates whether the date/time cells should be auto formatted. */
-	protected boolean noDateTimeFormat = false;
+	protected boolean noDataFormat = false;
 	
 	/** Maximal column width for auto sized columns. */
 	protected int maxColumnWidth = 20480; 
@@ -174,17 +174,17 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 
 	/**
-	 * @return the noDateTimeFormat
+	 * @return the noDataFormat
 	 */
-	public boolean isNoDateTimeFormat() {
-		return noDateTimeFormat;
+	public boolean isNoDataFormat() {
+		return noDataFormat;
 	}
 
 	/**
-	 * @param noDateTimeFormat the noDateTimeFormat to set
+	 * @param noDataFormat the noDataFormat to set
 	 */
-	public void setNoDateTimeFormat(boolean noDateTimeFormat) {
-		this.noDateTimeFormat = noDateTimeFormat;
+	public void setNoDataFormat(boolean noDataFormat) {
+		this.noDataFormat = noDataFormat;
 	}
 
 	/**
@@ -202,7 +202,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 		newTarget.setAutoFilter(isAutoFilter());
 		newTarget.setAutoSize(isAutoSize());
 		newTarget.setHeaderStyle(isHeaderStyle());
-		newTarget.setNoDateTimeFormat(isNoDateTimeFormat());
+		newTarget.setNoDataFormat(isNoDataFormat());
+		newTarget.setLigretoParameters(ligretoParameters);
 		newTarget.setDataFormat(dataFormat);
 		newTarget.outputFormat = outputFormat;
 		return newTarget;
@@ -677,8 +678,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 				autoSize = true;
 			} else if ("headerStyle".equals(o)) {	
 				headerStyle = true;
-			} else if ("noDateTimeFormat".equals(o)) {
-				noDateTimeFormat = true;
+			} else if ("noDataFormat".equals(o)) {
+				noDataFormat = true;
 			} else {
 				throw new LigretoException("Unsupported option specified: '" + o + "'");
 			}

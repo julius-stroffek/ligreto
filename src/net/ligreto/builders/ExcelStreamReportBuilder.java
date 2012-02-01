@@ -34,7 +34,8 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 		newTarget.setAutoFilter(isAutoFilter());
 		newTarget.setAutoSize(isAutoSize());
 		newTarget.setHeaderStyle(isHeaderStyle());
-		newTarget.setNoDateTimeFormat(isNoDateTimeFormat());
+		newTarget.setNoDataFormat(isNoDataFormat());
+		newTarget.setLigretoParameters(ligretoParameters);
 		newTarget.setDataFormat(dataFormat);
 		newTarget.outputFormat = outputFormat;
 		return newTarget;

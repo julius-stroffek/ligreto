@@ -44,7 +44,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  *   <li>autoFilter</li>
  *   <li>autoSize</li>
  *   <li>formatHeader</li>
- *   <li>noDateTimeFormat</li>
+ *   <li>noDataFormat</li>
  * </ul>
  * 
  * @author Julius Stroffek
@@ -92,7 +92,7 @@ public class ExcelReportTarget extends ReportTarget {
 	protected boolean headerStyle = false;
 	
 	/** Indicates whether the date/time cells should be auto formatted. */
-	protected boolean noDateTimeFormat = false;
+	protected boolean noDataFormat = false;
 	
 	/** Maximal column width for auto sized columns. */
 	protected int maxColumnWidth = 20480;
@@ -158,17 +158,17 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 
 	/**
-	 * @return the noDateTimeFormat
+	 * @return the noDataFormat
 	 */
-	public boolean isNoDateTimeFormat() {
-		return noDateTimeFormat;
+	public boolean isNoDataFormat() {
+		return noDataFormat;
 	}
 
 	/**
-	 * @param noDateTimeFormat the noDateTimeFormat to set
+	 * @param noDataFormat the noDataFormat to set
 	 */
-	public void setNoDateTimeFormat(boolean noDateTimeFormat) {
-		this.noDateTimeFormat = noDateTimeFormat;
+	public void setNoDataFormat(boolean noDataFormat) {
+		this.noDataFormat = noDataFormat;
 	}
 
 	/**
@@ -231,37 +231,45 @@ public class ExcelReportTarget extends ReportTarget {
 
 	@Override
 	public void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
+		String dataFormat = null;
 		Cell cell = createCell(row, actCol + i);
 		if (o instanceof Integer) {
+			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
 			cell.setCellValue(((Integer)o).intValue());
 		} else if (o instanceof Long) {
+			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
 			cell.setCellValue(((Long)o).longValue());
 		} else if (o instanceof Double) {
+			dataFormat = ligretoParameters.getExcelFloatFormat(); 
 			cell.setCellValue(((Double)o).doubleValue());
 		} else if (o instanceof Float) {
+			dataFormat = ligretoParameters.getExcelFloatFormat(); 
 			cell.setCellValue(((Float)o).floatValue());
 		} else if (o instanceof BigDecimal) {
-			cell.setCellValue(((BigDecimal)o).toString());
+			dataFormat = ligretoParameters.getExcelBigDecimalFormat();
+			if (!noDataFormat && dataFormat != null && !"@".equals(dataFormat)) {
+				cell.setCellValue(((BigDecimal)o).doubleValue());
+			} else {
+				cell.setCellValue(((BigDecimal)o).toString());
+			}
 		} else if (o instanceof Date) {
+			dataFormat = ligretoParameters.getExcelDateFormat(); 
 			cell.setCellValue(((Date)o));
-			if (!noDateTimeFormat) {
-				setDataFormat(cell, "yyyy-mm-dd");
-			}
 		} else if (o instanceof Timestamp) {
+			dataFormat = ligretoParameters.getExcelTimestampFormat(); 
 			cell.setCellValue(((Timestamp)o));
-			if (!noDateTimeFormat) {
-				setDataFormat(cell, "yyyy-mm-dd hh:mm:ss");
-			}
 		} else if (o instanceof Time) {
+			dataFormat = ligretoParameters.getExcelTimeFormat(); 
 			cell.setCellValue(((Time)o));
-			if (!noDateTimeFormat) {
-				setDataFormat(cell, "hh:mm:ss");
-			}
 		} else {
 			cell.setCellValue(o.toString());
+			dataFormat = ligretoParameters.getExcelStringFormat(); 
 		}
 		if (rgb != null) {
 			setCellColor(cell, rgb);
+		}
+		if (!noDataFormat && dataFormat != null && !"".equals(dataFormat)) {
+			setDataFormat(cell, dataFormat);
 		}
 		switch (cellFormat) {
 		case UNCHANGED:

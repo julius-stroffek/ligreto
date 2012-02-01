@@ -36,6 +36,27 @@ public class LigretoParameters {
 	
 	/** Indicates whether the null values should be collated first. Otherwise they are collated last. */
 	protected boolean nullsFirst = true;
+	
+	/** Specifies the format for integer numbers in excel spread sheet. */
+	protected String excelIntegerFormat = null;
+
+	/** Specifies the format for float numbers in excel spread sheet. */
+	protected String excelFloatFormat = null;
+	
+	/** Specifies the format for date type in excel spread sheet. */
+	protected String excelDateFormat = "yyyy-mm-dd";
+	
+	/** Specifies the format for time stamp type in excel spread sheet. */
+	protected String excelTimestampFormat = "yyyy-mm-dd hh:mm:ss";	
+
+	/** Specifies the format for time type in excel spread sheet. */
+	protected String excelTimeFormat = "hh:mm:ss";	
+	
+	/** Specifies the format for big decimal type in excel spread sheet. */
+	protected String excelBigDecimalFormat = null;
+	
+	/** Specifies the format for string type in excel spread sheet. */
+	protected String excelStringFormat = null;
 
 	public String getNullString() {
 		return nullString;
@@ -111,6 +132,90 @@ public class LigretoParameters {
 
 	public void setNullsFirst(String nullsFirst) {
 		this.nullsFirst = Boolean.parseBoolean(nullsFirst);
+	}
+
+	public String getExcelIntegerFormat() {
+		return excelIntegerFormat;
+	}
+
+	public void setExcelIntegerFormat(String excelIntegerFormat) {
+		this.excelIntegerFormat = excelIntegerFormat;
+	}
+
+	public void setExcelIntegerFormatAsString(String excelIntegerFormat) {
+		this.excelIntegerFormat = excelIntegerFormat;
+	}
+
+	public String getExcelFloatFormat() {
+		return excelFloatFormat;
+	}
+
+	public void setExcelFloatFormat(String excelFloatFormat) {
+		this.excelFloatFormat = excelFloatFormat;
+	}
+
+	public void setExcelFloatFormatAsString(String excelFloatFormat) {
+		this.excelFloatFormat = excelFloatFormat;
+	}
+
+	public String getExcelDateFormat() {
+		return excelDateFormat;
+	}
+
+	public void setExcelDateFormat(String excelDateFormat) {
+		this.excelDateFormat = excelDateFormat;
+	}
+
+	public void setExcelDateFormatAsString(String excelDateFormat) {
+		this.excelDateFormat = excelDateFormat;
+	}
+
+	public String getExcelTimestampFormat() {
+		return excelTimestampFormat;
+	}
+
+	public void setExcelTimestampFormat(String excelTimestampFormat) {
+		this.excelTimestampFormat = excelTimestampFormat;
+	}
+
+	public void setExcelTimestampFormatAsString(String excelTimestampFormat) {
+		this.excelTimestampFormat = excelTimestampFormat;
+	}
+
+	public String getExcelTimeFormat() {
+		return excelTimeFormat;
+	}
+
+	public void setExcelTimeFormat(String excelTimeFormat) {
+		this.excelTimeFormat = excelTimeFormat;
+	}
+
+	public void setExcelTimeFormatAsString(String excelTimeFormat) {
+		this.excelTimeFormat = excelTimeFormat;
+	}
+
+	public String getExcelBigDecimalFormat() {
+		return excelBigDecimalFormat;
+	}
+
+	public void setExcelBigDecimalFormat(String excelBigDecimalFormat) {
+		this.excelBigDecimalFormat = excelBigDecimalFormat;
+	}
+
+	public void setExcelBigDecimalFormatAsString(String excelBigDecimalFormat) {
+		this.excelBigDecimalFormat = excelBigDecimalFormat;
+	}
+
+	public String getExcelStringFormat() {
+		return excelStringFormat;
+	}
+
+	public void setExcelStringFormat(String excelStringFormat) {
+		this.excelStringFormat = excelStringFormat;
+	}
+
+	public void setExcelStringFormatAsString(String excelStringFormat) {
+		this.excelStringFormat = excelStringFormat;
 	}
 
 	/**
