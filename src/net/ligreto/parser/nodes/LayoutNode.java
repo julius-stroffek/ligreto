@@ -13,7 +13,7 @@ import net.ligreto.util.MiscUtils;
  */
 public class LayoutNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER, COMPLEMENT, LEFT_COMPLEMENT, RIGHT_COMPLEMENT};
-	public enum LayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY};
+	public enum LayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY, SUMMARY};
 	
 	protected LayoutType layoutType = LayoutType.INTERLACED;
 	protected JoinType joinType = JoinType.FULL;
@@ -59,6 +59,8 @@ public class LayoutNode extends Node {
 			this.layoutType = LayoutType.AGGREGATED;			
 		else if ("key".equals(layoutType))
 			this.layoutType = LayoutType.KEY;			
+		else if ("summary".equals(layoutType))
+			this.layoutType = LayoutType.SUMMARY;			
 		else
 			throw new IllegalArgumentException("The join layout could not be \"" + layoutType + "\"");
 	}
@@ -92,9 +94,9 @@ public class LayoutNode extends Node {
 		else if ("complement".equals(joinType))
 			this.joinType = JoinType.COMPLEMENT;
 		else if ("left complement".equals(joinType))
-			this.joinType = JoinType.COMPLEMENT;
+			this.joinType = JoinType.LEFT_COMPLEMENT;
 		else if ("right complement".equals(joinType))
-			this.joinType = JoinType.COMPLEMENT;
+			this.joinType = JoinType.RIGHT_COMPLEMENT;
 		else
 			throw new IllegalArgumentException("The join type could not be \"" + joinType + "\"");
 	}

@@ -83,6 +83,16 @@ public abstract class JoinLayout {
 	/** The description of 2nd data source. */
 	protected String dataSourceDesc2 = null;
 	
+	protected int equalRowCount = 0;
+	protected int matchingRowCount = 0;
+	protected int differentRowCount = 0;
+	protected int totalRowCount = 0;
+	protected int rowCountSrc1 = 0;
+	protected int nonMatchingRowsSrc1 = 0;
+	protected int rowCountSrc2 = 0;
+	protected int nonMatchingRowsSrc2 = 0;
+	protected int columnDifferences = 0;
+
 	/** Constructs the layout having the specified report builder. */
 	protected JoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		this.targetBuilder = targetBuilder;
@@ -109,6 +119,8 @@ public abstract class JoinLayout {
 			return new AggregatedLayout(targetBuilder, ligretoParameters);
 		case KEY:
 			return new KeyJoinLayout(targetBuilder, ligretoParameters);
+		case SUMMARY:
+			return new SummaryLayout(targetBuilder, ligretoParameters);
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinLayoutType.");
 		}
@@ -134,50 +146,120 @@ public abstract class JoinLayout {
 	 * @throws IOException 
 	 */
 	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+		
+		/*
+		 * First switch on the type of join and then decide whether the specified
+		 * result type should be part of the join result.
+		 */
 		switch (layoutNode.getJoinType()) {
 		case FULL:
-			dumpRow(rowDiffs, highlightArray, resultType);
-			return true;
-		case COMPLEMENT:
-			if (resultType == JoinResultType.LEFT || resultType == JoinResultType.RIGHT) {
+			switch (resultType) {
+			case LEFT:
+				rowCountSrc1++;
+				nonMatchingRowsSrc1++;
 				dumpRow(rowDiffs, highlightArray, resultType);
-				return true;
+				break;
+			case RIGHT:
+				rowCountSrc2++;
+				nonMatchingRowsSrc2++;
+				dumpRow(rowDiffs, highlightArray, resultType);
+				break;
+			case INNER:
+				rowCountSrc1++;
+				rowCountSrc2++;
+				matchingRowCount++;
+				dumpRow(rowDiffs, highlightArray, resultType);
+				break;
+			default:
+				return false;
+			}
+			break;
+		case COMPLEMENT:
+			switch (resultType) {
+			case LEFT:
+				rowCountSrc1++;
+				nonMatchingRowsSrc1++;
+				dumpRow(rowDiffs, highlightArray, resultType);
+				break;
+			case RIGHT:
+				rowCountSrc2++;
+				nonMatchingRowsSrc2++;
+				dumpRow(rowDiffs, highlightArray, resultType);
+				break;
+			default:
+				return false;
 			}
 			break;
 		case LEFT:
-			if (resultType == JoinResultType.LEFT || resultType == JoinResultType.INNER) {
+			switch (resultType) {
+			case LEFT:
+				rowCountSrc1++;
+				nonMatchingRowsSrc1++;
 				dumpRow(rowDiffs, highlightArray, resultType);
-				return true;
+				break;
+			case INNER:
+				rowCountSrc1++;
+				rowCountSrc2++;
+				matchingRowCount++;
+				dumpRow(rowDiffs, highlightArray, resultType);
+				break;
+			default:
+				return false;
 			}
 			break;
 		case LEFT_COMPLEMENT:
-			if (resultType == JoinResultType.LEFT) {
-				dumpRow(rowDiffs, highlightArray, resultType);
-				return true;
+			if (resultType != JoinResultType.LEFT) {
+				return false;
 			}
+			rowCountSrc1++;
+			nonMatchingRowsSrc1++;
+			dumpRow(rowDiffs, highlightArray, resultType);
 			break;
 		case RIGHT:
-			if (resultType == JoinResultType.RIGHT || resultType == JoinResultType.INNER) {
+			switch (resultType) {
+			case RIGHT:
+				rowCountSrc2++;
+				nonMatchingRowsSrc2++;
 				dumpRow(rowDiffs, highlightArray, resultType);
-				return true;
+				break;
+			case INNER:
+				rowCountSrc1++;
+				rowCountSrc2++;
+				matchingRowCount++;
+				dumpRow(rowDiffs, highlightArray, resultType);
+				break;
+			default:
+				return false;
 			}
 			break;
 		case RIGHT_COMPLEMENT:
-			if (resultType == JoinResultType.RIGHT) {
-				dumpRow(rowDiffs, highlightArray, resultType);
-				return true;
+			if (resultType != JoinResultType.RIGHT) {
+				return false;
 			}
+			rowCountSrc2++;
+			nonMatchingRowsSrc2++;
+			dumpRow(rowDiffs, highlightArray, resultType);
 			break;
 		case INNER:
-			if (resultType == JoinResultType.INNER) {
-				dumpRow(rowDiffs, highlightArray, resultType);
-				return true;
+			if (resultType != JoinResultType.INNER) {
+				return false;
 			}
+			rowCountSrc1++;
+			rowCountSrc2++;
+			matchingRowCount++;
+			dumpRow(rowDiffs, highlightArray, resultType);
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinType.");
 		}
-		return false;
+		totalRowCount++;
+		columnDifferences += rowDiffs;
+		if (resultType != JoinResultType.INNER || rowDiffs > 0) {
+			differentRowCount++;
+		} else {
+			equalRowCount++;
+		}
+		return true;
 	}
 
 	/**

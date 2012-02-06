@@ -26,13 +26,9 @@ import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
-import net.ligreto.executor.layouts.AggregatedLayout;
-import net.ligreto.executor.layouts.DetailedJoinLayout;
-import net.ligreto.executor.layouts.InterlacedJoinLayout;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 import net.ligreto.executor.layouts.KeyJoinLayout;
-import net.ligreto.executor.layouts.NormalJoinLayout;
 import net.ligreto.executor.layouts.ResultLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
@@ -353,31 +349,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 
 				/* Create the proper implementation of the join layout. */
 				JoinLayout joinLayout;
-				if (otherColumnCount == 0) {
+				if (otherColumnCount == 0 && layoutNode.getType() != LayoutNode.LayoutType.SUMMARY) {
 					if (layoutNode.getType() != LayoutNode.LayoutType.KEY) {
 						log.info("No columns to compare. Switching to KEY join layout.");
 					}
 					joinLayout = new KeyJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
 				} else {
-					switch (layoutNode.getType()) {
-					case NORMAL:
-						joinLayout = new NormalJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-						break;
-					case INTERLACED:
-						joinLayout = new InterlacedJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-						break;
-					case DETAILED:
-						joinLayout = new DetailedJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-						break;
-					case AGGREGATED:
-						joinLayout = new AggregatedLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-						break;
-					case KEY:
-						joinLayout = new KeyJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-						break;
-					default:
-						throw new LigretoException("Unexpected value of JoinLayoutType.");
-					}
+					joinLayout = JoinLayout.createInstance(layoutNode.getType(), targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
 				}
 				// Setup other parameters required for the join layout
 				joinLayout.setJoinNode(joinNode);

@@ -7,7 +7,6 @@ import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 
 public class ResultLayout extends AggregatedLayout {
 

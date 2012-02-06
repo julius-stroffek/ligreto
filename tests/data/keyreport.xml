@@ -11,18 +11,18 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report options="autoFilter,autoSize ,headerStyle">
+	<report options="autoFilter,autoSize ,headerStyle" result="true">
 		<output file="keyreport.xlsx"/>
 		<data>
-			<join on="1,2" target="keys!A1" layout="normal">
+			<join on="1,2" target="keys!A1" result="true" layout="normal">
 				<sql data-source="Source1">select * from key_table1</sql>
 				<sql data-source="Source2">select * from key_table2</sql>
 			</join>
-			<join target="nokey1!A1" layout="normal">
+			<join target="nokey1!A1" result="true" layout="normal">
 				<sql data-source="Source1">select 1024 as Col1 from sysibm.sysdummy1</sql>
 				<sql data-source="Source2">select 1025 as Col2 from sysibm.sysdummy1</sql>
 			</join>
-			<join target="nokey2!A1" layout="normal">
+			<join target="nokey2!A1" result="true" layout="normal">
 				<sql data-source="Source1">select 1026 as Col1 from sysibm.sysdummy1</sql>
 				<sql data-source="Source2">select 1026 as Col2 from sysibm.sysdummy1</sql>
 			</join>

@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
  * @author Julius Stroffek
  *
  */
-public class AggregatedReportTest {
+public class AggregatedSummaryReportTest {
 
 	/** The number of rows to be tested. */
 	public static final long rowCount = 1000;
@@ -70,32 +70,37 @@ public class AggregatedReportTest {
 		
 		long startStamp = System.currentTimeMillis();
 		for (long l=0; l < rowCount; l++) {
-			// Insert data into 1st table
-			pstm1.setLong(1, l);
 			
-			@SuppressWarnings("deprecation")
-			Timestamp stamp1 = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
+			if (l % 31 != 0) {
+				// Insert data into 1st table
+				pstm1.setLong(1, l);
 			
-			pstm1.setTimestamp(2, stamp1);
-			pstm1.setInt(3, (int)(l % 5));
-			pstm1.setString(4, "LastName" + l);
-			pstm1.setInt(5, (int) (l % 120));
-			pstm1.execute();
+				@SuppressWarnings("deprecation")
+				Timestamp stamp1 = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
+			
+				pstm1.setTimestamp(2, stamp1);
+				pstm1.setInt(3, (int)(l % 5));
+				pstm1.setString(4, "LastName" + l);
+				pstm1.setInt(5, (int) (l % 120));
+				pstm1.execute();
+			}
 			if (l % commitInterval == 0) {
 				cnn1.commit();
 			}
 			
-			// Insert data into 2nd table
-			pstm2.setLong(1, l);		
+			if (l % 133 != 0) {
+				// Insert data into 2nd table
+				pstm2.setLong(1, l);		
 			
-			@SuppressWarnings("deprecation")
-			Timestamp stamp2 = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
+				@SuppressWarnings("deprecation")
+				Timestamp stamp2 = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
 			
-			pstm2.setTimestamp(2, stamp2);
-			pstm2.setInt(3, (int)(l % 7));
-			pstm2.setString(4, "LastName" + l);
-			pstm2.setInt(5, (int) (l % 120));
-			pstm2.execute();
+				pstm2.setTimestamp(2, stamp2);
+				pstm2.setInt(3, (int)(l % 7));
+				pstm2.setString(4, "LastName" + l);
+				pstm2.setInt(5, (int) (l % 120));
+				pstm2.execute();
+			}
 			if (l % commitInterval == 0) {
 				cnn2.commit();
 			}
@@ -130,6 +135,17 @@ public class AggregatedReportTest {
 		).areSame());		
 	}
 	
+	@Test
+	public void testSummaryReport() throws SAXException, IOException, LigretoException {
+		LigretoNode ligreto = Parser.parse("summaryreport.xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		executor.execute();
+		Assert.assertTrue(new XSSFWorkbookComparator(
+				new XSSFWorkbook(new FileInputStream("summaryreport.xlsx")),
+				new XSSFWorkbook(new FileInputStream("desired/summaryreport.xlsx"))
+		).areSame());		
+	}
+
 	@Test
 	public void testMultipleLayoutsReport() throws SAXException, IOException, LigretoException {
 		LigretoNode ligreto = Parser.parse("multilayoutreport.xml");

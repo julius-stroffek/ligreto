@@ -11,51 +11,51 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report name="Detailed Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
+	<report name="Detailed Report" options="autoFilter, autoSize,headerStyle" locale="en_US" result="true">
 		<output file="detailedreport.xlsx"/>
 		<data>
-			<join on="1" target="full!B2" type="full" header="true" highlight="true" layout="detailed" locale="en">
+			<join on="1" target="full!B2" type="full" header="true" highlight="true" result="true" layout="detailed" locale="en">
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</join>
-			<join target="left!B2" type="left" header="true" highlight="false" layout="detailed" locale="en_GB">
+			<join target="left!B2" type="left" header="true" highlight="false" result="true" layout="detailed" locale="en_GB">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>
-			<join target="right!B2" type="right" header="true" highlight="false" layout="detailed" locale="cs_CZ">
+			<join target="right!B2" type="right" header="true" highlight="false" result="true" layout="detailed" locale="cs_CZ">
 				<sql type="call" data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>
-			<join target="inner!B2" type="inner" header="true" highlight="false" layout="detailed" locale="sk">
+			<join target="inner!B2" type="inner" header="true" highlight="false" result="true" layout="detailed" locale="sk">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql type="call" data-source="Source2" on="1">select * from join_table2</sql>
 			</join>
-			<join on="1" target="inner!B20" type="full" header="true" highlight="true" layout="detailed" locale="sk_SK">
+			<join on="1" target="inner!B20" type="full" header="true" highlight="true" result="true" layout="detailed" locale="sk_SK">
 				<sql type="call" data-source="Source1">select * from join_table1</sql>
 				<sql type="call" data-source="Source1">select * from join_table1</sql>
 			</join>
-			<join target="diffs!B2" type="full" header="true" diffs="true" layout="detailed" >
+			<join target="diffs!B2" type="full" header="true" diffs="true" result="true" layout="detailed" >
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>
-			<join target="append!B2" type="inner" header="true" diffs="true" layout="detailed" hlColor="#20d020">
+			<join target="append!B2" type="inner" header="true" diffs="true" result="true" layout="detailed" hlColor="#20d020">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>
-			<join target="append!B2" type="inner" header="false" append="true" diffs="true" layout="detailed" hlColor="#2020d0">
+			<join target="append!B2" type="inner" header="false" append="true" diffs="true" result="true" layout="detailed" hlColor="#2020d0">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>
-			<join target="multicols!A1" type="full" header="true" diffs="true" layout="detailed" hlColor="#2020d0">
+			<join target="multicols!A1" type="full" header="true" diffs="true" result="true" layout="detailed" hlColor="#2020d0">
 				<sql data-source="Source1" on="1,2,3">select id, 'ABC' aco, cast('ABCD' as char(6)) bco, first_name, last_name, age from join_table1</sql>
 				<sql data-source="Source2" on="1,2,3">select id, 'ABC' aco, 'ABCD' bco, first_name, last_name, age from join_table2</sql>
 			</join>
 		</data>
 	</report>
-	<report name="Detailed Stream Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
+	<report name="Detailed Stream Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" result="true" locale="en_US">
 		<output file="streamdetailedreport.xlsx"/>
 		<data>
-			<join on="1" target="full!B2" type="full" header="true" highlight="true" layout="detailed" locale="en">
+			<join on="1" target="full!B2" type="full" header="true" highlight="true" result="true" layout="detailed" locale="en">
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</join>
