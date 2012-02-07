@@ -26,7 +26,7 @@ public class LigretoParameters {
 	protected String missingString = "<missing>";
 	
 	/** The string displayed in case of NaN value. */
-	protected String nanString = "NaN";
+	protected String nanString = "<NaN>";
 	
 	/** The collator implementation to be used. */
 	protected String collatorClass = null;

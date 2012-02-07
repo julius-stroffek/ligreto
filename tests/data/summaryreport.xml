@@ -18,11 +18,11 @@
  				<layout type="summary" join="full" target="full!A1"/>
 				<layout type="summary" join="left" target="left!A1"/>
 				<layout type="summary" join="right" target="right!A1"/>
+				<layout type="summary" join="inner" target="inner!A1"/>
 				<sql data-source="Source1">select * from aggregation_table1</sql>
 				<sql data-source="Source2">select * from aggregation_table2</sql>
 			</join>
  			<join on="1">
-				<layout type="summary" join="inner" target="inner!A1"/>
 				<layout type="summary" join="complement" target="complement!A1"/>
 				<layout type="summary" join="left complement" target="lcomp!A1"/>
 				<layout type="summary" join="right complement" target="rcomp!A1"/>

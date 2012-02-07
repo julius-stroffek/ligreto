@@ -240,14 +240,27 @@ public class ExcelReportTarget extends ReportTarget {
 			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
 			cell.setCellValue(((Long)o).longValue());
 		} else if (o instanceof Double) {
-			dataFormat = ligretoParameters.getExcelFloatFormat(); 
-			cell.setCellValue(((Double)o).doubleValue());
+			double dVal = (Double) o;
+			dataFormat = ligretoParameters.getExcelFloatFormat();
+			if (Double.isNaN(dVal)) {
+				cell.setCellValue(ligretoParameters.getNanString());
+			} else {
+				cell.setCellValue(dVal);
+			}
 		} else if (o instanceof Float) {
-			dataFormat = ligretoParameters.getExcelFloatFormat(); 
-			cell.setCellValue(((Float)o).floatValue());
+			float fVal = (Float) o;
+			dataFormat = ligretoParameters.getExcelFloatFormat();
+			if (Float.isNaN(fVal)) {
+				cell.setCellValue(ligretoParameters.getNanString());
+			} else {
+				cell.setCellValue(fVal);
+			}
 		} else if (o instanceof BigDecimal) {
+			BigDecimal bdVal = (BigDecimal) o;
 			dataFormat = ligretoParameters.getExcelBigDecimalFormat();
-			if (!noDataFormat && dataFormat != null && !"@".equals(dataFormat)) {
+			if (Double.isNaN(bdVal.doubleValue())) {
+				cell.setCellValue(ligretoParameters.getNanString());
+			} else if (!noDataFormat && dataFormat != null && !"@".equals(dataFormat)) {
 				cell.setCellValue(((BigDecimal)o).doubleValue());
 			} else {
 				cell.setCellValue(((BigDecimal)o).toString());
