@@ -25,7 +25,7 @@ public class LayoutNode extends Node {
 	protected boolean append = false;
 	protected boolean result = true;
 	protected String groupBy;
-//	protected ReportNode reportNode;
+	protected ResultNode resultNode;
 	
 	public LayoutNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
@@ -278,6 +278,13 @@ public class LayoutNode extends Node {
 			values[i] = Integer.parseInt(sValues[i]);
 		}
 		return values;
+	}
+
+	/**
+	 * @param resultNode the result node to set
+	 */
+	public void setResultNode(ResultNode resultNode) {
+		this.resultNode = resultNode;
 	}
 		
 }

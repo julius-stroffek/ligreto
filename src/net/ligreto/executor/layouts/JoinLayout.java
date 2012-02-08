@@ -83,14 +83,31 @@ public abstract class JoinLayout {
 	/** The description of 2nd data source. */
 	protected String dataSourceDesc2 = null;
 	
+	/** The number of rows that are equal. */
 	protected int equalRowCount = 0;
+	
+	/** The number of rows that matched on the specified key. */
 	protected int matchingRowCount = 0;
+	
+	/** The number of rows that differs in any of the compared columns (including non-matched rows). */
 	protected int differentRowCount = 0;
+	
+	/** The total number of rows. */
 	protected int totalRowCount = 0;
+	
+	/** The number of rows on 1st data source. */
 	protected int rowCountSrc1 = 0;
+	
+	/** The number of rows that have not matched from the 1st data source. */
 	protected int nonMatchingRowsSrc1 = 0;
+	
+	/** The number of rows on 2nd data source. */
 	protected int rowCountSrc2 = 0;
+	
+	/** The number of rows that have not matched from the 2nd data source. */
 	protected int nonMatchingRowsSrc2 = 0;
+	
+	/** The number of column differences across all the rows. */
 	protected int columnDifferences = 0;
 
 	/** Constructs the layout having the specified report builder. */
@@ -103,7 +120,6 @@ public abstract class JoinLayout {
 	 * Constructs the layout of the specified type.
 	 * 
 	 * @param layoutType The type of the layout to create.
-	 * @param reportBuilder The report builder used for report generation.
 	 * @param ligretoParameters The global ligreto parameters to use.
 	 * @return The created {@code JoinLayout} instance.
 	 */
@@ -315,9 +331,8 @@ public abstract class JoinLayout {
 	}
 
 	/**
-	 * @param joinNode
-	 * 				The join node to set.
-	 * @throws DataSourceNotDefinedException 
+	 * @param layoutNode
+	 * 				The layout node to set.
 	 */
 	public void setLayoutNode(LayoutNode layoutNode) {
 		this.layoutNode = layoutNode;

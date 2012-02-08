@@ -190,11 +190,10 @@ public class ExcelReportBuilder extends ReportBuilder {
 	/**
 	 * This method will create the target builder.
 	 * 
-	 * @param reportBuilder
 	 * @param sheet
 	 * @param baseRow
 	 * @param baseCol
-	 * @return
+	 * @return The newly create target object.
 	 */
 	@Override
 	protected ExcelReportTarget createTarget(Sheet sheet, int baseRow, int baseCol) {

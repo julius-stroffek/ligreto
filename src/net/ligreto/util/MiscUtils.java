@@ -93,4 +93,22 @@ public class MiscUtils {
 			return false;
 		throw new InvalidValueException("Invalid string specified as boolean value: " + aBoolean);
 	}
+
+	/**
+	 * 
+	 * @param doubleString
+	 * @return
+	 */
+	public static Double parseDouble(String doubleString) {
+		return Double.parseDouble(doubleString);
+	}
+
+	/**
+	 * 
+	 * @param doublePercentage
+	 * @return
+	 */
+	public static Double parseDoublePercentage(String doublePercentage) {
+		return Double.parseDouble(doublePercentage);
+	}
 }

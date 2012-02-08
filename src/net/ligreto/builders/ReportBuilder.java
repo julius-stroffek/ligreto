@@ -102,7 +102,8 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @param sheet
 	 * @param baseRow
 	 * @param baseCol
-	 * @return
+	 * @return The newly created target object of a corresponding super-class based
+	 *         on report builder implementation.
 	 */
 	protected abstract TargetInterface createTarget(Sheet sheet, int baseRow, int baseCol);
 

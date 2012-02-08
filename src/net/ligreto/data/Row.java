@@ -52,7 +52,7 @@ public class Row implements Comparable<Object> {
 	}
 
 	/**
-	 * @param columns the columns to set
+	 * @param fields the fields to set
 	 */
 	public void setFields(Column[] fields) {
 		this.columns = fields;

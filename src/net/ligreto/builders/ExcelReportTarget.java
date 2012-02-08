@@ -52,6 +52,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class ExcelReportTarget extends ReportTarget {
 	
+	/** 
+	 * This is a work-around constant that limits the row number in references
+	 * to things like auto filter. Apache POI library will fail if the cell
+	 * reference contains somehow higher number.
+	 */
+	protected static int cellReferenceMaxRow = 1000000;
+	
 	/**
 	 * The information about the target location.
 	 * It is used for append operation on the target.
@@ -59,7 +66,7 @@ public class ExcelReportTarget extends ReportTarget {
 	protected ExcelReportBuilder.TargetInfo targetInfo;
 	
 	/** The output file format. */
-	OutputFormat outputFormat = OutputFormat.XSSF;
+	protected OutputFormat outputFormat = OutputFormat.XSSF;
 
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(ExcelReportTarget.class);
@@ -684,7 +691,20 @@ public class ExcelReportTarget extends ReportTarget {
 	 */
 	protected void flush(boolean lastFlush, boolean increaseSizeOnly) {
 		if (lastFlush && autoFilter && lastColumnIndex > baseCol) {
-			sheet.setAutoFilter(new CellRangeAddress(baseRow, actRow, baseCol, lastColumnIndex));
+			if (baseRow < cellReferenceMaxRow) {
+				if (actRow < cellReferenceMaxRow) {
+					sheet.setAutoFilter(new CellRangeAddress(baseRow, actRow, baseCol, lastColumnIndex));
+				} else {
+					sheet.setAutoFilter(new CellRangeAddress(baseRow, cellReferenceMaxRow, baseCol, lastColumnIndex));
+					log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
+					log.warn("Auto-filter was made on a smaller row range.");
+				}
+			} else {
+				// There is a bug in POI library that references to too high rows
+				// throw exceptions. We will therefore do nothing in such a case.
+				log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
+				log.warn("Auto-filter was therefore disabled.");
+			}
 		}
 		
 		if (autoSize && lastColumnIndex > baseCol) {

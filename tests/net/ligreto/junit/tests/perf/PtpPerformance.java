@@ -26,9 +26,9 @@ import org.junit.Test;
 public class PtpPerformance {
 
 	/** The number of rows to be tested. */
-	public static final long rowCount = 100000;
+	public static final long rowCount = 1000000;
 	
-	/** The number of rows to be tested. */
+	/** The number of rows inserted before commit while preparing the test data. */
 	public static final long commitInterval = 10000;
 	
 	/**

@@ -3,6 +3,7 @@
 <ligreto>
 	<param name="sys_dt" value="2010-10-10"/>
 	<param name="enddt">2010-11-30</param>
+	<param name="production" value="true"/>
 	<queries>
 		<query name="query1">select * from test</query>
 		<query name="query2">select * from test2</query>
@@ -31,16 +32,22 @@
 		<data>
 			<sql target="Sheet1!C1">select * from test</sql>
 			<sql query="Query1" target="Sheet1!C1"/>
-			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" highlight="true" hlColor="#040506" >
+			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" highlight="true" hl-color="#040506" >
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>
-			<join target="Sheet2!C3" type="full" interlaced="true" highlight="true" hlColor="#040506" exclude="last_cnhg_user,modified_date">
+			<join target="Sheet2!C3" type="full" interlaced="true" highlight="true" hl-color="#040506" exclude="last_cnhg_user,modified_date">
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>
 			<join type="full" exclude="last_cnhg_user,modified_date">
-				<layout target="Sheet2!C3" type="interlaced" highlight="true" hlColor="#040506"/>
+				<layout target="Sheet2!C3" type="interlaced" highlight="true" hl-color="#040506">
+					<result enabled="${production}">
+						<row-limit abs-diff="10" rel-diff="0.3" rel-non-matched="0.2" abs-non-matched="120"/>
+						<limit columns="1,2" rel-diff="0.1" abs-diff="10000"/>
+						<limit columns="2,3" rel-count="10" abs-count="1000"/>
+					</result>
+				</layout>
 				<sql data-source="Test" on="1,2,3"></sql>
 				<sql data-source="Test2" on="1,2,3"></sql>
 			</join>

@@ -39,11 +39,11 @@
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>		
-			<join target="append!B2" type="inner" header="true" diffs="true" highlight="true" interlaced="false" hlColor="#20d020">
+			<join target="append!B2" type="inner" header="true" diffs="true" highlight="true" interlaced="false" hl-color="#20d020">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>		
-			<join target="append!B2" type="inner" header="false" append="true" diffs="true" highlight="true" interlaced="false" hlColor="#2020d0">
+			<join target="append!B2" type="inner" header="false" append="true" diffs="true" highlight="true" interlaced="false" hl-color="#2020d0">
 				<sql data-source="Source1" on="1">select * from join_table1</sql>
 				<sql data-source="Source2" on="1">select * from join_table2</sql>
 			</join>		

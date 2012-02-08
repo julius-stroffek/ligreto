@@ -9,6 +9,7 @@ import net.ligreto.exceptions.AssertionException;
 import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.exceptions.ParserException;
 import net.ligreto.exceptions.ReportException;
 
 import net.ligreto.parser.nodes.DataSourceNode;
@@ -16,10 +17,13 @@ import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
 import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.parser.nodes.LimitNode;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.PostprocessNode;
 import net.ligreto.parser.nodes.PreprocessNode;
 import net.ligreto.parser.nodes.ReportNode;
+import net.ligreto.parser.nodes.ResultNode;
+import net.ligreto.parser.nodes.RowLimitNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.TargetNode;
 import net.ligreto.parser.nodes.TransferNode;
@@ -37,7 +41,7 @@ import org.xml.sax.SAXParseException;
 
 /** Object types being parsed by the parser. */
 enum ObjectType {
-	NONE, LIGRETO, DATA_SOURCE, INIT, INIT_SQL, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, LAYOUT, JOIN_SQL, PARAM, PTP, PTP_PREPROCESS, PTP_PREPROCESS_SQL, PTP_TRANSFER, PTP_TRANSFER_SQL, PTP_POSTPROCESS, PTP_POSTPROCESS_SQL
+	NONE, LIGRETO, DATA_SOURCE, INIT, INIT_SQL, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, LAYOUT, RESULT, JOIN_SQL, PARAM, PTP, PTP_PREPROCESS, PTP_PREPROCESS_SQL, PTP_TRANSFER, PTP_TRANSFER_SQL, PTP_POSTPROCESS, PTP_POSTPROCESS_SQL
 };
 
 /**
@@ -72,6 +76,15 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	
 	/** The join layout. */
 	protected LayoutNode layout;
+	
+	/** The result node. */
+	protected ResultNode result;
+	
+	/** The row limit for the result. */
+	protected RowLimitNode rowLimit;
+	
+	/** The limit for the result. */
+	protected LimitNode limit;
 
 	/** The Pre-Process/Transfer/Post-Process node - PTP */
 	protected PtpNode ptpNode;
@@ -173,6 +186,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case LAYOUT:
 			join.addLayout(layout);
 			layout = null;
+			break;
+		case RESULT:
+			layout.setResultNode(result);
+			result = null;
 			break;
 		case PARAM:
 			try {
@@ -362,8 +379,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						if (getAttributeValue(atts, "highlight") != null) {
 							layout.setHighlight(getAttributeValue(atts, "highlight"));
 						}
-						if (getAttributeValue(atts, "hlColor") != null) {
-							layout.setHlColor(getAttributeValue(atts, "hlColor"));
+						if (getAttributeValue(atts, "hl-color") != null) {
+							layout.setHlColor(getAttributeValue(atts, "hl-color"));
 						}
 						if (getAttributeValue(atts, "group-by") != null) {
 							layout.setGroupBy(getAttributeValue(atts, "group-by"));
@@ -426,8 +443,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "highlight") != null) {
 						layout.setHighlight(getAttributeValue(atts, "highlight"));
 					}
-					if (getAttributeValue(atts, "hlColor") != null) {
-						layout.setHlColor(getAttributeValue(atts, "hlColor"));
+					if (getAttributeValue(atts, "hl-color") != null) {
+						layout.setHlColor(getAttributeValue(atts, "hl-color"));
 					}
 					if (getAttributeValue(atts, "group-by") != null) {
 						layout.setGroupBy(getAttributeValue(atts, "group-by"));
@@ -439,6 +456,58 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						layout.setAppend(getAttributeValue(atts, "append"));
 					}
 					layout.setResult(getAttributeValue(atts, "result"));
+				}
+				break;
+			case LAYOUT:
+				if ("result".equals(localName)) {
+					objectStack.push(ObjectType.RESULT);
+					result = new ResultNode(ligretoNode);
+					if (getAttributeValue(atts, "enabled") != null) {
+						result.setEnabled(getAttributeValue(atts, "enabled"));
+					}
+				}
+				break;
+			case RESULT:
+				objectStack.push(ObjectType.NONE);
+				if ("row-limit".equals(localName)) {
+					rowLimit = new RowLimitNode(ligretoNode);
+					if (getAttributeValue(atts, "enabled") != null) {
+						rowLimit.setEnabled(getAttributeValue(atts, "enabled"));
+					}
+					if (getAttributeValue(atts, "abs-diff") != null) {
+						rowLimit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff"));
+					}
+					if (getAttributeValue(atts, "rel-diff") != null) {
+						rowLimit.setRelativeDifference(getAttributeValue(atts, "rel-diff"));
+					}
+					if (getAttributeValue(atts, "rel-non-matched") != null) {
+						rowLimit.setRelativeNonMatched(getAttributeValue(atts, "rel-non-matched"));
+					}
+					if (getAttributeValue(atts, "abs-non-matched") != null) {
+						rowLimit.setAbsoluteNonMatched(getAttributeValue(atts, "abs-non-matched"));
+					}
+					result.setRowLimitNode(rowLimit);
+				} else if ("limit".equals(localName)) {
+					limit = new LimitNode(ligretoNode);
+					if (getAttributeValue(atts, "enabled") != null) {
+						limit.setEnabled(getAttributeValue(atts, "enabled"));
+					}
+					if (getAttributeValue(atts, "columns") != null) {
+						limit.setColumns(getAttributeValue(atts, "columns"));
+					}
+					if (getAttributeValue(atts, "rel-diff") != null) {
+						limit.setRelativeDifference(getAttributeValue(atts, "rel-diff"));
+					}
+					if (getAttributeValue(atts, "abs-diff") != null) {
+						limit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff"));
+					}
+					if (getAttributeValue(atts, "rel-count") != null) {
+						limit.setRelativeCount(getAttributeValue(atts, "rel-count"));
+					}
+					if (getAttributeValue(atts, "abs-count") != null) {
+						limit.setAbsoluteCount(getAttributeValue(atts, "abs-count"));
+					}
+					result.addLimitNode(limit);
 				}
 				break;
 			case PTP:
@@ -556,6 +625,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			throw new SAXException("Invalid format specified.", e);
 		} catch (InvalidValueException e) {
 			throw new SAXException("Wrong value specified.", e);
+		} catch (ParserException e) {
+			throw new SAXException("Error parsing file.", e);
 		}
 	}
 

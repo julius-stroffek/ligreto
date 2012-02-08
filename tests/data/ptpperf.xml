@@ -17,4 +17,12 @@
 			<sql data-source="Source1">select * from ptp_perf_table</sql>
 		</transfer>
 	</ptp>
+	<report type="excel.stream" options="autoSize,autoFilter,headerStyle">
+		<output file="ptpperf.xlsx"/>
+		<data>
+			<sql target="ptpperf!A1000001" data-source="Source2">
+				select * from ptp_perf_table
+			</sql>
+		</data>
+	</report>
 </ligreto>

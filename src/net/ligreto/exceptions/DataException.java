@@ -1,6 +1,6 @@
 package net.ligreto.exceptions;
 
-public class DataException extends Exception {
+public class DataException extends LigretoException {
 	
 	/**
 	 * The default serial version ID.
