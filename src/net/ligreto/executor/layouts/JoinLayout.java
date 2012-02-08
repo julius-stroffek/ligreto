@@ -3,16 +3,21 @@ package net.ligreto.executor.layouts;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import net.ligreto.Database;
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.TargetInterface;
+import net.ligreto.data.AggregationResult;
+import net.ligreto.data.Column;
+import net.ligreto.data.ColumnAggregationResult;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
+import net.ligreto.util.Assert;
 
 /**
  * Provides the interface for implementing various join layouts that could be used
@@ -37,6 +42,12 @@ public abstract class JoinLayout {
 	
 	/** The object holding the join result status. */
 	protected ResultStatus resultStatus = null;
+	
+	/** The results aggregated across all the rows. */
+	protected AggregationResult aggregatedResult;
+	
+	/** The results calculated for the current row. */
+	protected AggregationResult currentResult;
 	
 	/** The column indices of the columns to be equal from the first result set. */
 	protected int[] on1 = null;
@@ -109,6 +120,16 @@ public abstract class JoinLayout {
 	
 	/** The number of column differences across all the rows. */
 	protected int columnDifferences = 0;
+	
+	/** Stores whether the initialization was done. */
+	private boolean startCalled = false;
+
+	/** Column metrics related fields. */
+	protected HashMap<Integer, Void> noResultColumns1 = new HashMap<Integer, Void>();
+	protected HashMap<Integer, Void> noResultColumns2 = new HashMap<Integer, Void>();
+	int[] resultColumns1 = null;
+	int[] resultColumns2 = null;
+	int resultCount = 0;
 
 	/** Constructs the layout having the specified report builder. */
 	protected JoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
@@ -149,6 +170,67 @@ public abstract class JoinLayout {
 	public abstract void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException;
 	
 	/**
+	 * This function is called to calculate the column result metrics.
+	 * 
+	 * @param resultType the type of the result being processed {@see JoinResultType}.
+	 * @return the metrics calculated for the current row produced as output
+	 * @throws SQLException 
+	 */
+	protected AggregationResult calculateColumnMetrics(JoinResultType resultType) throws SQLException {		
+		// Create the object holding the result metrics
+		AggregationResult result = new AggregationResult(resultCount);
+		
+		// Loop trough all the columns in the result sets.
+		for (int i = 0, i1 = 1, i2 = 1; i1 <= rsColCount && i2 <= rsColCount; i++, i1++, i2++) {
+			// Find the next column in the first result set that
+			// is not part of 'on', 'exclude' nor 'group by' column list
+			boolean col1Found = false;
+			while (i1 <= rsColCount) {
+				if (noResultColumns1.containsKey(i1)) {
+					i1++;
+				} else {
+					col1Found = true;
+					break;
+				}
+			}
+			// Find the next column in the second result set that
+			// is not part of 'on', 'exclude' nor 'group by' column list
+			boolean col2Found = false;
+			while (i2 <= rsColCount) {
+				if (noResultColumns2.containsKey(i2)) {
+					i2++;
+				} else {
+					col2Found = true;
+					break;
+				}
+			}
+			if (col1Found && col2Found) {
+				Column columnValue1, columnValue2;
+				switch (resultType) {
+				case LEFT:
+					columnValue1 = new Column(rs1, i1);
+					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
+					break;
+				case RIGHT:
+					columnValue2 = new Column(rs2, i2);
+					result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
+					break;
+				case INNER:
+					columnValue1 = new Column(rs1, i1);
+					columnValue2 = new Column(rs2, i2);
+					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
+				}
+			} else if (col1Found || col2Found) {
+				throw new RuntimeException("Internal inconsistency found.");
+			}
+		}
+		return result;
+	}
+	
+	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
 	 * call the ResultSet.next() method on the result sets where the row was processed.
 	 * The method will highlight some of the columns based on the array specified
@@ -163,6 +245,9 @@ public abstract class JoinLayout {
 	 */
 	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
 		
+		// Check for proper initialization
+		Assert.assertTrue(startCalled);
+		
 		/*
 		 * First switch on the type of join and then decide whether the specified
 		 * result type should be part of the join result.
@@ -173,18 +258,15 @@ public abstract class JoinLayout {
 			case LEFT:
 				rowCountSrc1++;
 				nonMatchingRowsSrc1++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			case RIGHT:
 				rowCountSrc2++;
 				nonMatchingRowsSrc2++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			case INNER:
 				rowCountSrc1++;
 				rowCountSrc2++;
 				matchingRowCount++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			default:
 				return false;
@@ -195,12 +277,10 @@ public abstract class JoinLayout {
 			case LEFT:
 				rowCountSrc1++;
 				nonMatchingRowsSrc1++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			case RIGHT:
 				rowCountSrc2++;
 				nonMatchingRowsSrc2++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			default:
 				return false;
@@ -211,13 +291,11 @@ public abstract class JoinLayout {
 			case LEFT:
 				rowCountSrc1++;
 				nonMatchingRowsSrc1++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			case INNER:
 				rowCountSrc1++;
 				rowCountSrc2++;
 				matchingRowCount++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			default:
 				return false;
@@ -229,20 +307,17 @@ public abstract class JoinLayout {
 			}
 			rowCountSrc1++;
 			nonMatchingRowsSrc1++;
-			dumpRow(rowDiffs, highlightArray, resultType);
 			break;
 		case RIGHT:
 			switch (resultType) {
 			case RIGHT:
 				rowCountSrc2++;
 				nonMatchingRowsSrc2++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			case INNER:
 				rowCountSrc1++;
 				rowCountSrc2++;
 				matchingRowCount++;
-				dumpRow(rowDiffs, highlightArray, resultType);
 				break;
 			default:
 				return false;
@@ -254,7 +329,6 @@ public abstract class JoinLayout {
 			}
 			rowCountSrc2++;
 			nonMatchingRowsSrc2++;
-			dumpRow(rowDiffs, highlightArray, resultType);
 			break;
 		case INNER:
 			if (resultType != JoinResultType.INNER) {
@@ -263,7 +337,6 @@ public abstract class JoinLayout {
 			rowCountSrc1++;
 			rowCountSrc2++;
 			matchingRowCount++;
-			dumpRow(rowDiffs, highlightArray, resultType);
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinType.");
@@ -275,6 +348,21 @@ public abstract class JoinLayout {
 		} else {
 			equalRowCount++;
 		}
+		
+		// Here we now that we produce the row that is part of the result.
+		// We will therefore do some more aggregations here.
+		currentResult = calculateColumnMetrics(resultType);
+		
+		if (aggregatedResult != null) {
+			aggregatedResult.merge(currentResult);
+		} else {
+			aggregatedResult = currentResult;
+		}
+		
+		// And finally we will dump the row after the current result
+		// and aggregation results are available. 
+		dumpRow(rowDiffs, highlightArray, resultType);
+		
 		return true;
 	}
 
@@ -435,6 +523,47 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 */
 	public void start() throws SQLException, LigretoException {
+		startCalled = true;
+		for (int i=0; i < on1.length; i++) {
+			noResultColumns1.put(on1[i], null);
+		}
+		for (int i=0; i < excl1.length; i++) {
+			noResultColumns1.put(excl1[i], null);
+		}
+		for (int i=0; i < on2.length; i++) {
+			noResultColumns2.put(on2[i], null);
+		}
+		for (int i=0; i < excl2.length; i++) {
+			noResultColumns2.put(excl2[i], null);
+		}
+		
+		// Do some sanity checks
+		int rs1Length = rs1.getMetaData().getColumnCount();
+		int rs2Length = rs2.getMetaData().getColumnCount();
+
+		int resultCount1 = rs1Length - noResultColumns1.size();
+		int resultCount2 = rs2Length - noResultColumns2.size();
+		
+		if (resultCount1 != resultCount2) {
+			throw new LigretoException(
+				"The column count in aggregation differs; 1st count: "
+				+ resultCount1 + "; 2nd count: " + resultCount2
+			);
+		}
+		resultCount = resultCount1;
+		
+		resultColumns1 = new int[resultCount];
+		resultColumns2 = new int[resultCount];
+		
+		// Store the information about the result column's indices
+		for (int i=0, i1=1, i2=1; i < resultCount; i++, i1++, i2++) {
+			while (noResultColumns1.containsKey(i1))
+				i1++;
+			while (noResultColumns2.containsKey(i2))
+				i2++;
+			resultColumns1[i] = i1;
+			resultColumns2[i] = i2;
+		}		
 	}
 
 	/**
@@ -443,6 +572,7 @@ public abstract class JoinLayout {
 	 * @throws SQLException 
 	 */
 	public void finish() throws IOException, SQLException {
+		Assert.assertTrue(startCalled);
 		targetBuilder.finish();
 	}
 

@@ -66,6 +66,7 @@ public class AggregatedLayout extends JoinLayout {
 
 	@Override
 	public void start() throws SQLException, LigretoException {
+		super.start();
 		for (int i=0; i < on1.length; i++) {
 			noResultColumns1.put(on1[i], null);
 		}
