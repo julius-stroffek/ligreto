@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import net.ligreto.LigretoParameters;
+import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.builders.TargetInterface;
@@ -46,7 +47,7 @@ public class SummaryLayout extends JoinLayout {
 	}
 
 	@Override
-	public void finish() throws IOException, SQLException {
+	public ResultStatus finish() throws IOException, SQLException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "Equal Rows", HeaderType.ROW);
 		targetBuilder.setColumnPosition(1);
@@ -95,6 +96,6 @@ public class SummaryLayout extends JoinLayout {
 		targetBuilder.dumpColumn(0, nonMatchingRowsSrc2, CellFormat.UNCHANGED);
 		targetBuilder.dumpColumn(1, nonMatchingRowsSrc2/(double)rowCountSrc2, CellFormat.PERCENTAGE_2_DECIMAL_DIGITS);
 		
-		super.finish();
+		return super.finish();
 	}
 }

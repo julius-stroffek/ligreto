@@ -35,7 +35,8 @@ public class Ligreto {
 	 * @param args The command-line arguments
 	 */
 	public static void main(String[] args) {
-		long result = 0;
+		long resultCount = 0;
+		ResultStatus resultStatus = null;
 		Options options = new Options();
 
 		Option help = new Option( "help", "print this help message" );
@@ -96,7 +97,8 @@ public class Ligreto {
 				Parser.parse(files[i], ligretoNode);
 			}
 			LigretoExecutor executor = new LigretoExecutor(ligretoNode);
-			result = executor.execute().getResultRowCount();
+			resultStatus = executor.execute();
+			resultCount = resultStatus.getDifferentRowCount();
 		} catch (SAXException e) {
 			// SAXException message should be already printed
 			System.exit(EXCEPTION_EXIT_STATUS);
@@ -107,9 +109,14 @@ public class Ligreto {
 			e.printStackTrace();
 			System.exit(EXCEPTION_EXIT_STATUS);
 		}
-		if (result > MAX_RESULT_EXIT_STATUS)
+		if (resultStatus.isAccepted()) {
+			System.exit(0);
+		} else if (resultCount > MAX_RESULT_EXIT_STATUS) {
 			System.exit(MAX_RESULT_EXIT_STATUS);
-		else
-			System.exit((int)result);
+		} else if (resultCount > 0) {
+			System.exit((int)resultCount);
+		}
+		// Exit with +1 when we do not know the different row count
+		System.exit(MAX_RESULT_EXIT_STATUS + 1);
 	}
 }

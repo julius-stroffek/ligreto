@@ -14,6 +14,7 @@ import net.ligreto.data.Column;
 import net.ligreto.data.ColumnAggregationResult;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.executor.ResultExecutor;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
@@ -48,7 +49,7 @@ public abstract class JoinLayout {
 	
 	/** The results calculated for the current row. */
 	protected AggregationResult currentResult;
-	
+		
 	/** The column indices of the columns to be equal from the first result set. */
 	protected int[] on1 = null;
 	
@@ -445,6 +446,13 @@ public abstract class JoinLayout {
 	}
 
 	/**
+	 * @return the resultStatus
+	 */
+	public ResultStatus getResultStatus() {
+		return resultStatus;
+	}
+
+	/**
 	 * @param resultStatus
 	 * 				The result status to set.
 	 */
@@ -518,6 +526,27 @@ public abstract class JoinLayout {
 	}
 
 	/**
+	 * @return the differentRowCount
+	 */
+	public int getDifferentRowCount() {
+		return differentRowCount;
+	}
+
+	/**
+	 * @return the totalRowCount
+	 */
+	public int getTotalRowCount() {
+		return totalRowCount;
+	}
+
+	/**
+	 * @return the columnDifferences
+	 */
+	public int getColumnDifferences() {
+		return columnDifferences;
+	}
+
+	/**
 	 * The method executed before providing any data to the layout object.
 	 * @throws SQLException 
 	 * @throws LigretoException 
@@ -570,10 +599,15 @@ public abstract class JoinLayout {
 	 * The method executed after providing all data to the layout object.
 	 * @throws IOException 
 	 * @throws SQLException 
+	 * @throws LigretoException
+	 * @return the result status 
 	 */
-	public void finish() throws IOException, SQLException {
+	public ResultStatus finish() throws IOException, SQLException, LigretoException {
 		Assert.assertTrue(startCalled);
 		targetBuilder.finish();
+		ResultExecutor executor = new ResultExecutor(layoutNode.getResultNode(), this);
+		resultStatus = executor.execute();
+		return resultStatus;
 	}
 
 }

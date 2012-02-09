@@ -11,7 +11,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
@@ -82,8 +81,7 @@ public class NumericTypesTest {
 		LigretoNode ligreto = Parser.parse("numericjoinreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
-		ResultStatus result = executor.execute();
-		Assert.assertEquals(17, result.getResultRowCount()); // 17 is the expected number of rows in the result
+		executor.execute();
 				
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("numericjoinreport.xlsx")),
@@ -96,8 +94,7 @@ public class NumericTypesTest {
 		LigretoNode ligreto = Parser.parse("numericaggregatedreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
-		ResultStatus result = executor.execute();
-		Assert.assertEquals(12, result.getResultRowCount()); // 12 is the expected number of rows in the result
+		executor.execute();
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("numericaggregatedreport.xlsx")),

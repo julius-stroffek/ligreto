@@ -113,7 +113,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 						if (callBack != null && rs != null) {
 							if (callBack.prepareProcessing(sqlNode, rs)) {
 								while (rs.next()) {
-									result.addRow(sqlNode.getResult());
+									result.addRow();
 									callBack.processResultSetRow(rs);
 								}
 								callBack.finalizeProcessing();

@@ -11,7 +11,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
@@ -131,8 +130,7 @@ public class JoinReportTest {
 		LigretoNode ligreto = Parser.parse("joinreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
-		ResultStatus result = executor.execute();
-		Assert.assertEquals(81, result.getResultRowCount()); // 81 is the expected number of rows in the result
+		executor.execute();
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("joinreport.xlsx")),
@@ -149,8 +147,7 @@ public class JoinReportTest {
 		LigretoNode ligreto = Parser.parse("detailedreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
-		ResultStatus result = executor.execute();
-		Assert.assertEquals(58, result.getResultRowCount()); // 58 is the expected number of rows in the result
+		executor.execute();
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("detailedreport.xlsx")),

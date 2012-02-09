@@ -124,7 +124,7 @@ public class PtpExecutor extends Executor {
 					tgtCnn.setAutoCommit(false);
 					int insCnt = 0;
 					while (rs.next()) {
-						result.addRow(transferNode.getResult());
+						result.addRow();
 						transferRow(rs);
 						if (++insCnt == targetNode.getCommitInterval()) {
 							tgtCnn.commit();
@@ -135,7 +135,7 @@ public class PtpExecutor extends Executor {
 				} else {
 					tgtCnn.setAutoCommit(true);
 					while (rs.next()) {
-						result.addRow(transferNode.getResult());
+						result.addRow();
 						transferRow(rs);
 					}
 				}

@@ -29,7 +29,6 @@ import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 import net.ligreto.executor.layouts.KeyJoinLayout;
-import net.ligreto.executor.layouts.ResultLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
@@ -374,16 +373,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 				layouts.add(joinLayout);
 			}
-			LayoutNode resultNode = new LayoutNode(joinNode.getLigretoNode());
-			ResultLayout resultLayout = new ResultLayout(joinNode.getLigretoNode().getLigretoParameters());
-			resultLayout.setJoinNode(joinNode);
-			resultLayout.setLayoutNode(resultNode);
-			resultLayout.setOnColumns(on1, on2);
-			resultLayout.setExcludeColumns(excl1, excl2);
-			resultLayout.setResultSets(rs1, rs2);
-			resultLayout.setColumnCount(rs1ColCount);
-			resultLayout.start();
-			layouts.add(resultLayout);
 			
 			// The comparator instance
 			LigretoComparator rsComparator = LigretoComparator.getInstance();
@@ -444,9 +433,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
-						if (joinLayout.processRow(otherColumnCount, JoinResultType.LEFT)) {
-							result.addRow(joinLayout.getLayoutNode().getResult());
-						}
+						joinLayout.processRow(otherColumnCount, JoinResultType.LEFT);
 					}
 					hasNext1 = rs1.next();
 					pCol1 = col1;
@@ -459,9 +446,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
 					for (JoinLayout joinLayout : layouts) {
 						if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
-							if (joinLayout.processRow(rowDiffs, cmpArray, JoinResultType.INNER)) {
-								result.addRow(joinLayout.getLayoutNode().getResult());
-							}
+							joinLayout.processRow(rowDiffs, cmpArray, JoinResultType.INNER);
 						}
 					}
 					
@@ -472,9 +457,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				case 1:
 					for (JoinLayout joinLayout : layouts) {
-						if (joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT)) {
-							result.addRow(joinLayout.getLayoutNode().getResult());
-						}
+						joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT);
 					}						
 					pCol2 = col2;
 					hasNext2 = rs2.next();
@@ -508,9 +491,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				pCol1 = col1;
 
 				for (JoinLayout joinLayout : layouts) {
-					if (joinLayout.processRow(otherColumnCount, JoinResultType.LEFT)) {
-						result.addRow(joinLayout.getLayoutNode().getResult());
-					}
+					joinLayout.processRow(otherColumnCount, JoinResultType.LEFT);
 				}
 				hasNext1 = rs1.next();
 			}
@@ -542,15 +523,14 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				pCol2 = col2;
 				
 				for (JoinLayout joinLayout : layouts) {
-					if (joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT)) {
-						result.addRow(joinLayout.getLayoutNode().getResult());
-					}
+					joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT);
 				}
 				hasNext2 = rs2.next();
 			}
 
+			result = new ResultStatus();
 			for (JoinLayout joinLayout : layouts) {
-				joinLayout.finish();
+				result.merge(joinLayout.finish());
 			}
 		}
 		finally {

@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
@@ -93,8 +92,7 @@ public class KeyReportTest {
 		LigretoNode ligreto = Parser.parse("keyreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		
-		ResultStatus result = executor.execute();
-		Assert.assertEquals(12, result.getResultRowCount()); // 12 is the expected number of rows in the result
+		executor.execute();
 		
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream("keyreport.xlsx")),

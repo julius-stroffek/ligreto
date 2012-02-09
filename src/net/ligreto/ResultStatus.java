@@ -11,20 +11,17 @@ import org.apache.commons.logging.Log;
  */
 public class ResultStatus {
 
-	/** The number of rows that will be reported as result row count. */
-	protected long resultRowCount;
+	/** The number of row that were different. */
+	protected long differentRowCount = 0;
 	
 	/** The total number of row count that was transferred/reported. */
-	protected long totalRowCount;
+	protected long totalRowCount = 0;
 	
-	/** The maximal relative difference that was seen during the operation. */
-	protected double maximalRelativeDifference;
+	/** Indicates whether the result was accepted according the <result> node definition. */
+	protected boolean accepted = true;
 	
 	/** Constructs the clean object. */
 	public ResultStatus() {
-		resultRowCount = 0;
-		totalRowCount = 0;
-		maximalRelativeDifference = 0;
 	}
 
 	/**
@@ -33,76 +30,52 @@ public class ResultStatus {
 	 * @param other The result of the other operation to be merged.
 	 */
 	public void merge(ResultStatus other) {
-		resultRowCount += other.resultRowCount;
+		differentRowCount += other.differentRowCount;
 		totalRowCount += other.totalRowCount;
-		maximalRelativeDifference = Math.max(maximalRelativeDifference, other.maximalRelativeDifference);
+		accepted &= other.accepted;
 	}
 	
+
 	/**
-	 * The method will merge the results from the child (or other) operation.
-	 * 
-	 * @param other The result of the other operation to be merged.
-	 * @param result Indicates whether the child/other operation should be treated as the result.
+	 * @return the differentRowCount
 	 */
-	public void merge(ResultStatus other, boolean result) {
-		if (result)
-			resultRowCount += other.resultRowCount;
-		totalRowCount += other.totalRowCount;
-		maximalRelativeDifference = Math.max(maximalRelativeDifference, other.maximalRelativeDifference);
-	}
-	
-	/**
-	 * Add additional row to the result reported.
-	 * 
-	 * @param result Indicates whether to increase also the result row count;
-	 *               otherwise only total row count will be increased.
-	 */
-	public void addRow(boolean result) {
-		totalRowCount++;
-		if (result)
-			resultRowCount++;
+	public long getDifferentRowCount() {
+		return differentRowCount;
 	}
 
 	/**
-	 * Add additional row to the result reported.
-	 * 
-	 * @param result Indicates whether to increase also the result row count;
-	 *               otherwise only total row count will be increased.
-	 * @param relativeDifference Maximal relative difference that was found.
+	 * @param differentRowCount the differentRowCount to set
 	 */
-	public void addRow(boolean result, double relativeDifference) {
-		addRow(result);
-		maximalRelativeDifference = Math.max(maximalRelativeDifference, relativeDifference);
+	public void setDifferentRowCount(long differentRowCount) {
+		this.differentRowCount = differentRowCount;
 	}
 
 	/**
-	 * Add additional value of the relative difference.
-	 * 
-	 * @param relativeDifference Next value of relative difference to add.
-	 */
-	public void addRelativeDifference(double relativeDifference) {
-		maximalRelativeDifference = Math.max(maximalRelativeDifference, relativeDifference);
-	}
-
-	/**
-	 * @return The number of rows that should be reported as the result.
-	 */
-	public long getResultRowCount() {
-		return resultRowCount;
-	}
-
-	/**
-	 * @return The total number of rows transferred/reported.
+	 * @return the totalRowCount
 	 */
 	public long getTotalRowCount() {
 		return totalRowCount;
 	}
 
 	/**
-	 * @return The maximal relative difference that was found.
+	 * @param totalRowCount the totalRowCount to set
 	 */
-	public double getMaximalRelativeDifference() {
-		return maximalRelativeDifference;
+	public void setTotalRowCount(long totalRowCount) {
+		this.totalRowCount = totalRowCount;
+	}
+
+	/**
+	 * @return the accepted
+	 */
+	public boolean isAccepted() {
+		return accepted;
+	}
+
+	/**
+	 * @param accepted the accepted to set
+	 */
+	public void setAccepted(boolean accepted) {
+		this.accepted = accepted;
 	}
 
 	/**
@@ -112,9 +85,19 @@ public class ResultStatus {
 	 * @param typeString The type of the result - e.g. "JOIN", "LIGRETO", etc.
 	 */
 	public void info(Log log, String typeString) {
-		log.info(typeString + " result row count: " + resultRowCount);
+		log.info(typeString + " different row count: " + differentRowCount);
 		log.info(typeString + " total row count: " + totalRowCount);
-		String msg = String.format("%s maximal relative difference: %1.3f%%", typeString, 100*maximalRelativeDifference);
-		log.info(msg);
+		if (accepted) {
+			log.info(typeString + " ACCEPTED.");
+		} else {
+			log.info(typeString + " REJECTED.");			
+		}
+	}
+
+	/**
+	 * Add additional row the row to the total row count.
+	 */
+	public void addRow() {
+		totalRowCount++;
 	}
 }

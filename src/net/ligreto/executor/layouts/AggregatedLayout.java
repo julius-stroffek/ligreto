@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.TreeSet;
 
 import net.ligreto.LigretoParameters;
+import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.builders.TargetInterface;
@@ -207,7 +208,7 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public void finish() throws IOException, SQLException {
+	public ResultStatus finish() throws IOException, SQLException, LigretoException {
 		TreeSet<Row> treeSet = new TreeSet<Row>(aggregationMap.keySet());
 		for (Row f : treeSet) {
 			AggregationResult result = aggregationMap.get(f);
@@ -242,6 +243,6 @@ public class AggregatedLayout extends JoinLayout {
 				targetBuilder.dumpColumn(4, cResult.getRowCount(), CellFormat.UNCHANGED);
 			}
 		}
-		super.finish();
+		return super.finish();
 	}
 }

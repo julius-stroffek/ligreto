@@ -90,7 +90,7 @@ public class LigretoExecutor extends Executor {
 			sqlExecutor.setCallBack(sqlExecutor);
 			ResultStatus sqlResult = sqlExecutor.execute();
 			sqlResult.info(log, "REPORT/SQLs");
-			result.merge(sqlResult, reportNode.getResult());
+			result.merge(sqlResult);
 		
 			JoinExecutor joinExecutor = new JoinExecutor();
 			joinExecutor.setReportBuilder(reportBuilder);
@@ -98,7 +98,7 @@ public class LigretoExecutor extends Executor {
 			joinExecutor.setCallBack(joinExecutor);
 			ResultStatus joinResult = joinExecutor.execute();
 			joinResult.info(log, "REPORT/JOINs");
-			result.merge(joinResult, reportNode.getResult());
+			result.merge(joinResult);
 			
 			reportBuilder.writeOutput();
 		} catch (Exception e) {

@@ -275,7 +275,6 @@ public class DetailedJoinLayout extends JoinLayout {
 		
 		// Provide number only for non-zero values
 		if (diff != 0) {
-			resultStatus.addRelativeDifference(diff);
 			return diff;
 		} else {
 			return "";

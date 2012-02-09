@@ -281,6 +281,13 @@ public class LayoutNode extends Node {
 	}
 
 	/**
+	 * @return the result node
+	 */
+	public ResultNode getResultNode() {
+		return resultNode;
+	}
+	
+	/**
 	 * @param resultNode the result node to set
 	 */
 	public void setResultNode(ResultNode resultNode) {
