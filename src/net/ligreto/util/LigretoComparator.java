@@ -238,22 +238,6 @@ public class LigretoComparator {
 		
 		return comparator.compare(s1.trim(), s2.trim());
 	}
-
-	/*
-	public int compare(ResultSet rs1, ResultSet rs2) throws SQLException {
-		int colCount1 = rs1.getMetaData().getColumnCount();
-		int colCount2 = rs2.getMetaData().getColumnCount();
-		int cmpCount = colCount1 < colCount2 ? colCount1 : colCount2;
-		
-		int cResult;
-		for (int i=1; i <= cmpCount; i++) {
-			cResult = compare(rs1, i, rs2, i);
-			if (cResult != 0)
-				return cResult;
-		}
-		return 0;
-	}
-	*/
 	
 	public int compareAsDataSource(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException {
 		Assert.assertTrue(on1.length == on2.length);

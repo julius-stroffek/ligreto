@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Abs-Diff-Count Success Report" options="autoFilter,autoSize,headerStyle">
+		<output file="result-row-adc-succ-report.xlsx"/>
+		<data>
+			<join on="1">
+				<layout target="summary!A1" type="summary">
+					<result>
+						<row-limit abs-diff-count="859"/>
+					</result>
+				</layout>
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

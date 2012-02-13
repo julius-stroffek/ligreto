@@ -61,6 +61,9 @@ public class Database {
 		if (node == null) {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
 		}
+
+		log.info("Connecting to \"" + node.getDescription() + " (" + node.getName() + ")\" data source with uri: " + node.getUri());
+		
 		Class.forName(ligretoNode.substituteParams(node.getDriverClass()));
 		
 		// Create the connection
@@ -69,7 +72,7 @@ public class Database {
 			Properties params = ligretoNode.substitueParams(node.getParameters());
 			cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), params);
 		} catch (SQLException e) {
-			throw new DataSourceException("Could not connect to data source: " + name, e);
+			throw new DataSourceException("Could not connect to data source: " + node.getDescription(), e);
 		}
 		
 		// Initialize the connection with the given SQL queries
@@ -115,7 +118,7 @@ public class Database {
 			throw new DataSourceInitException("Failed to initialize the connection by custom SQL statements.", e);
 		}
 		
-		log.info("Connected to " + name + " data source with uri: " + node.getUri());
+		log.info("Connected.");
 		return cnn;
 	}
 

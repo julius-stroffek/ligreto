@@ -190,6 +190,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case RESULT:
 			layout.setResultNode(result);
 			result = null;
+			rowLimit = null;
+			limit = null;
 			break;
 		case PARAM:
 			try {
@@ -470,21 +472,24 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			case RESULT:
 				objectStack.push(ObjectType.NONE);
 				if ("row-limit".equals(localName)) {
+					if (rowLimit != null) {
+						throw new ParserException("Node <row-limit> could be specified only once in a <result> node.");
+					}
 					rowLimit = new RowLimitNode(ligretoNode);
 					if (getAttributeValue(atts, "enabled") != null) {
 						rowLimit.setEnabled(getAttributeValue(atts, "enabled"));
 					}
-					if (getAttributeValue(atts, "abs-diff") != null) {
-						rowLimit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff"));
+					if (getAttributeValue(atts, "abs-diff-count") != null) {
+						rowLimit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff-count"));
 					}
-					if (getAttributeValue(atts, "rel-diff") != null) {
-						rowLimit.setRelativeDifference(getAttributeValue(atts, "rel-diff"));
+					if (getAttributeValue(atts, "rel-diff-count") != null) {
+						rowLimit.setRelativeDifference(getAttributeValue(atts, "rel-diff-count"));
 					}
-					if (getAttributeValue(atts, "rel-non-matched") != null) {
-						rowLimit.setRelativeNonMatched(getAttributeValue(atts, "rel-non-matched"));
+					if (getAttributeValue(atts, "rel-non-matched-count") != null) {
+						rowLimit.setRelativeNonMatched(getAttributeValue(atts, "rel-non-matched-count"));
 					}
-					if (getAttributeValue(atts, "abs-non-matched") != null) {
-						rowLimit.setAbsoluteNonMatched(getAttributeValue(atts, "abs-non-matched"));
+					if (getAttributeValue(atts, "abs-non-matched-count") != null) {
+						rowLimit.setAbsoluteNonMatched(getAttributeValue(atts, "abs-non-matched-count"));
 					}
 					result.setRowLimitNode(rowLimit);
 				} else if ("limit".equals(localName)) {
@@ -495,17 +500,17 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "columns") != null) {
 						limit.setColumns(getAttributeValue(atts, "columns"));
 					}
-					if (getAttributeValue(atts, "rel-diff") != null) {
-						limit.setRelativeDifference(getAttributeValue(atts, "rel-diff"));
+					if (getAttributeValue(atts, "rel-diff-value") != null) {
+						limit.setRelativeDifference(getAttributeValue(atts, "rel-diff-value"));
 					}
-					if (getAttributeValue(atts, "abs-diff") != null) {
-						limit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff"));
+					if (getAttributeValue(atts, "abs-diff-value") != null) {
+						limit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff-value"));
 					}
-					if (getAttributeValue(atts, "rel-count") != null) {
-						limit.setRelativeCount(getAttributeValue(atts, "rel-count"));
+					if (getAttributeValue(atts, "rel-diff-count") != null) {
+						limit.setRelativeCount(getAttributeValue(atts, "rel-diff-count"));
 					}
-					if (getAttributeValue(atts, "abs-count") != null) {
-						limit.setAbsoluteCount(getAttributeValue(atts, "abs-count"));
+					if (getAttributeValue(atts, "abs-diff-count") != null) {
+						limit.setAbsoluteCount(getAttributeValue(atts, "abs-diff-count"));
 					}
 					result.addLimitNode(limit);
 				}

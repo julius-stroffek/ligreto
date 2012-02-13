@@ -43,9 +43,9 @@
 			<join type="full" exclude="last_cnhg_user,modified_date">
 				<layout target="Sheet2!C3" type="interlaced" highlight="true" hl-color="#040506">
 					<result enabled="${production}">
-						<row-limit abs-diff="10" rel-diff="0.3" rel-non-matched="0.2" abs-non-matched="120"/>
-						<limit columns="1,2" rel-diff="0.1" abs-diff="10000"/>
-						<limit columns="2,3" rel-count="10" abs-count="1000"/>
+						<row-limit abs-diff-count="10" rel-diff-count="0.3" rel-non-matched-count="0.2" abs-non-matched-count="120"/>
+						<limit columns="1,2" rel-diff-value="0.1" abs-diff-value="10000"/>
+						<limit columns="2,3" rel-diff-count="10%" abs-diff-count="1000"/>
 					</result>
 				</layout>
 				<sql data-source="Test" on="1,2,3"></sql>

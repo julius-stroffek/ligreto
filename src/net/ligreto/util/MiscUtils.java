@@ -109,6 +109,12 @@ public class MiscUtils {
 	 * @return
 	 */
 	public static Double parseDoublePercentage(String doublePercentage) {
-		return Double.parseDouble(doublePercentage);
+		String trimmed = doublePercentage.trim();
+		if (trimmed.endsWith("%")) {
+			trimmed = trimmed.substring(0, trimmed.length() - 1);
+			return Double.parseDouble(trimmed)/100;
+		} else {
+			return Double.parseDouble(trimmed);
+		}
 	}
 }

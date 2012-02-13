@@ -4,7 +4,6 @@
 package net.ligreto.junit.tests.func;
 
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,15 +13,10 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.tests.TestUtils;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
-import net.ligreto.parser.Parser;
-import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.junit.tests.util.TestUtil;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -31,7 +25,7 @@ import org.xml.sax.SAXException;
  * @author Julius Stroffek
  *
  */
-public class AggregatedSummaryReportTest {
+public class LargeDataJoinTest {
 
 	/** The number of rows to be tested. */
 	public static final long rowCount = 1000;
@@ -126,34 +120,28 @@ public class AggregatedSummaryReportTest {
 	
 	@Test
 	public void testAggregatedReport() throws SAXException, IOException, LigretoException {
-		LigretoNode ligreto = Parser.parse("aggregatedreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("aggregatedreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/aggregatedreport.xlsx"))
-		).areSame());		
+		TestUtil.testReport("aggregatedreport", false);
 	}
 	
 	@Test
 	public void testSummaryReport() throws SAXException, IOException, LigretoException {
-		LigretoNode ligreto = Parser.parse("summaryreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("summaryreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/summaryreport.xlsx"))
-		).areSame());		
+		TestUtil.testReport("summaryreport", false);
 	}
 
 	@Test
 	public void testMultipleLayoutsReport() throws SAXException, IOException, LigretoException {
-		LigretoNode ligreto = Parser.parse("multilayoutreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("multilayoutreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/multilayoutreport.xlsx"))
-		).areSame());		
+		TestUtil.testReport("multilayoutreport", false);
+	}
+	
+	@Test
+	public void testResultRowLimits() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("result-row-rdc-succ-report", true);		
+		TestUtil.testReport("result-row-rdc-fail-report", false);		
+		TestUtil.testReport("result-row-adc-succ-report", true);		
+		TestUtil.testReport("result-row-adc-fail-report", false);		
+		TestUtil.testReport("result-row-rnmc-succ-report", true);		
+		TestUtil.testReport("result-row-rnmc-fail-report", false);		
+		TestUtil.testReport("result-row-anmc-succ-report", true);		
+		TestUtil.testReport("result-row-anmc-fail-report", false);		
 	}
 }

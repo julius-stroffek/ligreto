@@ -19,7 +19,7 @@ public class LimitNode extends Node {
 	 */
 	public int[] getColumns() {
 		if (columns == null) {
-			return new int[0];
+			return null;
 		}
 		String[] sValues = ligretoNode.substituteParams(columns).split(",");
 		int values[] = new int[sValues.length];

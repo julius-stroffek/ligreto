@@ -131,6 +131,10 @@ public abstract class JoinLayout {
 	int[] resultColumns1 = null;
 	int[] resultColumns2 = null;
 	int resultCount = 0;
+	int[] noExcludeColumns1 = null;
+	int[] noExcludeColumns2 = null;
+	int noExcludeCount = 0;
+	int[] xmlToResult = null;
 
 	/** Constructs the layout having the specified report builder. */
 	protected JoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
@@ -169,6 +173,28 @@ public abstract class JoinLayout {
 	 * @throws DataSourceNotDefinedException 
 	 * @throws IOException */
 	public abstract void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException;
+	
+	/**
+	 * This function converts the specified column index from XML into the index
+	 * of the result structure. The result structure does not contain the columns
+	 * that were specified in exclude attribute.
+	 * 
+	 * @param index Index of the column as specified in "on" attribute of the join. 
+	 * @return the index of the column in the result structure, -1 if the columns is not in the result
+	 */
+	public int translateToResultColumn(int index) {
+		if (index < 0 || index >= xmlToResult.length)
+			return -1;
+		return xmlToResult[index];
+	}
+	
+	/**
+	 * @param index index of the result column
+	 * @return the aggregated result of the column data
+	 */
+	public ColumnAggregationResult getColumnAggregationResult(int index) {
+		return aggregatedResult.getColumnResult(index);
+	}
 	
 	/**
 	 * This function is called to calculate the column result metrics.
@@ -510,6 +536,13 @@ public abstract class JoinLayout {
 	}
 
 	/**
+	 * @return The number of columns being processed (excluding the exclude columns).
+	 */
+	public int getColumnCount() {
+		return rsColCount;
+	}
+	
+	/**
 	 * @param columnCount
 	 * 				The column count to set.
 	 */
@@ -523,6 +556,27 @@ public abstract class JoinLayout {
 			lowerArray[i] = -1;
 			higherArray[i] = 1;
 		}
+	}
+
+	/**
+	 * @return the matchingRowCount
+	 */
+	public int getMatchingRowCount() {
+		return matchingRowCount;
+	}
+
+	/**
+	 * @return the nonMatchingRowsSrc1
+	 */
+	public int getNonMatchingRowsSrc1() {
+		return nonMatchingRowsSrc1;
+	}
+
+	/**
+	 * @return the nonMatchingRowsSrc2
+	 */
+	public int getNonMatchingRowsSrc2() {
+		return nonMatchingRowsSrc2;
 	}
 
 	/**
@@ -553,14 +607,8 @@ public abstract class JoinLayout {
 	 */
 	public void start() throws SQLException, LigretoException {
 		startCalled = true;
-		for (int i=0; i < on1.length; i++) {
-			noResultColumns1.put(on1[i], null);
-		}
 		for (int i=0; i < excl1.length; i++) {
 			noResultColumns1.put(excl1[i], null);
-		}
-		for (int i=0; i < on2.length; i++) {
-			noResultColumns2.put(on2[i], null);
 		}
 		for (int i=0; i < excl2.length; i++) {
 			noResultColumns2.put(excl2[i], null);
@@ -569,6 +617,43 @@ public abstract class JoinLayout {
 		// Do some sanity checks
 		int rs1Length = rs1.getMetaData().getColumnCount();
 		int rs2Length = rs2.getMetaData().getColumnCount();
+
+		int noExcludeCount1 = rs1Length - noResultColumns1.size();
+		int noExcludeCount2 = rs2Length - noResultColumns2.size();
+
+		if (noExcludeCount1 != noExcludeCount2) {
+			throw new LigretoException(
+				"The column count without excluded columns differs; 1st count: "
+				+ noExcludeCount1 + "; 2nd count: " + noExcludeCount2
+			);
+		}
+		noExcludeCount = noExcludeCount1;
+		
+		// Get the indices for all the columns excluding the result columns 
+		noExcludeColumns1 = new int[noExcludeCount];
+		noExcludeColumns2 = new int[noExcludeCount];
+		
+		// Store the information about the result column's indices
+		for (int i=0, i1=1, i2=1; i < noExcludeCount; i++, i1++, i2++) {
+			while (noResultColumns1.containsKey(i1))
+				i1++;
+			while (noResultColumns2.containsKey(i2))
+				i2++;
+			noExcludeColumns1[i] = i1;
+			noExcludeColumns2[i] = i2;
+		}		
+		
+		
+		for (int i=0; i < on1.length; i++) {
+			noResultColumns1.put(on1[i], null);
+		}
+		for (int i=0; i < on2.length; i++) {
+			noResultColumns2.put(on2[i], null);
+		}
+		
+		// Do some sanity checks
+		rs1Length = rs1.getMetaData().getColumnCount();
+		rs2Length = rs2.getMetaData().getColumnCount();
 
 		int resultCount1 = rs1Length - noResultColumns1.size();
 		int resultCount2 = rs2Length - noResultColumns2.size();
@@ -592,7 +677,19 @@ public abstract class JoinLayout {
 				i2++;
 			resultColumns1[i] = i1;
 			resultColumns2[i] = i2;
-		}		
+		}
+		
+		xmlToResult = new int[noExcludeCount];
+		// Do the XML index to result translation array
+		for (int i=0; i < noExcludeCount; i++) {
+			xmlToResult[i] = -1;
+			for (int j=0; j < resultCount; j++) {
+				if (resultColumns1[j] == noExcludeColumns1[i]) {
+					xmlToResult[i] = j;
+					break;
+				}
+			}
+		}
 	}
 
 	/**

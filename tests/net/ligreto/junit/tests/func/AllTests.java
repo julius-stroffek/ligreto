@@ -21,7 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	KeyReportTest.class,
 	ResultReportTest.class,
 	NumericTypesTest.class,
-	AggregatedSummaryReportTest.class,
+	LargeDataJoinTest.class,
 	Excel97ReportTest.class,
 	PtpReportTest.class,
 	StyleDedupTest.class,

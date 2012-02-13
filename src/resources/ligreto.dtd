@@ -69,22 +69,22 @@
 <!ATTLIST layout group-by CDATA #IMPLIED>
 
 <!ELEMENT result (row-limit|limit)+>
-<!ATTLIST result enabled CDATA "true">		<!-- (true|false) -->
+<!ATTLIST result enabled CDATA "true">				<!-- (true|false) -->
 
 <!ELEMENT limit EMPTY>
-<!ATTLIST limit enabled CDATA #IMPLIED>		<!-- (true|false) -->
+<!ATTLIST limit enabled CDATA #IMPLIED>				<!-- (true|false) -->
 <!ATTLIST limit columns CDATA #IMPLIED>
-<!ATTLIST limit rel-diff CDATA #IMPLIED>
-<!ATTLIST limit abs-diff CDATA #IMPLIED>
-<!ATTLIST limit rel-count CDATA #IMPLIED>
-<!ATTLIST limit abs-count CDATA #IMPLIED>
+<!ATTLIST limit rel-diff-value CDATA #IMPLIED>
+<!ATTLIST limit abs-diff-value CDATA #IMPLIED>
+<!ATTLIST limit rel-diff-count CDATA #IMPLIED>
+<!ATTLIST limit abs-diff-count CDATA #IMPLIED>
 
 <!ELEMENT row-limit EMPTY>
-<!ATTLIST row-limit enabled CDATA #IMPLIED>		<!-- (true|false) -->
-<!ATTLIST row-limit rel-diff CDATA #IMPLIED>
-<!ATTLIST row-limit abs-diff CDATA #IMPLIED>
-<!ATTLIST row-limit rel-non-matched CDATA #IMPLIED>
-<!ATTLIST row-limit abs-non-matched CDATA #IMPLIED>
+<!ATTLIST row-limit enabled CDATA #IMPLIED>			<!-- (true|false) -->
+<!ATTLIST row-limit rel-diff-count CDATA #IMPLIED>
+<!ATTLIST row-limit abs-diff-count CDATA #IMPLIED>
+<!ATTLIST row-limit rel-non-matched-count CDATA #IMPLIED>
+<!ATTLIST row-limit abs-non-matched-count CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>
