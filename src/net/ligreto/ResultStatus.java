@@ -88,9 +88,9 @@ public class ResultStatus {
 		log.info(typeString + " different row count: " + differentRowCount);
 		log.info(typeString + " total row count: " + totalRowCount);
 		if (accepted) {
-			log.info(typeString + " PASSED.");
+			log.info(typeString + " ACCEPTED.");
 		} else {
-			log.info(typeString + " FAILED.");			
+			log.info(typeString + " REJECTED.");			
 		}
 	}
 

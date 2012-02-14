@@ -11,10 +11,10 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report options="autoFilter,autoSize ,headerStyle" result="true">
+	<report options="autoFilter,autoSize ,headerStyle">
 		<output file="keyreport.xlsx"/>
 		<data>
-			<join on="1,2" target="keys!A1" result="true" layout="normal">
+			<join on="1,2" target="keys!A1" result="true" layout="key">
 				<sql data-source="Source1">select * from key_table1</sql>
 				<sql data-source="Source2">select * from key_table2</sql>
 			</join>

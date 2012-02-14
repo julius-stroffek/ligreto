@@ -21,7 +21,7 @@
 			<sql data-source="Source2">select * from num_table2</sql>
 		</transfer>
 	</ptp>
-	<report name="Numeric Types Report" options="autoFilter,autoSize,headerStyle" result="true">
+	<report name="Numeric Types Report" options="autoFilter,autoSize,headerStyle">
 		<output file="numericaggregatedreport.xlsx"/>
 		<data>
 			<join on="1,2" group-by="2" target="aggregated!B2" type="full" result="true" layout="aggregated">

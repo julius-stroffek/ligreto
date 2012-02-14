@@ -120,17 +120,17 @@ public class LargeDataJoinTest {
 	
 	@Test
 	public void testAggregatedReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("aggregatedreport", false);
+		TestUtil.testReport("aggregatedreport", true);
 	}
 	
 	@Test
 	public void testSummaryReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("summaryreport", false);
+		TestUtil.testReport("summaryreport", true);
 	}
 
 	@Test
 	public void testMultipleLayoutsReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("multilayoutreport", false);
+		TestUtil.testReport("multilayoutreport", true);
 	}
 	
 	@Test

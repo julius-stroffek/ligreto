@@ -167,8 +167,8 @@ public class ResultExecutor extends Executor {
 					processLimitNode(limitNode);
 				}
 			}
-		} else if (resultStatus.getDifferentRowCount() > 0) {
-			resultStatus.setAccepted(false);
+		} else if (joinLayout.getLayoutNode().getResult() && resultStatus.getDifferentRowCount() > 0) {
+				resultStatus.setAccepted(false);
 		}
 		return resultStatus;
 	}

@@ -17,7 +17,6 @@
 <!ATTLIST report type CDATA "excel">
 <!ATTLIST report locale CDATA #IMPLIED>
 <!ATTLIST report options CDATA #IMPLIED>
-<!ATTLIST report result CDATA "false"> 		<!--(true|false)-->
 
 <!ELEMENT output EMPTY>
 <!ATTLIST output file CDATA #REQUIRED>
@@ -37,9 +36,19 @@
 <!ATTLIST sql type CDATA "statement">		<!--(statement|call)-->
 <!ATTLIST sql exceptions CDATA "fail">		<!--(ignore|dump|fail)-->
 <!ATTLIST sql exclude CDATA #IMPLIED>
-<!ATTLIST sql result CDATA "false">			<!--(true|false)-->
+<!ATTLIST sql empty CDATA "false">			<!--(true|false)-->
+<!ATTLIST sql non-empty CDATA "false">		<!--(true|false)-->
 
 <!ELEMENT join (layout*,sql,layout*,sql+,layout*)>
+<!ATTLIST join on CDATA #IMPLIED>
+<!ATTLIST join exclude CDATA #IMPLIED>
+<!ATTLIST join locale CDATA #IMPLIED>
+<!ATTLIST join collation CDATA "fail">		<!--(ignore|dump|fail)-->
+
+<!-- 
+	These are deprecated attributes only for compatibility.
+	Use of <layout> is recommended.
+-->
 <!ATTLIST join target CDATA #IMPLIED>
 <!ATTLIST join type CDATA "full">			<!--(full|left|right|inner|complement|left complement|right complement)-->
 <!ATTLIST join diffs CDATA "false"> 		<!--(true|false)-->
@@ -47,14 +56,13 @@
 <!ATTLIST join highlight CDATA "true">		<!--(true|false)-->
 <!ATTLIST join header CDATA "true">			<!--(true|false)-->
 <!ATTLIST join append CDATA "false">		<!--(true|false)-->
-<!ATTLIST join hl-color CDATA "#d02020">		<!-- #RRGGBB -->
-<!ATTLIST join on CDATA #IMPLIED>
-<!ATTLIST join exclude CDATA #IMPLIED>
-<!ATTLIST join locale CDATA #IMPLIED>
-<!ATTLIST join collation CDATA "fail">		<!--(ignore|dump|fail)-->
-<!ATTLIST join result CDATA "false">			<!--(true|false)-->
+<!ATTLIST join hl-color CDATA "#d02020">	<!-- #RRGGBB -->
+<!ATTLIST join result CDATA "false">		<!--(true|false)-->
 <!ATTLIST join layout CDATA "interlaced">	<!--(normal|interlaced|detailed|aggregated|key|summary)-->
 <!ATTLIST join group-by CDATA #IMPLIED>
+<!--
+	End of deprecated attributes.
+-->
 
 <!ELEMENT layout (result?)>
 <!ATTLIST layout target CDATA #REQUIRED>

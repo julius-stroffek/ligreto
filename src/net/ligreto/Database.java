@@ -62,7 +62,8 @@ public class Database {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
 		}
 
-		log.info("Connecting to \"" + node.getDescription() + " (" + node.getName() + ")\" data source with uri: " + node.getUri());
+		String sourceDecription = node.getDescription() + " (" + node.getName() + ")";
+		log.info("Connecting to \"" + sourceDecription + "\" data source with uri: " + node.getUri());
 		
 		Class.forName(ligretoNode.substituteParams(node.getDriverClass()));
 		
@@ -72,7 +73,7 @@ public class Database {
 			Properties params = ligretoNode.substitueParams(node.getParameters());
 			cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), params);
 		} catch (SQLException e) {
-			throw new DataSourceException("Could not connect to data source: " + node.getDescription(), e);
+			throw new DataSourceException("Could not connect to data source: " + sourceDecription, e);
 		}
 		
 		// Initialize the connection with the given SQL queries
@@ -83,13 +84,13 @@ public class Database {
 				try {
 					switch (sqlNode.getQueryType()) {
 					case STATEMENT:
-						log.info("Executing the SQL statement on \"" + name + "\" data source:");
+						log.info("Executing the SQL statement on \"" + sourceDecription + "\" data source:");
 						log.info(sqlNode.getQuery());
 						stm = cnn.createStatement();
 						stm.execute(sqlNode.getQuery());
 						break;
 					case CALL:
-						log.info("Executing the SQL callable statement on \"" + name + "\" data source:");
+						log.info("Executing the SQL callable statement on \"" + sourceDecription + "\" data source:");
 						log.info(sqlNode.getQuery());
 						cstm = cnn.prepareCall(sqlNode.getQuery());
 						cstm.execute();

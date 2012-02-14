@@ -28,7 +28,6 @@ import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
-import net.ligreto.executor.layouts.KeyJoinLayout;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
@@ -347,15 +346,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				targetBuilder.setHlColor(layoutNode.getHlColor());
 
 				/* Create the proper implementation of the join layout. */
-				JoinLayout joinLayout;
-				if (otherColumnCount == 0 && layoutNode.getType() != LayoutNode.LayoutType.SUMMARY) {
-					if (layoutNode.getType() != LayoutNode.LayoutType.KEY) {
-						log.info("No columns to compare. Switching to KEY join layout.");
-					}
-					joinLayout = new KeyJoinLayout(targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-				} else {
-					joinLayout = JoinLayout.createInstance(layoutNode.getType(), targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
-				}
+				JoinLayout joinLayout = JoinLayout.createInstance(layoutNode.getType(), targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
+
 				// Setup other parameters required for the join layout
 				joinLayout.setJoinNode(joinNode);
 				joinLayout.setLayoutNode(layoutNode);
@@ -537,7 +529,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			Database.close(cnn1, stm1, cstm1, rs1);
 			Database.close(cnn2, stm2, cstm2, rs2);
 		}
-		result.info(log, "JOIN");
+		result.info(log, "JOIN COMPARISON");
 		return result;
 	}
 

@@ -11,11 +11,11 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report name="Simple Report" options="autoFilter, autoSize,headerStyle" result="true" locale="en_US">
+	<report name="Simple Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
 		<output file="resultreport.xlsx"/>
 		<data>
-			<sql data-source="Source1" target="Source1!A1" result="true">select * from join_table1</sql>
-			<sql data-source="Source2" target="Source2!A1">select * from join_table2</sql>
+			<sql data-source="Source1" target="Source1!A1" empty="true">select * from join_table1</sql>
+			<sql data-source="Source2" target="Source2!A1" non-empty="true">select * from join_table2</sql>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true" interlaced="false" result="true" locale="en">
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>

@@ -11,7 +11,7 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report name="Detailed Report" options="autoFilter, autoSize,headerStyle" locale="en_US" result="true">
+	<report name="Detailed Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
 		<output file="detailedreport.xlsx"/>
 		<data>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true" result="true" layout="detailed" locale="en">
@@ -52,7 +52,7 @@
 			</join>
 		</data>
 	</report>
-	<report name="Detailed Stream Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" result="true" locale="en_US">
+	<report name="Detailed Stream Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
 		<output file="streamdetailedreport.xlsx"/>
 		<data>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true" result="true" layout="detailed" locale="en">

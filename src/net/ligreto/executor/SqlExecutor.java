@@ -133,7 +133,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 				} finally {
 					Database.close(cnn, stm, cstm, rs);
 				}
-			log.info("SQL result row count: " + result);
+				result.info(log, "SQL");
 			} catch (SQLException e) {
 				String msg = "Database error on data source: " + sqlNode.getQuery().toString();
 				log.error(msg);
