@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 import net.ligreto.builders.ExcelStreamReportBuilder;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.tests.TestUtils;
+import net.ligreto.junit.util.TestUtil;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
@@ -67,7 +67,7 @@ public class ExcelStreamReportTest {
 		}
 		cnn.commit();
 		long endStamp = System.currentTimeMillis();
-		TestUtils.logPerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
+		TestUtil.logPerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
 		pstm.close();
 		stm.close();
 		cnn.close();

@@ -51,92 +51,72 @@ public class DetailedJoinLayout extends JoinLayout {
 		int rs1Length = rs1.getMetaData().getColumnCount();
 		int rs2Length = rs2.getMetaData().getColumnCount();
 		
-		for (int i=0, i1=1, i2=1; i1 <= rs1Length && i2 <= rs2Length; i++, i1++, i2++) {
-			// Find the next column in the first result set that
-			// is not part of 'on' nor 'exclude' column list
-			boolean col1Found = false;
-			while (i1 <= rs1Length) {
-				if (MiscUtils.arrayContains(on1, i1) || MiscUtils.arrayContains(excl1, i1)) {
-					i1++;
+		// Loop through all the columns to be in the result
+		for (int i = 0; i < resultCount; i++) {
+			
+			// Get the indices of result columns into the result sets
+			int i1 = resultColumns1[i];
+			int i2 = resultColumns2[i];
+			
+			switch (resultType) {
+			case LEFT:
+				targetBuilder.nextRow();
+				targetBuilder.dumpHeaderColumn(0, rs1.getMetaData().getColumnName(i1), HeaderType.ROW);
+				targetBuilder.setHighlightArray(higherArray);
+				targetBuilder.setColumnPosition(1);
+				targetBuilder.dumpJoinOnColumns(rs1, on1);
+				targetBuilder.setColumnPosition(onLength + 1);
+				targetBuilder.dumpColumn(0, rs1, i1);
+				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
+				if (JdbcUtils.getNumericObject(rs1, i1) != null) {
+					targetBuilder.dumpColumn(2, rs1, i1);
+					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				} else {
-					col1Found = true;
-					break;
+					targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
 				}
-			}
-			// Find the next column in the second result set that
-			// is not part of 'on' nor 'exclude' column list
-			boolean col2Found = false;
-			while (i2 <= rs1Length) {
-				if (MiscUtils.arrayContains(on2, i2) || MiscUtils.arrayContains(excl2, i2)) {
-					i2++;
+				break;
+			case RIGHT:
+				targetBuilder.nextRow();
+				targetBuilder.dumpHeaderColumn(0, rs2.getMetaData().getColumnName(i2), HeaderType.ROW);
+				targetBuilder.setHighlightArray(lowerArray);
+				targetBuilder.setColumnPosition(1);
+				targetBuilder.dumpJoinOnColumns(rs2, on2);
+				targetBuilder.setColumnPosition(onLength + 1);
+				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
+				targetBuilder.dumpColumn(1, rs2, i2);
+				if (JdbcUtils.getNumericObject(rs2, i2) != null) {
+					targetBuilder.dumpColumn(2, rs2, i2);
+					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				} else {
-					col2Found = true;
-					break;
+					targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
 				}
-			}
-			if (col1Found && col2Found) {
-				switch (resultType) {
-				case LEFT:
+				break;
+			case INNER:
+				if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
+					String colName = rs1.getMetaData().getColumnName(i1);
+					String col2Name = rs1.getMetaData().getColumnName(i2);
+					if (! colName.equalsIgnoreCase(col2Name)) {
+						colName = colName + " / " + col2Name;
+					}
 					targetBuilder.nextRow();
-					targetBuilder.dumpHeaderColumn(0, rs1.getMetaData().getColumnName(i1), HeaderType.ROW);
-					targetBuilder.setHighlightArray(higherArray);
+					targetBuilder.dumpHeaderColumn(0, colName, HeaderType.ROW);
 					targetBuilder.setColumnPosition(1);
 					targetBuilder.dumpJoinOnColumns(rs1, on1);
 					targetBuilder.setColumnPosition(onLength + 1);
+					if (cmpArray[i] < 0) {
+						targetBuilder.setHighlightArray(lowerArray);
+					} else if (cmpArray[i] > 0) {
+						targetBuilder.setHighlightArray(higherArray);
+					}
 					targetBuilder.dumpColumn(0, rs1, i1);
-					targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
-					if (JdbcUtils.getNumericObject(rs1, i1) != null) {
-						targetBuilder.dumpColumn(2, rs1, i1);
-						targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
-					} else {
-						targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
-					}
-					break;
-				case RIGHT:
-					targetBuilder.nextRow();
-					targetBuilder.dumpHeaderColumn(0, rs2.getMetaData().getColumnName(i2), HeaderType.ROW);
-					targetBuilder.setHighlightArray(lowerArray);
-					targetBuilder.setColumnPosition(1);
-					targetBuilder.dumpJoinOnColumns(rs2, on2);
-					targetBuilder.setColumnPosition(onLength + 1);
-					targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
 					targetBuilder.dumpColumn(1, rs2, i2);
-					if (JdbcUtils.getNumericObject(rs2, i2) != null) {
-						targetBuilder.dumpColumn(2, rs2, i2);
-						targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
-					} else {
-						targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
-					}
-					break;
-				case INNER:
-					if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
-						String colName = rs1.getMetaData().getColumnName(i1);
-						String col2Name = rs1.getMetaData().getColumnName(i2);
-						if (! colName.equalsIgnoreCase(col2Name)) {
-							colName = colName + " / " + col2Name;
-						}
-						targetBuilder.nextRow();
-						targetBuilder.dumpHeaderColumn(0, colName, HeaderType.ROW);
-						targetBuilder.setColumnPosition(1);
-						targetBuilder.dumpJoinOnColumns(rs1, on1);
-						targetBuilder.setColumnPosition(onLength + 1);
-						if (cmpArray[i] < 0) {
-							targetBuilder.setHighlightArray(lowerArray);
-						} else if (cmpArray[i] > 0) {
-							targetBuilder.setHighlightArray(higherArray);
-						}
-						targetBuilder.dumpColumn(0, rs1, i1);
-						targetBuilder.dumpColumn(1, rs2, i2);
-						targetBuilder.dumpColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
-						targetBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+					targetBuilder.dumpColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
+					targetBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 
-					}
-					break;
-				default:
-					throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 				}
-			} else if (col1Found || col2Found) {
-				throw new RuntimeException("Internal inconsistency found.");
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 			}
 		}
 	}

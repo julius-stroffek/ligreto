@@ -183,9 +183,9 @@ public abstract class JoinLayout {
 	 * @return the index of the column in the result structure, -1 if the columns is not in the result
 	 */
 	public int translateToResultColumn(int index) {
-		if (index < 0 || index >= xmlToResult.length)
+		if (index < 1 || index > xmlToResult.length)
 			return -1;
-		return xmlToResult[index];
+		return xmlToResult[index-1];
 	}
 	
 	/**
@@ -207,51 +207,30 @@ public abstract class JoinLayout {
 		// Create the object holding the result metrics
 		AggregationResult result = new AggregationResult(resultCount);
 		
-		// Loop trough all the columns in the result sets.
-		for (int i = 0, i1 = 1, i2 = 1; i1 <= rsColCount && i2 <= rsColCount; i++, i1++, i2++) {
-			// Find the next column in the first result set that
-			// is not part of 'on', 'exclude' nor 'group by' column list
-			boolean col1Found = false;
-			while (i1 <= rsColCount) {
-				if (noResultColumns1.containsKey(i1)) {
-					i1++;
-				} else {
-					col1Found = true;
-					break;
-				}
-			}
-			// Find the next column in the second result set that
-			// is not part of 'on', 'exclude' nor 'group by' column list
-			boolean col2Found = false;
-			while (i2 <= rsColCount) {
-				if (noResultColumns2.containsKey(i2)) {
-					i2++;
-				} else {
-					col2Found = true;
-					break;
-				}
-			}
-			if (col1Found && col2Found) {
-				Column columnValue1, columnValue2;
-				switch (resultType) {
-				case LEFT:
-					columnValue1 = new Column(rs1, i1);
-					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
-					break;
-				case RIGHT:
-					columnValue2 = new Column(rs2, i2);
-					result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
-					break;
-				case INNER:
-					columnValue1 = new Column(rs1, i1);
-					columnValue2 = new Column(rs2, i2);
-					result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
-					break;
-				default:
-					throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
-				}
-			} else if (col1Found || col2Found) {
-				throw new RuntimeException("Internal inconsistency found.");
+		// Loop through all the columns to be in the result
+		for (int i = 0; i < resultCount; i++) {
+			
+			// Get the indices of result columns into the result sets
+			int i1 = resultColumns1[i];
+			int i2 = resultColumns2[i];
+			
+			Column columnValue1, columnValue2;
+			switch (resultType) {
+			case LEFT:
+				columnValue1 = new Column(rs1, i1);
+				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
+				break;
+			case RIGHT:
+				columnValue2 = new Column(rs2, i2);
+				result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
+				break;
+			case INNER:
+				columnValue1 = new Column(rs1, i1);
+				columnValue2 = new Column(rs2, i2);
+				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 			}
 		}
 		return result;
@@ -485,7 +464,7 @@ public abstract class JoinLayout {
 	public void setResultStatus(ResultStatus resultStatus) {
 		this.resultStatus = resultStatus;
 	}
-
+	
 	/**
 	 * @param on1 The join columns for first result set to set.
 	 * @param on2 The join columns for second result set to set.
@@ -509,7 +488,7 @@ public abstract class JoinLayout {
 		else
 			groupByLength = 0;
 	}
-
+	
 	/**
 	 * @param excl1 The exclude columns for the first result set to set.
 	 * @param excl2 The exclude columns for the second result set to set.
@@ -518,7 +497,7 @@ public abstract class JoinLayout {
 		this.excl1 = excl1;
 		this.excl2 = excl2;
 	}
-
+	
 	/**
 	 * @param rs1 The first result set to set.
 	 * @param rs2 The second result set to set.
@@ -534,7 +513,7 @@ public abstract class JoinLayout {
 	public void setLigretoParameters(LigretoParameters ligretoParameters) {
 		this.ligretoParameters = ligretoParameters;
 	}
-
+	
 	/**
 	 * @return The number of columns being processed (excluding the exclude columns).
 	 */

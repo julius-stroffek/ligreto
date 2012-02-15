@@ -14,11 +14,25 @@
 	<report name="Aggregated Report" options="autoFilter,autoSize,headerStyle" type="excel.stream">
 		<output file="aggregatedreport.xlsx"/>
 		<data>
- 			<join on="1,3" group-by="3" target="aggregated1!A1" type="full" layout="aggregated">
+ 			<join on="1">
+ 				<layout type="summary" target="summary1!A1" join="full"/>
+ 				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+ 			<join on="1,3">
+ 				<layout type="summary" target="summary1+3!A1" join="full"/>
+ 				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+ 			<join on="1,3">
+ 				<layout type="aggregated" target="aggregated1!A1" join="full" group-by="3"/>
+ 				<layout type="interlaced" target="interlaced1!A1" join="full"/>
  				<sql data-source="Source1">select * from aggregation_table1 where id &lt; 24</sql>
 				<sql data-source="Source2">select * from aggregation_table2 where id &lt; 24</sql>
 			</join>
-			<join on="1,3" group-by="3" target="aggregated2!A1" type="full" layout="aggregated">
+ 			<join on="1,3">
+ 				<layout type="aggregated" target="aggregated2!A1" join="full" group-by="3"/>
+ 				<layout type="interlaced" target="interlaced2!A1" join="full" group-by="3"/>
 				<sql data-source="Source1">select * from aggregation_table1 where id &lt; 140</sql>
 				<sql data-source="Source2">select * from aggregation_table2 where id &lt; 140</sql>
 			</join>
@@ -30,7 +44,9 @@
 				<sql data-source="Source1">select * from aggregation_table1</sql>
 				<sql data-source="Source2">select * from aggregation_table2</sql>
 			</join>
-			<join on="1,3" target="aggregated5!A1" type="full" layout="aggregated">
+			<join on="1">
+				<layout type="aggregated" target="aggregated6!A1"/>
+				<layout type="aggregated" join="inner" target="aggregated7!A1"/>
 				<sql data-source="Source1">select * from aggregation_table1</sql>
 				<sql data-source="Source2">select * from aggregation_table2</sql>
 			</join>

@@ -1,5 +1,7 @@
 package net.ligreto.junit.tests;
 
+import net.ligreto.junit.util.TestUtil;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -18,7 +20,7 @@ public class AllTests {
 	 */
 	@BeforeClass
 	public static void setUp() throws Exception {
-		TestUtils.createDBs();
+		TestUtil.createDBs();
 	}
 	
 	/**

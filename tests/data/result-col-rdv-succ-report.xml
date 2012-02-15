@@ -11,15 +11,16 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report name="Rel-Diff-Count Failure Report" options="autoFilter,autoSize,headerStyle">
-		<output file="result-row-rdc-fail-report.xlsx"/>
+	<report name="Abs-Diff-Count Failure Report" options="autoFilter,autoSize,headerStyle">
+		<output file="result-col-rdv-succ-report.xlsx"/>
 		<data>
 			<join on="1">
-				<layout target="summary!A1" type="summary">
+				<layout target="aggregated!A1" type="aggregated">
 					<result>
-						<row-limit rel-diff-count="39.5%"/>
+						<limit columns="7" rel-diff-value="0.0383"/>
 					</result>
 				</layout>
+				<layout target="inner!A1" join="inner" type="aggregated"/>
 				<sql data-source="Source1">select * from aggregation_table1</sql>
 				<sql data-source="Source2">select * from aggregation_table2</sql>
 			</join>

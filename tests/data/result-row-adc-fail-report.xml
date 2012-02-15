@@ -17,7 +17,7 @@
 			<join on="1">
 				<layout target="summary!A1" type="summary">
 					<result>
-						<row-limit abs-diff-count="858"/>
+						<row-limit abs-diff-count="394"/>
 					</result>
 				</layout>
 				<sql data-source="Source1">select * from aggregation_table1</sql>

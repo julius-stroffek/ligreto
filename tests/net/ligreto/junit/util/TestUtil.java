@@ -1,27 +1,60 @@
-package net.ligreto.junit.tests.util;
+package net.ligreto.junit.util;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Assert;
-import org.xml.sax.SAXException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
 
 import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Assert;
+import org.xml.sax.SAXException;
+
 /**
- * This class provides various testing utility functions.
+ * This class provides various common functions related to testing
+ * that could be used across all the tests. For example database
+ * creation, etc.
  * 
  * @author Julius Stroffek
  *
  */
 public class TestUtil {
+
+	/** The logger instance for the class. */
+	private static Log log = LogFactory.getLog(TestUtil.class);
+
+	/** This function will create the databases used across all the tests. 
+	 * @throws ClassNotFoundException 
+	 * @throws SQLException */
+	public static void createDBs() throws ClassNotFoundException, SQLException {
+		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+		Properties properties = new Properties();
+		properties.setProperty("create", "true");
+		Connection cnn = DriverManager.getConnection("jdbc:derby:db1", properties);
+		cnn.close();
+		cnn = DriverManager.getConnection("jdbc:derby:db2", properties);
+		cnn.close();
+	}
+	
+	/** Stores the performance testing results into the target DB for further reference. */
+	public static void storePerfResults(String operation, long amount, long millis) {
+		log.info("Operation: " + operation + " on " + amount + " records took " + millis/1000 + " seconds.");
+	}
+	
+	/** Log the performance results into the log file. */
+	public static void logPerfResults(String operation, long amount, long millis) {
+		log.info("Operation: " + operation + " on " + amount + " records took " + millis/1000 + " seconds.");
+	}
 	
 	/**
 	 * This function will invoke the report generation according the convention in the tests.
@@ -47,10 +80,10 @@ public class TestUtil {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void compareReport(String reportName) throws FileNotFoundException, IOException {
+	public static void compareReport(String reportName, String desiredReportName) throws FileNotFoundException, IOException {
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream(reportName + ".xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/" + reportName + ".xlsx"))
+				new XSSFWorkbook(new FileInputStream("desired/" + desiredReportName + ".xlsx"))
 		).areSame());						
 	}
 	
@@ -60,15 +93,20 @@ public class TestUtil {
 	 * the 'desired' report directory.
 	 * 
 	 * @param reportName
+	 * @param desiredReportName
 	 * @param accepted
 	 * @throws SAXException
 	 * @throws IOException
 	 * @throws LigretoException
 	 */
-	public static void testReport(String reportName, boolean accepted) throws SAXException, IOException, LigretoException {
+	public static void testReport(String reportName, String desiredReportName, boolean accepted) throws SAXException, IOException, LigretoException {
 		ResultStatus resultStatus = generateReport(reportName);
 		Assert.assertTrue(resultStatus.isAccepted() == accepted);
-		compareReport(reportName);
+		compareReport(reportName, desiredReportName);
+	}
+
+	public static void testReport(String reportName, boolean accepted) throws SAXException, IOException, LigretoException {
+		testReport(reportName, reportName, accepted);
 	}
 
 	/**

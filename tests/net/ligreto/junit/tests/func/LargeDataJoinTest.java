@@ -5,6 +5,7 @@ package net.ligreto.junit.tests.func;
 
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,8 +14,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.junit.tests.TestUtils;
-import net.ligreto.junit.tests.util.TestUtil;
+import net.ligreto.junit.util.TestUtil;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -55,10 +55,10 @@ public class LargeDataJoinTest {
 		} catch (SQLException e) {
 			// do nothing
 		}
-		stm1.execute("create table aggregation_table1 (Id int, stamp timestamp, party_type int, name varchar(32), age int)");
-		stm2.execute("create table aggregation_table2 (Id int, stamp timestamp, party_type int, name varchar(32), age int)");
-		PreparedStatement pstm1 = cnn1.prepareStatement("insert into aggregation_table1 values (?, ?, ?, ?, ?)");
-		PreparedStatement pstm2 = cnn2.prepareStatement("insert into aggregation_table2 values (?, ?, ?, ?, ?)");
+		stm1.execute("create table aggregation_table1 (Id int, stamp timestamp, party_type int, name varchar(32), age int, fValue float, bdValue numeric(20,7))");
+		stm2.execute("create table aggregation_table2 (Id int, stamp timestamp, party_type int, name varchar(32), age int, fValue float, bdValue numeric(20,7))");
+		PreparedStatement pstm1 = cnn1.prepareStatement("insert into aggregation_table1 values (?, ?, ?, ?, ?, ?, ?)");
+		PreparedStatement pstm2 = cnn2.prepareStatement("insert into aggregation_table2 values (?, ?, ?, ?, ?, ?, ?)");
 		cnn1.setAutoCommit(false);
 		cnn2.setAutoCommit(false);
 		
@@ -73,9 +73,11 @@ public class LargeDataJoinTest {
 				Timestamp stamp1 = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
 			
 				pstm1.setTimestamp(2, stamp1);
-				pstm1.setInt(3, (int)(l % 5));
+				pstm1.setInt(3, (int)((l % 7) + (l % 100 < 92 ? 0 : 1)));
 				pstm1.setString(4, "LastName" + l);
-				pstm1.setInt(5, (int) (l % 120));
+				pstm1.setInt(5, (int) ((l % 120) + (l % 10 < 7 ? 0 : 1)));
+				pstm1.setDouble(6, (l % 120) + (l % 100 < 90 ? 0 : 1));
+				pstm1.setBigDecimal(7, new BigDecimal((l % 120) + (l % 1000 < 998 ? 0 : 1)));
 				pstm1.execute();
 			}
 			if (l % commitInterval == 0) {
@@ -90,9 +92,12 @@ public class LargeDataJoinTest {
 				Timestamp stamp2 = new Timestamp(111, 11, 20, 11, (int)l%24, (int)l%60, (int)l%60);
 			
 				pstm2.setTimestamp(2, stamp2);
-				pstm2.setInt(3, (int)(l % 7));
+				pstm2.setInt(3, (int)((l % 7) - (l % 100 < 92 ? 0 : 1)));
 				pstm2.setString(4, "LastName" + l);
 				pstm2.setInt(5, (int) (l % 120));
+				pstm2.setInt(5, (int) ((l % 120)));
+				pstm2.setDouble(6, l % 120);
+				pstm2.setBigDecimal(7, new BigDecimal(l % 120));
 				pstm2.execute();
 			}
 			if (l % commitInterval == 0) {
@@ -102,7 +107,7 @@ public class LargeDataJoinTest {
 		cnn1.commit();
 		cnn2.commit();
 		long endStamp = System.currentTimeMillis();
-		TestUtils.logPerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
+		TestUtil.logPerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
 		pstm1.close();
 		pstm2.close();
 		stm1.close();
@@ -134,14 +139,34 @@ public class LargeDataJoinTest {
 	}
 	
 	@Test
-	public void testResultRowLimits() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("result-row-rdc-succ-report", true);		
-		TestUtil.testReport("result-row-rdc-fail-report", false);		
-		TestUtil.testReport("result-row-adc-succ-report", true);		
-		TestUtil.testReport("result-row-adc-fail-report", false);		
-		TestUtil.testReport("result-row-rnmc-succ-report", true);		
-		TestUtil.testReport("result-row-rnmc-fail-report", false);		
-		TestUtil.testReport("result-row-anmc-succ-report", true);		
-		TestUtil.testReport("result-row-anmc-fail-report", false);		
+	public void testResultRowRelativeLimits() throws SAXException, IOException, LigretoException {
+		final String desiredReportFile = "result-row-report";
+		TestUtil.testReport("result-row-rdc-succ-report", desiredReportFile, true);		
+		TestUtil.testReport("result-row-rdc-fail-report", desiredReportFile, false);		
+		TestUtil.testReport("result-row-rnmc-succ-report", desiredReportFile, true);		
+		TestUtil.testReport("result-row-rnmc-fail-report", desiredReportFile, false);		
+	}
+
+	@Test
+	public void testResultRowAbsoluteLimits() throws SAXException, IOException, LigretoException {
+		final String desiredReportFile = "result-row-report";
+		TestUtil.testReport("result-row-adc-succ-report", desiredReportFile, true);		
+		TestUtil.testReport("result-row-adc-fail-report", desiredReportFile, false);		
+		TestUtil.testReport("result-row-anmc-succ-report", desiredReportFile, true);		
+		TestUtil.testReport("result-row-anmc-fail-report", desiredReportFile, false);		
+	}
+	
+	@Test
+	public void testResultColLimitsNoColSpec() throws SAXException, IOException, LigretoException {
+		final String desiredReportFile = "result-col-report";
+		TestUtil.testReport("result-col-succ-report", desiredReportFile, true);
+		TestUtil.testReport("result-col-fail-report", desiredReportFile, false);
+	}
+	
+	@Test
+	public void testResultColLimitsWithExclude() throws SAXException, IOException, LigretoException {
+		final String desiredReportFile = "result-col-exclude-report";
+		TestUtil.testReport("result-col-exclude-succ-report", desiredReportFile, true);
+		TestUtil.testReport("result-col-exclude-fail-report", desiredReportFile, false);
 	}
 }

@@ -1,6 +1,6 @@
 package net.ligreto.junit.tests.unit;
 
-import net.ligreto.junit.tests.TestUtils;
+import net.ligreto.junit.util.TestUtil;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,7 +17,7 @@ public class AllTests {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		TestUtils.createDBs();
+		TestUtil.createDBs();
 	}
 	
 	/**

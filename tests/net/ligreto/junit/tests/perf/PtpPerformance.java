@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.tests.TestUtils;
+import net.ligreto.junit.util.TestUtil;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
@@ -61,7 +61,7 @@ public class PtpPerformance {
 		}
 		cnn.commit();
 		long endStamp = System.currentTimeMillis();
-		TestUtils.storePerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
+		TestUtil.storePerfResults("insert (commit 1)", rowCount, endStamp - startStamp);
 		pstm.close();
 		stm.close();
 		cnn.close();
@@ -81,7 +81,7 @@ public class PtpPerformance {
 		long startStamp = System.currentTimeMillis();
 		executor.execute();
 		long endStamp = System.currentTimeMillis();
-		TestUtils.storePerfResults("transfer (commit 1)", rowCount, endStamp - startStamp);
+		TestUtil.storePerfResults("transfer (commit 1)", rowCount, endStamp - startStamp);
 	}
 
 }

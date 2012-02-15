@@ -85,12 +85,12 @@ public class ResultStatus {
 	 * @param typeString The type of the result - e.g. "JOIN", "LIGRETO", etc.
 	 */
 	public void info(Log log, String typeString) {
-		log.info(typeString + " different row count: " + differentRowCount);
-		log.info(typeString + " total row count: " + totalRowCount);
+		log.info("[" + typeString + "] Different Row Count: " + differentRowCount);
+		log.info("[" + typeString + "] Total Row Count: " + totalRowCount);
 		if (accepted) {
-			log.info(typeString + " ACCEPTED.");
+			log.info("[" + typeString + "] ACCEPTED.");
 		} else {
-			log.info(typeString + " REJECTED.");			
+			log.info("[" + typeString + "] REJECTED.");			
 		}
 	}
 
