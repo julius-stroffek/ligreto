@@ -191,13 +191,8 @@ public class AggregatedLayout extends JoinLayout {
 			AggregationResult result = aggregationMap.get(f);
 			for (int i=0; i < result.getColumnCount(); i++) {
 				ColumnAggregationResult cResult = result.getColumnResult(i);
-				String colName = rs1.getMetaData().getColumnName(resultColumns1[i]);
-				String col2Name = rs1.getMetaData().getColumnName(resultColumns2[i]);
-				if (! colName.equalsIgnoreCase(col2Name)) {
-					colName = colName + " / " + col2Name;
-				}
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, colName, HeaderType.ROW);
+				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 				targetBuilder.setColumnPosition(1);
 				for (int j=0; j < f.getFields().length; j++) {
 					targetBuilder.dumpColumn(j, f.getFields()[j].getColumnValue(), CellFormat.UNCHANGED);

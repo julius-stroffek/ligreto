@@ -10,7 +10,6 @@ import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.util.MiscUtils;
 import net.ligreto.util.JdbcUtils;
 
 public class DetailedJoinLayout extends JoinLayout {
@@ -47,10 +46,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
-		int rs1Length = rs1.getMetaData().getColumnCount();
-		int rs2Length = rs2.getMetaData().getColumnCount();
-		
+	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {		
 		// Loop through all the columns to be in the result
 		for (int i = 0; i < resultCount; i++) {
 			
@@ -61,7 +57,7 @@ public class DetailedJoinLayout extends JoinLayout {
 			switch (resultType) {
 			case LEFT:
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, rs1.getMetaData().getColumnName(i1), HeaderType.ROW);
+				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 				targetBuilder.setHighlightArray(higherArray);
 				targetBuilder.setColumnPosition(1);
 				targetBuilder.dumpJoinOnColumns(rs1, on1);
@@ -77,7 +73,7 @@ public class DetailedJoinLayout extends JoinLayout {
 				break;
 			case RIGHT:
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, rs2.getMetaData().getColumnName(i2), HeaderType.ROW);
+				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 				targetBuilder.setHighlightArray(lowerArray);
 				targetBuilder.setColumnPosition(1);
 				targetBuilder.dumpJoinOnColumns(rs2, on2);
@@ -93,13 +89,8 @@ public class DetailedJoinLayout extends JoinLayout {
 				break;
 			case INNER:
 				if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
-					String colName = rs1.getMetaData().getColumnName(i1);
-					String col2Name = rs1.getMetaData().getColumnName(i2);
-					if (! colName.equalsIgnoreCase(col2Name)) {
-						colName = colName + " / " + col2Name;
-					}
 					targetBuilder.nextRow();
-					targetBuilder.dumpHeaderColumn(0, colName, HeaderType.ROW);
+					targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 					targetBuilder.setColumnPosition(1);
 					targetBuilder.dumpJoinOnColumns(rs1, on1);
 					targetBuilder.setColumnPosition(onLength + 1);

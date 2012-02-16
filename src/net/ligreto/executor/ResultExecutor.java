@@ -1,5 +1,6 @@
 package net.ligreto.executor;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -90,7 +91,7 @@ public class ResultExecutor extends Executor {
 		}
 	}
 	
-	private void processLimitNode(LimitNode limitNode, int columnIndex) {
+	private void processLimitNode(LimitNode limitNode, int columnIndex) throws SQLException {
 		Double absoluteCountLimit = limitNode.getAbsoluteCount();
 		Double relativeCountLimit = limitNode.getRelativeCount();
 		Double absoluteDifferenceLimit = limitNode.getAbsoluteDifference();
@@ -99,7 +100,7 @@ public class ResultExecutor extends Executor {
 		if (resultColumn >= 0) {
 			ColumnAggregationResult columnResult = joinLayout.getColumnAggregationResult(resultColumn);
 
-			// TODO: Dump column name
+			log.info("Checking \"" + joinLayout.getResultColumnName(resultColumn) + "\" column result:");
 			
 			if (absoluteCountLimit != null) {
 				String statusMsg = compareLimit(columnResult.getDifferenceCount(), absoluteCountLimit);
@@ -139,7 +140,7 @@ public class ResultExecutor extends Executor {
 		}
 	}
 	
-	private void processLimitNode(LimitNode limitNode) {
+	private void processLimitNode(LimitNode limitNode) throws SQLException {
 		if (limitNode.getColumns() != null) {
 			for (int col : limitNode.getColumns()) {
 				processLimitNode(limitNode, col);
@@ -156,19 +157,23 @@ public class ResultExecutor extends Executor {
 		resultStatus = new ResultStatus();
 		resultStatus.setDifferentRowCount(joinLayout.getDifferentRowCount());
 		resultStatus.setTotalRowCount(joinLayout.getTotalRowCount());
-		if (resultNode != null && resultNode.isEnabled()) {
-			RowLimitNode rowLimitNode = resultNode.getRowLimitNode();
-			if (rowLimitNode != null) {
-				processRowLimitNode(rowLimitNode);
-			}
-			List<LimitNode> limitNodes = resultNode.getLimitNodes();
-			if (limitNodes != null) {
-				for (LimitNode limitNode : limitNodes) {
-					processLimitNode(limitNode);
+		try {
+			if (resultNode != null && resultNode.isEnabled()) {
+				RowLimitNode rowLimitNode = resultNode.getRowLimitNode();
+				if (rowLimitNode != null) {
+					processRowLimitNode(rowLimitNode);
 				}
+				List<LimitNode> limitNodes = resultNode.getLimitNodes();
+				if (limitNodes != null) {
+					for (LimitNode limitNode : limitNodes) {
+						processLimitNode(limitNode);
+					}
+				}
+			} else if (joinLayout.getLayoutNode().getResult() && resultStatus.getDifferentRowCount() > 0) {
+					resultStatus.setAccepted(false);
 			}
-		} else if (joinLayout.getLayoutNode().getResult() && resultStatus.getDifferentRowCount() > 0) {
-				resultStatus.setAccepted(false);
+		} catch (SQLException e) {
+			throw new LigretoException("Error checking the result of comparison.", e);
 		}
 		return resultStatus;
 	}

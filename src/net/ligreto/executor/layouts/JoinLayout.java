@@ -180,14 +180,41 @@ public abstract class JoinLayout {
 	 * that were specified in exclude attribute.
 	 * 
 	 * @param index Index of the column as specified in "on" attribute of the join. 
-	 * @return the index of the column in the result structure, -1 if the columns is not in the result
+	 * @return the index of the column in the result structure; -1 of the index column is not in the result
 	 */
 	public int translateToResultColumn(int index) {
+		Assert.assertTrue(startCalled);
+
 		if (index < 1 || index > xmlToResult.length)
 			return -1;
+		
 		return xmlToResult[index-1];
 	}
 	
+	/**
+	 * Function will provide the name of the specified result column.
+	 * 
+	 * @param i the index of the result column
+	 * @return the name of the i-th result column
+	 * @throws SQLException
+	 */
+	public String getResultColumnName(int i) throws SQLException {
+		Assert.assertTrue(startCalled);
+
+		if (i < 0 || i >= resultCount)
+			throw new IllegalArgumentException("Result column index out of range");
+
+		int i1 = resultColumns1[i];
+		int i2 = resultColumns2[i];
+
+		String colName = rs1.getMetaData().getColumnName(i1);
+		String col2Name = rs1.getMetaData().getColumnName(i2);
+		if (! colName.equalsIgnoreCase(col2Name)) {
+			colName = colName + " / " + col2Name;
+		}
+
+		return colName;
+	}
 	/**
 	 * @param index index of the result column
 	 * @return the aggregated result of the column data
