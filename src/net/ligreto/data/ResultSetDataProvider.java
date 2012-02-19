@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.sql.Types;
+import java.sql.Date;
 
 import net.ligreto.exceptions.DataException;
 import net.ligreto.util.Assert;
@@ -152,10 +155,11 @@ public class ResultSetDataProvider extends DataProvider {
 	}
 
 	@Override
-	public Object getObject(int index) throws DataException {
+	public Time getTime(int index) throws DataException {
 		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		Time result;
 		try {
-			Object result = resultSet.getObject(originalIndices[index-1]);
+			result = resultSet.getTime(originalIndices[index-1]);
 			if (resultSet.wasNull())
 				return null;
 			else
@@ -163,6 +167,84 @@ public class ResultSetDataProvider extends DataProvider {
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
+	}
+
+	@Override
+	public Date getDate(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		Date result;
+		try {
+			result = resultSet.getDate(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+	}
+
+	@Override
+	public Object getObject(int index) throws DataException {	
+		Object columnValue = null;
+		switch (getColumnType(index)) {
+		case Types.BOOLEAN:
+			columnValue = getBoolean(index);
+			break;
+		case Types.BIGINT:
+		case Types.INTEGER:
+			columnValue = getLong(index);
+			break;
+		case Types.DOUBLE:
+		case Types.FLOAT:
+			columnValue = getDouble(index);
+			break;
+		case Types.DATE:
+			Date date = getDate(index);
+			if (date != null) {
+				columnValue = new Date(date.getTime());
+			} else {
+				columnValue = null;
+			}
+			break;
+		case Types.TIMESTAMP:
+			Timestamp ts = getTimestamp(index);
+			if (ts != null) {
+				columnValue = new Timestamp(ts.getTime());
+			} else {
+				columnValue = null;
+			}
+			break;
+		case Types.TIME:
+			Time time = getTime(index);
+			if (time != null) {
+				columnValue = new Time(time.getTime());
+			} else {
+				columnValue = null;
+			}
+			break;
+		case Types.DECIMAL:
+		case Types.NUMERIC:
+			BigDecimal bd = getBigDecimal(index);
+			if (bd != null) {
+				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
+			} else {
+				columnValue = null;
+			}
+
+			break;
+		default:
+			String tmpValue = getString(index);
+			if (tmpValue != null)
+				columnValue = new String(tmpValue);
+			else
+				columnValue = null;
+			break;
+		}
+		if (wasNull())
+			columnValue = null;
+
+		return columnValue;
 	}
 
 	@Override
@@ -222,6 +304,21 @@ public class ResultSetDataProvider extends DataProvider {
 			return resultSet.wasNull();
 		} catch (SQLException e) {
 			throw new DataException(e);
+		}
+	}
+
+	@Override
+	public boolean isNumeric(int index) throws DataException {
+		switch (getColumnType(index)) {
+		case Types.BIGINT:
+		case Types.INTEGER:
+		case Types.DOUBLE:
+		case Types.FLOAT:
+		case Types.DECIMAL:
+		case Types.NUMERIC:
+			return true;
+		default:
+			return false;			
 		}
 	}
 }

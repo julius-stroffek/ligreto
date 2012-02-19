@@ -153,65 +153,7 @@ public class LigretoComparator {
 	}
 	
 	public int compareAsDataSource(DataProvider dp1, int on1, DataProvider dp2, int on2) throws DataException {
-		int result = 0;
-		// Deal with the case when at least one of the values is null.
-		dp1.getString(on1);
-		dp2.getString(on2);
-		boolean isNull1 = dp1.wasNull();
-		boolean isNull2 = dp2.wasNull();
-		
-		result = compareNullsAsDataSource(isNull1, isNull2);
-		if (result != 0)
-			return result;
-		if (isNull1 && isNull2)
-			return 0;
-		
-		int ct1 = dp1.getColumnType(on1);
-		int ct2 = dp2.getColumnType(on2);
-		if (ct1 != ct2) {
-			log.debug(
-				"Data types differ, using string comparison: "
-				+ DataProviderUtils.getJdbcTypeName(ct1) + "; " + DataProviderUtils.getJdbcTypeName(ct2)
-			);
-			result = compareAsDataSource(dp1.getString(on1), dp2.getString(on2));
-		} else {
-			switch (ct1) {
-			case Types.BOOLEAN:
-				result = compare(dp1.getBoolean(on1), dp2.getBoolean(on2));
-				break;
-			case Types.BIGINT:
-			case Types.INTEGER:
-				result = compare(dp1.getLong(on1), dp2.getLong(on2));
-				break;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-				result = compare(dp1.getDouble(on1), dp2.getDouble(on2));
-				break;
-			case Types.DATE:
-			case Types.TIMESTAMP:
-			case Types.TIME:
-				result = compare(dp1.getTimestamp(on1), dp2.getTimestamp(on2));
-				break;
-			case Types.DECIMAL:
-			case Types.NUMERIC:
-				result = compare(dp1.getBigDecimal(on1), dp2.getBigDecimal(on2));
-				break;
-			case Types.CHAR:
-			case Types.VARCHAR:
-				result = compareAsDataSource(dp1.getString(on1), dp2.getString(on2));
-				break;
-			default:
-				log.debug("Unknown data type used, using string comparison: " + DataProviderUtils.getJdbcTypeName(ct1));
-				result = compareAsDataSource(dp1.getString(on1), dp2.getString(on2));
-				break;
-			}
-		}
-		// Make sure we are returning only -1, 0 and 1
-		if (result > 0)
-			return 1;
-		if (result < 0)
-			return -1;
-		return 0;
+		return compareAsDataSource(dp1.getColumnType(on1), dp1.getObject(on1), dp2.getColumnType(on2), dp2.getObject(on2));
 	}
 	
 	public int compare(String s1, String s2) {
@@ -265,38 +207,57 @@ public class LigretoComparator {
 	}
 
 	public int compareAsDataSource(Column field1, Column field2) throws LigretoException {
+		return compareAsDataSource(field1.getColumnType(), field1.getColumnValue(), field2.getColumnType(), field2.getColumnValue());
+	}
+	
+	public int compareAsDataSource(int fieldType1, Object fieldValue1, int fieldType2, Object fieldValue2) throws DataException {
 		int result = 0;
 		// Take care of the null values first
-		boolean isNull1 = field1.getColumnValue() == null;
-		boolean isNull2 = field2.getColumnValue() == null;
+		boolean isNull1 = fieldValue1 == null;
+		boolean isNull2 = fieldValue2 == null;
+		if (isNull1 && isNull2)
+			return 0;
+
 		result = compareNullsAsDataSource(isNull1, isNull2);
 		if (result != 0)
 			return result;
 
-		switch (field1.getColumnType()) {
-		case Types.BOOLEAN:
-			result = compare((Boolean) field1.getColumnValue(), (Boolean) field2.getColumnValue());
-			break;
-		case Types.BIGINT:
-		case Types.INTEGER:
-			result = compare((Long) field1.getColumnValue(), (Long) field2.getColumnValue());
-			break;
-		case Types.DOUBLE:
-		case Types.FLOAT:
-			result = compare((Double) field1.getColumnValue(), (Double) field2.getColumnValue());
-			break;
-		case Types.DATE:
-		case Types.TIMESTAMP:
-		case Types.TIME:
-			result = compare((Timestamp) field1.getColumnValue(), (Timestamp) field2.getColumnValue());
-			break;
-		case Types.DECIMAL:
-		case Types.NUMERIC:
-			result = compare((BigDecimal) field1.getColumnValue(), (BigDecimal) field2.getColumnValue());
-			break;
-		default:
-			result = compareAsDataSource((String) field1.getColumnValue(), (String) field2.getColumnValue());
-			break;
+		if (fieldType1 != fieldType2) {
+			throw new DataException("Columns to compare have to be of the same data type.");
+		}
+		
+		if (fieldType1 != fieldType2) {
+			log.debug(
+				"Data types differ, using string comparison: "
+				+ DataProviderUtils.getJdbcTypeName(fieldType1) + "; " + DataProviderUtils.getJdbcTypeName(fieldType2)
+			);
+			result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
+		} else {
+			switch (fieldType1) {
+			case Types.BOOLEAN:
+				result = compare((Boolean) fieldValue1, (Boolean) fieldValue2);
+				break;
+			case Types.BIGINT:
+			case Types.INTEGER:
+				result = compare((Long) fieldValue1, (Long) fieldValue2);
+				break;
+			case Types.DOUBLE:
+			case Types.FLOAT:
+				result = compare((Double) fieldValue1, (Double) fieldValue2);
+				break;
+			case Types.DATE:
+			case Types.TIMESTAMP:
+			case Types.TIME:
+				result = compare((Timestamp) fieldValue1, (Timestamp) fieldValue2);
+				break;
+			case Types.DECIMAL:
+			case Types.NUMERIC:
+				result = compare((BigDecimal) fieldValue1, (BigDecimal) fieldValue2);
+				break;
+			default:
+				result = compareAsDataSource((String) fieldValue1, (String) fieldValue2);
+				break;
+			}
 		}
 		return result;
 	}
@@ -323,38 +284,47 @@ public class LigretoComparator {
 		return result;
 	}
 
-	public int compare(Column field1, Column field2) {
+	public int compare(Column field1, Column field2) throws DataException {
+		return compare(field1.getColumnType(), field1.getColumnValue(), field2.getColumnType(), field2.getColumnValue());
+	}
+
+	public int compare(int fieldType1, Object fieldValue1, int fieldType2, Object fieldValue2) throws DataException {
 		int result = 0;
+		
 		// Take care of the null values first
-		boolean isNull1 = field1.getColumnValue() == null;
-		boolean isNull2 = field2.getColumnValue() == null;
+		boolean isNull1 = fieldValue1 == null;
+		boolean isNull2 = fieldValue2 == null;
 		result = compareNulls(isNull1, isNull2);
 		if (result != 0)
 			return result;
 
-		switch (field1.getColumnType()) {
+		if (fieldType1 != fieldType2) {
+			throw new DataException("Columns to compare have to be of the same data type.");
+		}
+		
+		switch (fieldType1) {
 		case Types.BOOLEAN:
-			result = compare((Boolean) field1.getColumnValue(), (Boolean) field2.getColumnValue());
+			result = compare((Boolean) fieldValue1, (Boolean) fieldValue2);
 			break;
 		case Types.BIGINT:
 		case Types.INTEGER:
-			result = compare((Long) field1.getColumnValue(), (Long) field2.getColumnValue());
+			result = compare((Long) fieldValue1, (Long) fieldValue2);
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:
-			result = compare((Double) field1.getColumnValue(), (Double) field2.getColumnValue());
+			result = compare((Double) fieldValue1, (Double) fieldValue2);
 			break;
 		case Types.DATE:
 		case Types.TIMESTAMP:
 		case Types.TIME:
-			result = compare((Timestamp) field1.getColumnValue(), (Timestamp) field2.getColumnValue());
+			result = compare((Timestamp) fieldValue1, (Timestamp) fieldValue2);
 			break;
 		case Types.DECIMAL:
 		case Types.NUMERIC:
-			result = compare((BigDecimal) field1.getColumnValue(), (BigDecimal) field2.getColumnValue());
+			result = compare((BigDecimal) fieldValue1, (BigDecimal) fieldValue2);
 			break;
 		default:
-			result = compare((String) field1.getColumnValue(), (String) field2.getColumnValue());
+			result = compare((String) fieldValue1, (String) fieldValue2);
 			break;
 		}
 		return result;

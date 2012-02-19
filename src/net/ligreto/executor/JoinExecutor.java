@@ -24,6 +24,7 @@ import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.Column;
 import net.ligreto.data.DataProvider;
 import net.ligreto.data.ResultSetDataProvider;
+import net.ligreto.data.SortingDataProvider;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
@@ -31,6 +32,7 @@ import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.JoinNode.SortingStrategy;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
@@ -184,7 +186,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			if (on1.length != on2.length)
 				throw new LigretoException("All queries in the join have to have the same number of \"on\" columns.");
 			
-			if (on1.length > 0) {
+			if (on1.length > 0 && joinNode.getSortingStrategy() == SortingStrategy.EXTERNAL) {
 				// Things are all right, so we will continue...
 				qry1.append(" order by ");
 				qry2.append(" order by ");
@@ -320,6 +322,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			if (dp1.getColumnCount() != dp2.getColumnCount()) {
 				throw new LigretoException("Result set column counts differs: " + dp1.getColumnCount() + " and " + dp2.getColumnCount());
+			}
+			
+			if (joinNode.getSortingStrategy() == SortingStrategy.INTERNAL) {
+				SortingDataProvider sdp1 = new SortingDataProvider(dp1, on1);
+				SortingDataProvider sdp2 = new SortingDataProvider(dp2, on2);
+				dp1 = sdp1;
+				dp2 = sdp2;
 			}
 			
 			// Create the arrays to be used to highlight

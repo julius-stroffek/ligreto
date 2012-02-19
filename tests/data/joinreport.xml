@@ -66,7 +66,7 @@
 			</join>
 		</data>
 	</report>
-	<report name="Simple Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
+	<report name="Simple Report 2" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
 		<output file="streamjoinreport.xlsx"/>
 		<data>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true" layout="normal" locale="en" result="true">

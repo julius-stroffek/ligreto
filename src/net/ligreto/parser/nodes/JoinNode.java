@@ -11,11 +11,13 @@ import java.util.List;
  *
  */
 public class JoinNode extends Node {
+	public enum SortingStrategy {INTERNAL, EXTERNAL};
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<LayoutNode> layouts = new ArrayList<LayoutNode>();
 	protected String on;
 	protected String exclude;
 	protected String locale;
+	protected SortingStrategy sortingStrategy = SortingStrategy.EXTERNAL;
 	protected ReportNode reportNode;
 	protected Attitude collation = Attitude.FAIL;
 	
@@ -113,6 +115,33 @@ public class JoinNode extends Node {
 		this.reportNode = reportNode;
 	}
 	
+	/**
+	 * @return the sortingStrategy
+	 */
+	public SortingStrategy getSortingStrategy() {
+		return sortingStrategy;
+	}
+
+	/**
+	 * @param sortingStrategy the sortingStrategy to set
+	 */
+	public void setSortingStrategy(SortingStrategy sortingStrategy) {
+		this.sortingStrategy = sortingStrategy;
+	}
+
+	/**
+	 * @param sortingStrategy the sortingStrategy to set
+	 */
+	public void setSortingStrategy(String sortingStrategy) {
+		if ("internal".equals(sortingStrategy)) {
+			this.sortingStrategy = SortingStrategy.INTERNAL;
+		} else if ("external".equals(sortingStrategy)) {
+			this.sortingStrategy = SortingStrategy.EXTERNAL;			
+		} else {
+			throw new IllegalArgumentException("The sort could not be \"" + sortingStrategy + "\"");
+		}
+	}
+
 	public Attitude getCollation() {
 		return collation;
 	}

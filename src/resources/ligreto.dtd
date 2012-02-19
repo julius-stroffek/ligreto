@@ -24,11 +24,12 @@
 <!ELEMENT template EMPTY>
 <!ATTLIST template file CDATA #REQUIRED>
 
-<!ELEMENT data (sql|join)+>
+<!ELEMENT data (sql|comparison|join)+>
 
 <!ELEMENT sql (#PCDATA)>
 <!ATTLIST sql query CDATA #IMPLIED>
 <!ATTLIST sql on CDATA #IMPLIED>
+<!ATTLIST sql key CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
 <!ATTLIST sql header CDATA "true">			<!--(true|false)-->
@@ -39,11 +40,21 @@
 <!ATTLIST sql empty CDATA "false">			<!--(true|false)-->
 <!ATTLIST sql non-empty CDATA "false">		<!--(true|false)-->
 
+<!ELEMENT comparison (layout*,sql,layout*,sql+,layout*)>
+<!ATTLIST comparison key CDATA #IMPLIED>
+<!ATTLIST comparison exclude CDATA #IMPLIED>
+<!ATTLIST comparison locale CDATA #IMPLIED>
+<!ATTLIST comparison collation CDATA "fail">	<!--(ignore|dump|fail)-->
+<!ATTLIST comparison sort CDATA "external">		<!--(external|internal)-->
+
+<!-- The element <join> is deprecated, use <comparison> instead. -->
 <!ELEMENT join (layout*,sql,layout*,sql+,layout*)>
 <!ATTLIST join on CDATA #IMPLIED>
+<!ATTLIST join key CDATA #IMPLIED>
 <!ATTLIST join exclude CDATA #IMPLIED>
 <!ATTLIST join locale CDATA #IMPLIED>
 <!ATTLIST join collation CDATA "fail">		<!--(ignore|dump|fail)-->
+<!ATTLIST join sort CDATA "external">		<!--(external|internal)-->
 
 <!-- 
 	These are deprecated attributes only for compatibility.

@@ -33,7 +33,8 @@ public class Column implements Comparable<Object> {
 	 */
 	public Column(DataProvider dp, int index) throws DataException {
 		columnType = dp.getColumnType(index);
-		numeric = false;
+		columnValue = dp.getObject(index);
+		numeric = dp.isNumeric(index);
 		switch (columnType) {
 		case Types.BOOLEAN:
 			columnValue = dp.getBoolean(index);
@@ -154,6 +155,10 @@ public class Column implements Comparable<Object> {
 			throw new IllegalArgumentException("Could not compare Column against other objects.");
 		
 		Column f = (Column) obj;
-		return LigretoComparator.getInstance().compare(this, f);
+		try {
+			return LigretoComparator.getInstance().compare(this, f);
+		} catch (DataException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 }

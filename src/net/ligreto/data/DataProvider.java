@@ -1,6 +1,8 @@
 package net.ligreto.data;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 
 import net.ligreto.exceptions.DataException;
@@ -47,4 +49,10 @@ public abstract class DataProvider {
 	public abstract int getIndex(int originalIndex) throws DataException;
 
 	public abstract boolean wasNull() throws DataException;
+
+	public abstract boolean isNumeric(int index) throws DataException;
+
+	public abstract Time getTime(int index) throws DataException;
+
+	public abstract Date getDate(int index) throws DataException;
 }
