@@ -1,11 +1,12 @@
 package net.ligreto.util;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 
 /**
  * This class provides couple of JDBC related utility functions.
@@ -13,7 +14,7 @@ import java.util.Map;
  * @author Julius Stroffek
  *
  */
-public class JdbcUtils {
+public class DataProviderUtils {
 	
 	/** Holds the association of SQL type and type name. */
 	protected static Map<Integer, String> sqlTypeMap = new HashMap<Integer, String>();
@@ -33,26 +34,26 @@ public class JdbcUtils {
 	}
 	
 	/** No instances allowed. */
-	private JdbcUtils() {
+	private DataProviderUtils() {
 	}
 	
 	/** @return The object created for the specified index in the result set. */
-	public static Object getNumericObject(ResultSet rs, int columnIndex) throws SQLException {
+	public static Object getNumericObject(DataProvider dp, int columnIndex) throws DataException {
 		// Check the null value first
-		rs.getObject(columnIndex);
-		if (rs.wasNull())
+		dp.getObject(columnIndex);
+		if (dp.wasNull())
 			return null;
 		
-		switch (rs.getMetaData().getColumnType(columnIndex)) {
+		switch (dp.getColumnType(columnIndex)) {
 		case Types.BIGINT:
 		case Types.INTEGER:
-			return new Long(rs.getLong(columnIndex));
+			return new Long(dp.getLong(columnIndex));
 		case Types.DOUBLE:
 		case Types.FLOAT:
-			return new Double(rs.getDouble(columnIndex));
+			return new Double(dp.getDouble(columnIndex));
 		case Types.DECIMAL:
 		case Types.NUMERIC:
-			BigDecimal bd = rs.getBigDecimal(columnIndex);
+			BigDecimal bd = dp.getBigDecimal(columnIndex);
 			if (bd != null)
 				return new BigDecimal(bd.unscaledValue(), bd.scale());
 			else
@@ -62,11 +63,11 @@ public class JdbcUtils {
 		}
 	}
 
-	/** @return The numeric object created for the specified index in the result set or string value. */
-	public static Object getNumericObjectOrString(ResultSet rs, int columnIndex) throws SQLException {
-		Object result = getNumericObject(rs, columnIndex);
+	/** @return The numeric object created for the specified index in the data provider or string value. */
+	public static Object getNumericObjectOrString(DataProvider dp, int columnIndex) throws DataException {
+		Object result = getNumericObject(dp, columnIndex);
 		if (result == null) {
-			return rs.getString(columnIndex);
+			return dp.getString(columnIndex);
 		} else {
 			return result;
 		}

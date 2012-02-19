@@ -8,9 +8,10 @@ import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.builders.TargetInterface;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.util.JdbcUtils;
+import net.ligreto.util.DataProviderUtils;
 
 public class DetailedJoinLayout extends JoinLayout {
 
@@ -31,11 +32,11 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "Column Name", HeaderType.TOP);
 		targetBuilder.setColumnPosition(1, 1, null);
-		targetBuilder.dumpJoinOnHeader(rs1, on1, null);
+		targetBuilder.dumpJoinOnHeader(dp1, on1, null);
 		targetBuilder.setColumnPosition(onLength + 1, 1, null);
 		
 		targetBuilder.dumpHeaderColumn(0, dataSourceDesc1, HeaderType.TOP);
@@ -60,12 +61,12 @@ public class DetailedJoinLayout extends JoinLayout {
 				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 				targetBuilder.setHighlightArray(higherArray);
 				targetBuilder.setColumnPosition(1);
-				targetBuilder.dumpJoinOnColumns(rs1, on1);
+				targetBuilder.dumpJoinOnColumns(dp1, on1);
 				targetBuilder.setColumnPosition(onLength + 1);
-				targetBuilder.dumpColumn(0, rs1, i1);
+				targetBuilder.dumpColumn(0, dp1, i1);
 				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
-				if (JdbcUtils.getNumericObject(rs1, i1) != null) {
-					targetBuilder.dumpColumn(2, rs1, i1);
+				if (DataProviderUtils.getNumericObject(dp1, i1) != null) {
+					targetBuilder.dumpColumn(2, dp1, i1);
 					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				} else {
 					targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
@@ -76,12 +77,12 @@ public class DetailedJoinLayout extends JoinLayout {
 				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 				targetBuilder.setHighlightArray(lowerArray);
 				targetBuilder.setColumnPosition(1);
-				targetBuilder.dumpJoinOnColumns(rs2, on2);
+				targetBuilder.dumpJoinOnColumns(dp2, on2);
 				targetBuilder.setColumnPosition(onLength + 1);
 				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
-				targetBuilder.dumpColumn(1, rs2, i2);
-				if (JdbcUtils.getNumericObject(rs2, i2) != null) {
-					targetBuilder.dumpColumn(2, rs2, i2);
+				targetBuilder.dumpColumn(1, dp2, i2);
+				if (DataProviderUtils.getNumericObject(dp2, i2) != null) {
+					targetBuilder.dumpColumn(2, dp2, i2);
 					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				} else {
 					targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
@@ -92,15 +93,15 @@ public class DetailedJoinLayout extends JoinLayout {
 					targetBuilder.nextRow();
 					targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
 					targetBuilder.setColumnPosition(1);
-					targetBuilder.dumpJoinOnColumns(rs1, on1);
+					targetBuilder.dumpJoinOnColumns(dp1, on1);
 					targetBuilder.setColumnPosition(onLength + 1);
 					if (cmpArray[i] < 0) {
 						targetBuilder.setHighlightArray(lowerArray);
 					} else if (cmpArray[i] > 0) {
 						targetBuilder.setHighlightArray(higherArray);
 					}
-					targetBuilder.dumpColumn(0, rs1, i1);
-					targetBuilder.dumpColumn(1, rs2, i2);
+					targetBuilder.dumpColumn(0, dp1, i1);
+					targetBuilder.dumpColumn(1, dp2, i2);
 					targetBuilder.dumpColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
 					targetBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 
@@ -152,8 +153,8 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	private Object calculateDifference(int i1, int i2) throws SQLException, LigretoException {
-		Object columnValue1 = JdbcUtils.getNumericObject(rs1, i1);
-		Object columnValue2 = JdbcUtils.getNumericObject(rs2, i2);
+		Object columnValue1 = DataProviderUtils.getNumericObject(dp1, i1);
+		Object columnValue2 = DataProviderUtils.getNumericObject(dp2, i2);
 		
 		if (columnValue1 instanceof String)
 			columnValue1 = null;
@@ -162,8 +163,8 @@ public class DetailedJoinLayout extends JoinLayout {
 			
 		// If one of the values is not number, report just 'yes'/'no'
 		if (columnValue1 == null || columnValue2 == null) {
-			String str1 = rs1.getString(i1);
-			String str2 = rs2.getString(i2);
+			String str1 = dp1.getString(i1);
+			String str2 = dp2.getString(i2);
 			if (str1 == null && str2 == null)
 				return "no";
 			else if (str1 != null)
@@ -208,9 +209,9 @@ public class DetailedJoinLayout extends JoinLayout {
 		}
 	}
 
-	private Object calculateRelativeDifference(int i1, int i2) throws SQLException {
-		Object columnValue1 = JdbcUtils.getNumericObject(rs1, i1);
-		Object columnValue2 = JdbcUtils.getNumericObject(rs2, i2);
+	private Object calculateRelativeDifference(int i1, int i2) throws DataException {
+		Object columnValue1 = DataProviderUtils.getNumericObject(dp1, i1);
+		Object columnValue2 = DataProviderUtils.getNumericObject(dp2, i2);
 		
 		// If one of the values is not number, report just empty string
 		if (columnValue1 == null || columnValue2 == null) {

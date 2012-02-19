@@ -1,11 +1,10 @@
 package net.ligreto.data;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import net.ligreto.exceptions.DataException;
 import net.ligreto.util.LigretoComparator;
 
 /**
@@ -30,29 +29,29 @@ public class Column implements Comparable<Object> {
 
 	/**
 	 * Creates the instance from the result set. 
-	 * @throws SQLException
+	 * @throws DataException 
 	 */
-	public Column(ResultSet rs, int index) throws SQLException {
-		columnType = rs.getMetaData().getColumnType(index);
+	public Column(DataProvider dp, int index) throws DataException {
+		columnType = dp.getColumnType(index);
 		numeric = false;
 		switch (columnType) {
 		case Types.BOOLEAN:
-			columnValue = new Boolean(rs.getBoolean(index));
+			columnValue = dp.getBoolean(index);
 			break;
 		case Types.BIGINT:
 		case Types.INTEGER:
-			columnValue = new Long(rs.getLong(index));
+			columnValue = dp.getLong(index);
 			numeric = true;
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:
-			columnValue = new Double(rs.getDouble(index));
+			columnValue = dp.getDouble(index);
 			numeric = true;
 			break;
 		case Types.DATE:
 		case Types.TIMESTAMP:
 		case Types.TIME:
-			Timestamp ts = rs.getTimestamp(index);
+			Timestamp ts = dp.getTimestamp(index);
 			if (ts != null) {
 				columnValue = new Timestamp(ts.getTime());
 			} else {
@@ -61,7 +60,7 @@ public class Column implements Comparable<Object> {
 			break;
 		case Types.DECIMAL:
 		case Types.NUMERIC:
-			BigDecimal bd = rs.getBigDecimal(index);
+			BigDecimal bd = dp.getBigDecimal(index);
 			if (bd != null) {
 				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
 			} else {
@@ -71,14 +70,14 @@ public class Column implements Comparable<Object> {
 			break;
 		default:
 			columnType = Types.VARCHAR;
-			String tmpValue = rs.getString(index);
+			String tmpValue = dp.getString(index);
 			if (tmpValue != null)
 				columnValue = new String(tmpValue);
 			else
 				columnValue = null;
 			break;			
 		}
-		if (rs.wasNull())
+		if (dp.wasNull())
 			columnValue = null;
 	}
 

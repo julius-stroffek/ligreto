@@ -1,7 +1,6 @@
 package net.ligreto.executor.layouts;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.TreeSet;
 
@@ -14,6 +13,7 @@ import net.ligreto.data.AggregationResult;
 import net.ligreto.data.ColumnAggregationResult;
 import net.ligreto.data.Column;
 import net.ligreto.data.Row;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.LigretoComparator;
@@ -49,12 +49,12 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "Column Name", HeaderType.TOP);
 		targetBuilder.setColumnPosition(1, 1, null);
 		if (groupByLength > 0)
-			targetBuilder.dumpJoinOnHeader(rs1, groupBy, null);
+			targetBuilder.dumpJoinOnHeader(dp1, groupBy, null);
 		targetBuilder.setColumnPosition(groupByLength + 1, 1, null);
 
 		targetBuilder.dumpHeaderColumn(0, "# of Diffs", HeaderType.TOP);
@@ -66,19 +66,13 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public void start() throws SQLException, LigretoException {
+	public void start() throws LigretoException {
 		super.start();
 		for (int i=0; i < on1.length; i++) {
 			noResultColumns1.put(on1[i], null);
 		}
-		for (int i=0; i < excl1.length; i++) {
-			noResultColumns1.put(excl1[i], null);
-		}
 		for (int i=0; i < on2.length; i++) {
 			noResultColumns2.put(on2[i], null);
-		}
-		for (int i=0; i < excl2.length; i++) {
-			noResultColumns2.put(excl2[i], null);
 		}
 		if (groupBy != null) {
 			for (int i=0; i < groupBy.length; i++) {
@@ -101,8 +95,8 @@ public class AggregatedLayout extends JoinLayout {
 			}
 		}
 		// Do some sanity checks
-		int rs1Length = rs1.getMetaData().getColumnCount();
-		int rs2Length = rs2.getMetaData().getColumnCount();
+		int rs1Length = dp1.getColumnCount();
+		int rs2Length = dp2.getColumnCount();
 
 		int resultCount1 = rs1Length - noResultColumns1.size();
 		int resultCount2 = rs2Length - noResultColumns2.size();
@@ -130,7 +124,7 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+	public void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
 
 		// Get the value of group by columns first
 		Row row = new Row();
@@ -138,10 +132,10 @@ public class AggregatedLayout extends JoinLayout {
 		switch (resultType) {
 		case INNER:
 		case LEFT:
-			row.setFields(LigretoComparator.duplicate(rs1, groupBy));
+			row.setFields(LigretoComparator.duplicate(dp1, groupBy));
 			break;
 		case RIGHT:
-			row.setFields(LigretoComparator.duplicate(rs2, groupBy));
+			row.setFields(LigretoComparator.duplicate(dp2, groupBy));
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
@@ -157,16 +151,16 @@ public class AggregatedLayout extends JoinLayout {
 			Column columnValue1, columnValue2;
 			switch (resultType) {
 			case LEFT:
-				columnValue1 = new Column(rs1, i1);
+				columnValue1 = new Column(dp1, i1);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
 				break;
 			case RIGHT:
-				columnValue2 = new Column(rs2, i2);
+				columnValue2 = new Column(dp2, i2);
 				result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
 				break;
 			case INNER:
-				columnValue1 = new Column(rs1, i1);
-				columnValue2 = new Column(rs2, i2);
+				columnValue1 = new Column(dp1, i1);
+				columnValue2 = new Column(dp2, i2);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
 				break;
 			default:
@@ -185,7 +179,7 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public ResultStatus finish() throws IOException, SQLException, LigretoException {
+	public ResultStatus finish() throws IOException, DataException, LigretoException {
 		TreeSet<Row> treeSet = new TreeSet<Row>(aggregationMap.keySet());
 		for (Row f : treeSet) {
 			AggregationResult result = aggregationMap.get(f);

@@ -1,7 +1,6 @@
 package net.ligreto.util;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -14,6 +13,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.data.Column;
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.LigretoException;
 
 /**
@@ -151,13 +152,13 @@ public class LigretoComparator {
 		nullOrdering = NullOrdering.Unspecified;
 	}
 	
-	public int compareAsDataSource(ResultSet rs1, int on1, ResultSet rs2, int on2) throws SQLException {
+	public int compareAsDataSource(DataProvider dp1, int on1, DataProvider dp2, int on2) throws DataException {
 		int result = 0;
 		// Deal with the case when at least one of the values is null.
-		rs1.getString(on1);
-		rs2.getString(on2);
-		boolean isNull1 = rs1.wasNull();
-		boolean isNull2 = rs2.wasNull();
+		dp1.getString(on1);
+		dp2.getString(on2);
+		boolean isNull1 = dp1.wasNull();
+		boolean isNull2 = dp2.wasNull();
 		
 		result = compareNullsAsDataSource(isNull1, isNull2);
 		if (result != 0)
@@ -165,43 +166,43 @@ public class LigretoComparator {
 		if (isNull1 && isNull2)
 			return 0;
 		
-		int ct1 = rs1.getMetaData().getColumnType(on1);
-		int ct2 = rs2.getMetaData().getColumnType(on2);
+		int ct1 = dp1.getColumnType(on1);
+		int ct2 = dp2.getColumnType(on2);
 		if (ct1 != ct2) {
 			log.debug(
 				"Data types differ, using string comparison: "
-				+ JdbcUtils.getJdbcTypeName(ct1) + "; " + JdbcUtils.getJdbcTypeName(ct2)
+				+ DataProviderUtils.getJdbcTypeName(ct1) + "; " + DataProviderUtils.getJdbcTypeName(ct2)
 			);
-			result = compareAsDataSource(rs1.getString(on1), rs2.getString(on2));
+			result = compareAsDataSource(dp1.getString(on1), dp2.getString(on2));
 		} else {
 			switch (ct1) {
 			case Types.BOOLEAN:
-				result = compare(rs1.getBoolean(on1), rs2.getBoolean(on2));
+				result = compare(dp1.getBoolean(on1), dp2.getBoolean(on2));
 				break;
 			case Types.BIGINT:
 			case Types.INTEGER:
-				result = compare(rs1.getLong(on1), rs2.getLong(on2));
+				result = compare(dp1.getLong(on1), dp2.getLong(on2));
 				break;
 			case Types.DOUBLE:
 			case Types.FLOAT:
-				result = compare(rs1.getDouble(on1), rs2.getDouble(on2));
+				result = compare(dp1.getDouble(on1), dp2.getDouble(on2));
 				break;
 			case Types.DATE:
 			case Types.TIMESTAMP:
 			case Types.TIME:
-				result = compare(rs1.getTimestamp(on1), rs2.getTimestamp(on2));
+				result = compare(dp1.getTimestamp(on1), dp2.getTimestamp(on2));
 				break;
 			case Types.DECIMAL:
 			case Types.NUMERIC:
-				result = compare(rs1.getBigDecimal(on1), rs2.getBigDecimal(on2));
+				result = compare(dp1.getBigDecimal(on1), dp2.getBigDecimal(on2));
 				break;
 			case Types.CHAR:
 			case Types.VARCHAR:
-				result = compareAsDataSource(rs1.getString(on1), rs2.getString(on2));
+				result = compareAsDataSource(dp1.getString(on1), dp2.getString(on2));
 				break;
 			default:
-				log.debug("Unknown data type used, using string comparison: " + JdbcUtils.getJdbcTypeName(ct1));
-				result = compareAsDataSource(rs1.getString(on1), rs2.getString(on2));
+				log.debug("Unknown data type used, using string comparison: " + DataProviderUtils.getJdbcTypeName(ct1));
+				result = compareAsDataSource(dp1.getString(on1), dp2.getString(on2));
 				break;
 			}
 		}
@@ -239,26 +240,26 @@ public class LigretoComparator {
 		return comparator.compare(s1.trim(), s2.trim());
 	}
 	
-	public int compareAsDataSource(ResultSet rs1, int[] on1, ResultSet rs2, int[] on2) throws SQLException {
+	public int compareAsDataSource(DataProvider dp1, int[] on1, DataProvider dp2, int[] on2) throws DataException {
 		Assert.assertTrue(on1.length == on2.length);
 		
 		int cResult;
 		for (int i=0; i < on1.length; i++) {
-			cResult = compareAsDataSource(rs1, on1[i], rs2, on2[i]);
+			cResult = compareAsDataSource(dp1, on1[i], dp2, on2[i]);
 			if (cResult != 0)
 				return cResult;
 		}
 		return 0;
 	}
 
-	public static Column[] duplicate(ResultSet rs, int[] on) throws SQLException {
+	public static Column[] duplicate(DataProvider dp, int[] on) throws DataException {
 		if (on == null) {
 			return new Column[0];
 		}
 		Column[] result = new Column[on.length];
 
 		for (int i=0; i < on.length; i++) {
-			result[i] = new Column(rs, on[i]);
+			result[i] = new Column(dp, on[i]);
 		}
 		return result;
 	}
@@ -397,11 +398,11 @@ public class LigretoComparator {
 	 * @throws SQLException
 	 * @throws LigretoException
 	 */
-	public int[] compareOthersAsDataSource(ResultSet rs1, int[] on1, int[] excl1, ResultSet rs2, int[] on2, int[] excl2) throws SQLException, LigretoException {
+	public int[] compareOthersAsDataSource(DataProvider dp1, int[] on1, DataProvider dp2, int[] on2) throws SQLException, LigretoException {
 		Assert.assertTrue(on1.length == on2.length);
 		
-		int colCount1 = rs1.getMetaData().getColumnCount();
-		int colCount2 = rs2.getMetaData().getColumnCount();
+		int colCount1 = dp1.getColumnCount();
+		int colCount2 = dp2.getColumnCount();
 		
 		// The assertion checks that on1/2[] pointers are less than
 		// the number of columns in result set should be done.
@@ -411,24 +412,28 @@ public class LigretoComparator {
 			if (on2[i] > colCount2)
 				throw new LigretoException("The index in \"on\" attribute (" + on2[i] + ") is larger than the number of columns (" + colCount2 + ").");
 		}
-		int cmpCount = colCount1 > colCount2 ? colCount1 : colCount2;
-		int[] result = new int[cmpCount];
+		int cmpCount1 = dp1.getColumnCount() - on1.length;
+		int cmpCount2 = dp2.getColumnCount() - on2.length;
+
+		int maxCount = cmpCount1 > cmpCount2 ? cmpCount1 : cmpCount2;
+		int minCount = cmpCount1 < cmpCount2 ? cmpCount1 : cmpCount2;
+		int[] result = new int[maxCount];
 		int i=0, i1=1, i2=1;
-		for (; i1 <= colCount1 && i2 <= colCount2; i1++, i2++, i++) {
-			while (MiscUtils.arrayContains(on1, i1) || MiscUtils.arrayContains(excl1, i1))
+		for (; i < minCount && i1 <= colCount1 && i2 <= colCount2; i1++, i2++, i++) {
+			while (MiscUtils.arrayContains(on1, i1))
 				i1++;
-			while (MiscUtils.arrayContains(on2, i2) || MiscUtils.arrayContains(excl2, i2))
+			while (MiscUtils.arrayContains(on2, i2))
 				i2++;
 			if (i1 <= colCount1 && i2 <= colCount2)
-				result[i] = compareAsDataSource(rs1, i1, rs2, i2);
+				result[i] = compareAsDataSource(dp1, i1, dp2, i2);
 		}
-		for (int j=i+1; j < cmpCount; j++, i1++, i2++) {
+		for (int j=i+1; j < maxCount; j++, i1++, i2++) {
 			if (colCount1 > colCount2) {
-				rs1.getString(i1);
-				result[j] = compareNulls(rs1.wasNull(), true);
+				dp1.getString(i1);
+				result[j] = compareNulls(dp1.wasNull(), true);
 			} else if (colCount1 < colCount2) {
-				rs2.getString(i1);
-				result[j] = compareNulls(true, rs2.wasNull());
+				dp2.getString(i1);
+				result[j] = compareNulls(true, dp2.wasNull());
 			} else {
 				result[j] = 0;
 			}

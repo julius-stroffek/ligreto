@@ -1,13 +1,12 @@
 package net.ligreto.builders;
 
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.parser.nodes.*;
 import net.ligreto.util.MiscUtils;
 
@@ -136,25 +135,19 @@ public abstract class ReportTarget implements TargetInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet, int)
 	 */
 	@Override
-	public void dumpColumn(int i, ResultSet rs, int rsi) throws SQLException {
-		Object o = rs.getObject(rsi);
-		if (rs.wasNull() || o == null) {
+	public void dumpColumn(int i, DataProvider dp, int dpi) throws DataException {
+		Object o = dp.getObject(dpi);
+		if (dp.wasNull() || o == null) {
 			o = ligretoParameters.getNullString();
 		}
 		dumpColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet)
-	 */
 	@Override
-	public void dumpColumn(int i, ResultSet rs) throws SQLException {
-		dumpColumn(i-1, rs, i);
+	public void dumpColumn(int i, DataProvider dp) throws DataException {
+		dumpColumn(i-1, dp, i);
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#nextRow()
-	 */
 	@Override
 	public void nextRow() throws IOException {
 		actRow++;
@@ -229,12 +222,11 @@ public abstract class ReportTarget implements TargetInterface {
 	 * @see net.ligreto.builders.BuilderInterface#dumpHeader(java.sql.ResultSet, int[])
 	 */
 	@Override
-	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException {
-		ResultSetMetaData rsmd = rs.getMetaData();
+	public void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException {
 		nextRow();
-		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
+		for (int i=1, c=0; i <= dp.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				dumpHeaderColumn(columnStep*c++, rsmd.getColumnLabel(i), HeaderType.TOP);
+				dumpHeaderColumn(columnStep*c++, dp.getColumnLabel(i), HeaderType.TOP);
 			}
 		}
 	}
@@ -243,14 +235,13 @@ public abstract class ReportTarget implements TargetInterface {
 	 * @see net.ligreto.builders.BuilderInterface#dumpJoinOnHeader(java.sql.ResultSet, int[])
 	 */
 	@Override
-	public void dumpJoinOnHeader(ResultSet rs, int[] on, String dataSourceDesc) throws SQLException {
-		ResultSetMetaData rsmd = rs.getMetaData();
+	public void dumpJoinOnHeader(DataProvider dp, int[] on, String dataSourceDesc) throws DataException {
 		for (int i=0; i < on.length; i++) {
 			dumpHeaderColumn(
 				columnStep*i,
 				dataSourceDesc != null
-					? rsmd.getColumnLabel(on[i]) + " (" + dataSourceDesc + ")"
-					: rsmd.getColumnLabel(on[i]),
+					? dp.getColumnLabel(on[i]) + " (" + dataSourceDesc + ")"
+					: dp.getColumnLabel(on[i]),
 				HeaderType.TOP
 			);
 		}
@@ -260,9 +251,8 @@ public abstract class ReportTarget implements TargetInterface {
 	 * @see net.ligreto.builders.BuilderInterface#dumpOtherHeader(java.sql.ResultSet, int[], int[])
 	 */
 	@Override
-	public void dumpOtherHeader(ResultSet rs, int[] on, int[] excl, String dataSourceDesc) throws SQLException {
-		ResultSetMetaData rsmd = rs.getMetaData();
-		int rsLength = rsmd.getColumnCount();
+	public void dumpOtherHeader(DataProvider dp, int[] on, int[] excl, String dataSourceDesc) throws DataException {
+		int rsLength = dp.getColumnCount();
 		int idx = 0;
 		for (int i=0; i < rsLength; i++) {
 			boolean skip = false;
@@ -277,8 +267,8 @@ public abstract class ReportTarget implements TargetInterface {
 				dumpHeaderColumn(
 					columnStep*idx,
 					dataSourceDesc != null
-						? rsmd.getColumnLabel(i+1) + " (" + dataSourceDesc + ")"
-						: rsmd.getColumnLabel(i+1),
+						? dp.getColumnLabel(i+1) + " (" + dataSourceDesc + ")"
+						: dp.getColumnLabel(i+1),
 					HeaderType.TOP
 				);
 				idx++;
@@ -290,9 +280,9 @@ public abstract class ReportTarget implements TargetInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setJoinOnColumns(java.sql.ResultSet, int[])
 	 */
 	@Override
-	public void dumpJoinOnColumns(ResultSet rs, int[] on) throws SQLException {
+	public void dumpJoinOnColumns(DataProvider dp, int[] on) throws DataException {
 		for (int i=0; i < on.length; i++) {
-			dumpColumn(i, rs, on[i]);
+			dumpColumn(i, dp, on[i]);
 		}
 	}
 
@@ -300,8 +290,8 @@ public abstract class ReportTarget implements TargetInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setOtherColumns(java.sql.ResultSet, int[], int[])
 	 */
 	@Override
-	public void dumpOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException {
-		int rsLength = rs.getMetaData().getColumnCount();
+	public void dumpOtherColumns(DataProvider dp, int[] on, int[] excl) throws DataException {
+		int rsLength = dp.getColumnCount();
 		int idx = 0;
 		for (int i=0; i < rsLength; i++) {
 			boolean skip = false;
@@ -313,7 +303,7 @@ public abstract class ReportTarget implements TargetInterface {
 			}
 			
 			if (!skip) {
-				dumpColumn(idx, rs, i+1);
+				dumpColumn(idx, dp, i+1);
 				idx++;
 			}
 		}

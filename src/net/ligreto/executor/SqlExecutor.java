@@ -3,7 +3,6 @@ package net.ligreto.executor;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -14,6 +13,8 @@ import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.TargetInterface;
+import net.ligreto.data.DataProvider;
+import net.ligreto.data.ResultSetDataProvider;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.util.MiscUtils;
@@ -43,7 +44,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	protected int[] excl = new int[0];
 	
 	@Override
-	public boolean prepareProcessing(SqlNode sqlNode, ResultSet rs) throws Exception {
+	public boolean prepareProcessing(SqlNode sqlNode, DataProvider dp) throws Exception {
 		// Go to the next SQL query if we do not have the target defined
 		if (sqlNode.getTarget() == null)
 			return false;
@@ -52,26 +53,25 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		if (exclStr != null && exclStr.length > 0) {
 			excl = new int[exclStr.length];
 			for (int i=0; i < exclStr.length; i++) {
-				excl[i] = MiscUtils.findColumnIndex(rs, exclStr[i]);
+				excl[i] = MiscUtils.findColumnIndex(dp, exclStr[i]);
 				log.info("Excluding column \"" + exclStr[i] + "\" from sql query which has the index: " + excl[i]);
 			}
 		}
 		
 		targetBuilder = reportBuilder.getTargetBuilder(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
-			targetBuilder.dumpHeader(rs, excl);
+			targetBuilder.dumpHeader(dp, excl);
 		}
 		return true;
 	}
 	
 	@Override
-	public void processResultSetRow(ResultSet rs) throws Exception {
+	public void processResultSetRow(DataProvider dp) throws Exception {
 		targetBuilder.nextRow();
 		targetBuilder.setColumnPosition(0);
-		ResultSetMetaData rsmd = rs.getMetaData();				
-		for (int i=1, c=0; i <= rsmd.getColumnCount(); i++) {
+		for (int i=1, c=0; i <= dp.getColumnCount(); i++) {
 			if (!MiscUtils.arrayContains(excl, i)) {
-				targetBuilder.dumpColumn(c++, rs, i);
+				targetBuilder.dumpColumn(c++, dp, i);
 			}
 		}
 	}
@@ -111,10 +111,11 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 							throw new LigretoException("Unknown query type.");
 						}
 						if (callBack != null && rs != null) {
-							if (callBack.prepareProcessing(sqlNode, rs)) {
+							DataProvider dp = new ResultSetDataProvider(rs, excl);
+							if (callBack.prepareProcessing(sqlNode, dp)) {
 								while (rs.next()) {
 									result.addRow();
-									callBack.processResultSetRow(rs);
+									callBack.processResultSetRow(dp);
 								}
 								callBack.finalizeProcessing();
 							}

@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 
@@ -11,14 +13,16 @@ public class MiscUtils {
 	/**
 	 * This function searches the specified array for the given element.
 	 * 
-	 * @param on1 The array to be searched
-	 * @param i1 The element to be found
+	 * @param array The array to be searched
+	 * @param index The element to be found
 	 * @return True if the element is found in the array
 	 */
-	public static <T> boolean arrayContains(int[] on1, int i1) {
-		for (int i=0; i < on1.length; i++) {
-			if (on1[i] == i1)
-				return true;
+	public static <T> boolean arrayContains(int[] array, int index) {
+		if (array != null) {
+			for (int i=0; i < array.length; i++) {
+				if (array[i] == index)
+					return true;
+			}
 		}
 		return false;
 	}
@@ -71,6 +75,14 @@ public class MiscUtils {
 		result[2] = Short.parseShort(bb, 16);
 		
 		return result;
+	}
+	
+	public static int findColumnIndex(DataProvider dp, String columnName) throws DataException {
+		for (int i=1; i <= dp.getColumnCount(); i++) {
+			if (dp.getColumnName(i).equalsIgnoreCase(columnName))
+				return i;
+		}
+		return -1;
 	}
 	
 	public static int findColumnIndex(ResultSet rs, String columnName) throws SQLException {

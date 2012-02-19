@@ -3,8 +3,6 @@ package net.ligreto.builders;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Date;
@@ -13,6 +11,8 @@ import java.util.Hashtable;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.builders.ExcelReportBuilder.OutputFormat;
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.UnimplementedMethodException;
 
 import org.apache.commons.logging.Log;
@@ -309,8 +309,8 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 	
 	@Override
-	public void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException {
-		super.dumpHeader(rs, excl);
+	public void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException {
+		super.dumpHeader(dp, excl);
 		flush(false, false);
 	}
 	

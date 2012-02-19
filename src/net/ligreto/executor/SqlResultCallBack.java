@@ -1,11 +1,10 @@
 package net.ligreto.executor;
 
-import java.sql.ResultSet;
-
+import net.ligreto.data.DataProvider;
 import net.ligreto.parser.nodes.SqlNode;
 
 public interface SqlResultCallBack {
-	public boolean prepareProcessing(SqlNode sqlNode, ResultSet rs) throws Exception;
-	public void processResultSetRow(ResultSet rs) throws Exception;
+	public boolean prepareProcessing(SqlNode sqlNode, DataProvider dp) throws Exception;
+	public void processResultSetRow(DataProvider dp) throws Exception;
 	public void finalizeProcessing() throws Exception;
 }

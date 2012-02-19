@@ -8,6 +8,7 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
 import net.ligreto.builders.TargetInterface;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 
@@ -34,7 +35,7 @@ public class SummaryLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "Summary of Rows", HeaderType.TOP);
 		targetBuilder.dumpHeaderColumn(1, "Value", HeaderType.TOP);
@@ -47,7 +48,7 @@ public class SummaryLayout extends JoinLayout {
 	}
 
 	@Override
-	public ResultStatus finish() throws IOException, SQLException, LigretoException {
+	public ResultStatus finish() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "Equal Rows", HeaderType.ROW);
 		targetBuilder.setColumnPosition(1);

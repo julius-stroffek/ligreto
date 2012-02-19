@@ -17,7 +17,7 @@
 			<join on="1" exclude="party_type">
 				<layout target="aggregated!A1" type="aggregated">
 					<result>
-						<limit columns="5" rel-diff-count="13.32%"/>
+						<limit columns="6" rel-diff-count="13.32%"/>
 					</result>
 				</layout>
 				<layout target="inner!A1" join="inner" type="aggregated"/>

@@ -1,7 +1,6 @@
 package net.ligreto.executor.layouts;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -12,6 +11,8 @@ import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.AggregationResult;
 import net.ligreto.data.Column;
 import net.ligreto.data.ColumnAggregationResult;
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.ResultExecutor;
@@ -55,21 +56,15 @@ public abstract class JoinLayout {
 	
 	/** The column indices of the columns to be equal from the second result set. */
 	protected int[] on2 = null;
-	
-	/** The column indices of the columns to be excluded from the comparison in the first result set. */
-	protected int[] excl1 = null;
-	
-	/** The column indices of the columns to be excluded from the comparison in the second result set. */
-	protected int[] excl2 = null;
-	
+		
 	/** The columns which should be used for aggregated result. */
 	protected int[] groupBy = null;
 	
-	/** The first result set. */
-	protected ResultSet rs1 = null;
+	/** The first data provider. */
+	protected DataProvider dp1 = null;
 	
-	/** The second result set. */
-	protected ResultSet rs2 = null;
+	/** The second data provider. */
+	protected DataProvider dp2 = null;
 	
 	/** The length of the on1 and on2 arrays which have to be the same. */
 	protected int onLength = -1;
@@ -131,10 +126,8 @@ public abstract class JoinLayout {
 	int[] resultColumns1 = null;
 	int[] resultColumns2 = null;
 	int resultCount = 0;
-	int[] noExcludeColumns1 = null;
-	int[] noExcludeColumns2 = null;
-	int noExcludeCount = 0;
-	int[] xmlToResult = null;
+	int[] xmlToResult1 = null;
+	int[] xmlToResult2 = null;
 
 	/** Constructs the layout having the specified report builder. */
 	protected JoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
@@ -171,8 +164,9 @@ public abstract class JoinLayout {
 	/** Dumps the join result header. 
 	 * @throws SQLException 
 	 * @throws DataSourceNotDefinedException 
-	 * @throws IOException */
-	public abstract void dumpHeader() throws SQLException, DataSourceNotDefinedException, IOException;
+	 * @throws IOException 
+	 * @throws DataException */
+	public abstract void dumpHeader() throws DataSourceNotDefinedException, IOException, DataException;
 	
 	/**
 	 * This function converts the specified column index from XML into the index
@@ -181,14 +175,28 @@ public abstract class JoinLayout {
 	 * 
 	 * @param index Index of the column as specified in "on" attribute of the join. 
 	 * @return the index of the column in the result structure; -1 of the index column is not in the result
+	 * @throws LigretoException 
 	 */
-	public int translateToResultColumn(int index) {
+	public int translateToResultColumn(int index) throws LigretoException {
 		Assert.assertTrue(startCalled);
 
-		if (index < 1 || index > xmlToResult.length)
-			return -1;
+		int rc1 = dp1.getIndex(index);
+		int rc2 = dp2.getIndex(index);
 		
-		return xmlToResult[index-1];
+		if (rc1 == -1 || rc2 == -1)
+			throw new LigretoException("Column index \"" + index + "\" matches the excluded column.");
+		
+		rc1 = xmlToResult1[rc1-1];
+		rc2 = xmlToResult2[rc2-1];
+		
+		if (rc1 == -1 && rc2 == -1)
+			return -1;
+
+		if (rc1 != rc2) {
+			throw new LigretoException("Column index \"" + index + "\" does not matches the same columns in the result due to some columns being excluded.");
+		}
+		
+		return rc1;
 	}
 	
 	/**
@@ -198,7 +206,7 @@ public abstract class JoinLayout {
 	 * @return the name of the i-th result column
 	 * @throws SQLException
 	 */
-	public String getResultColumnName(int i) throws SQLException {
+	public String getResultColumnName(int i) throws DataException {
 		Assert.assertTrue(startCalled);
 
 		if (i < 0 || i >= resultCount)
@@ -207,8 +215,8 @@ public abstract class JoinLayout {
 		int i1 = resultColumns1[i];
 		int i2 = resultColumns2[i];
 
-		String colName = rs1.getMetaData().getColumnName(i1);
-		String col2Name = rs1.getMetaData().getColumnName(i2);
+		String colName = dp1.getColumnName(i1);
+		String col2Name = dp1.getColumnName(i2);
 		if (! colName.equalsIgnoreCase(col2Name)) {
 			colName = colName + " / " + col2Name;
 		}
@@ -230,7 +238,7 @@ public abstract class JoinLayout {
 	 * @return the metrics calculated for the current row produced as output
 	 * @throws SQLException 
 	 */
-	protected AggregationResult calculateColumnMetrics(JoinResultType resultType) throws SQLException {		
+	protected AggregationResult calculateColumnMetrics(JoinResultType resultType) throws DataException {		
 		// Create the object holding the result metrics
 		AggregationResult result = new AggregationResult(resultCount);
 		
@@ -244,16 +252,16 @@ public abstract class JoinLayout {
 			Column columnValue1, columnValue2;
 			switch (resultType) {
 			case LEFT:
-				columnValue1 = new Column(rs1, i1);
+				columnValue1 = new Column(dp1, i1);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
 				break;
 			case RIGHT:
-				columnValue2 = new Column(rs2, i2);
+				columnValue2 = new Column(dp2, i2);
 				result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
 				break;
 			case INNER:
-				columnValue1 = new Column(rs1, i1);
-				columnValue2 = new Column(rs2, i2);
+				columnValue1 = new Column(dp1, i1);
+				columnValue2 = new Column(dp2, i2);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
 				break;
 			default:
@@ -517,21 +525,12 @@ public abstract class JoinLayout {
 	}
 	
 	/**
-	 * @param excl1 The exclude columns for the first result set to set.
-	 * @param excl2 The exclude columns for the second result set to set.
+	 * @param dp1 The first data provider to set.
+	 * @param dp2 The second data provider to set.
 	 */
-	public void setExcludeColumns(int[] excl1, int[] excl2) {
-		this.excl1 = excl1;
-		this.excl2 = excl2;
-	}
-	
-	/**
-	 * @param rs1 The first result set to set.
-	 * @param rs2 The second result set to set.
-	 */
-	public void setResultSets(ResultSet rs1, ResultSet rs2) {
-		this.rs1 = rs1;
-		this.rs2 = rs2;
+	public void setDataProviders(DataProvider dp1, DataProvider dp2) {
+		this.dp1 = dp1;
+		this.dp2 = dp2;
 	}
 	
 	/**
@@ -611,62 +610,22 @@ public abstract class JoinLayout {
 	 * @throws SQLException 
 	 * @throws LigretoException 
 	 */
-	public void start() throws SQLException, LigretoException {
+	public void start() throws LigretoException {
 		startCalled = true;
-		for (int i=0; i < excl1.length; i++) {
-			noResultColumns1.put(excl1[i], null);
-		}
-		for (int i=0; i < excl2.length; i++) {
-			noResultColumns2.put(excl2[i], null);
-		}
-		
-		// Do some sanity checks
-		int rs1Length = rs1.getMetaData().getColumnCount();
-		int rs2Length = rs2.getMetaData().getColumnCount();
 
-		int noExcludeCount1 = rs1Length - noResultColumns1.size();
-		int noExcludeCount2 = rs2Length - noResultColumns2.size();
-
-		if (noExcludeCount1 != noExcludeCount2) {
-			throw new LigretoException(
-				"The column count without excluded columns differs; 1st count: "
-				+ noExcludeCount1 + "; 2nd count: " + noExcludeCount2
-			);
-		}
-		noExcludeCount = noExcludeCount1;
-		
-		// Get the indices for all the columns excluding the result columns 
-		noExcludeColumns1 = new int[noExcludeCount];
-		noExcludeColumns2 = new int[noExcludeCount];
-		
-		// Store the information about the result column's indices
-		for (int i=0, i1=1, i2=1; i < noExcludeCount; i++, i1++, i2++) {
-			while (noResultColumns1.containsKey(i1))
-				i1++;
-			while (noResultColumns2.containsKey(i2))
-				i2++;
-			noExcludeColumns1[i] = i1;
-			noExcludeColumns2[i] = i2;
-		}		
-		
-		
 		for (int i=0; i < on1.length; i++) {
 			noResultColumns1.put(on1[i], null);
 		}
 		for (int i=0; i < on2.length; i++) {
 			noResultColumns2.put(on2[i], null);
 		}
-		
-		// Do some sanity checks
-		rs1Length = rs1.getMetaData().getColumnCount();
-		rs2Length = rs2.getMetaData().getColumnCount();
 
-		int resultCount1 = rs1Length - noResultColumns1.size();
-		int resultCount2 = rs2Length - noResultColumns2.size();
+		int resultCount1 = dp1.getColumnCount() - noResultColumns1.size();
+		int resultCount2 = dp2.getColumnCount() - noResultColumns2.size();
 		
 		if (resultCount1 != resultCount2) {
 			throw new LigretoException(
-				"The column count in aggregation differs; 1st count: "
+				"The column count from data sources differs; 1st count: "
 				+ resultCount1 + "; 2nd count: " + resultCount2
 			);
 		}
@@ -685,14 +644,18 @@ public abstract class JoinLayout {
 			resultColumns2[i] = i2;
 		}
 		
-		xmlToResult = new int[noExcludeCount];
+		xmlToResult1 = new int[rsColCount];
+		xmlToResult2 = new int[rsColCount];
 		// Do the XML index to result translation array
-		for (int i=0; i < noExcludeCount; i++) {
-			xmlToResult[i] = -1;
+		for (int i=0; i < rsColCount; i++) {
+			xmlToResult1[i] = -1;
+			xmlToResult2[i] = -1;
 			for (int j=0; j < resultCount; j++) {
-				if (resultColumns1[j] == noExcludeColumns1[i]) {
-					xmlToResult[i] = j;
-					break;
+				if (resultColumns1[j] == i+1) {
+					xmlToResult1[i] = j;
+				}
+				if (resultColumns2[j] == i+1) {
+					xmlToResult2[i] = j;
 				}
 			}
 		}
@@ -705,7 +668,7 @@ public abstract class JoinLayout {
 	 * @throws LigretoException
 	 * @return the result status 
 	 */
-	public ResultStatus finish() throws IOException, SQLException, LigretoException {
+	public ResultStatus finish() throws IOException, LigretoException {
 		Assert.assertTrue(startCalled);
 		targetBuilder.finish();
 		ResultExecutor executor = new ResultExecutor(layoutNode.getResultNode(), this);

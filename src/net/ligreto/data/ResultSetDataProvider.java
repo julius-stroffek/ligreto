@@ -2,25 +2,59 @@ package net.ligreto.data;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import net.ligreto.exceptions.DataException;
+import net.ligreto.util.Assert;
 
 public class ResultSetDataProvider extends DataProvider {
 	
 	protected ResultSet resultSet;
+	protected int[] originalIndices;
+	protected int[] dataProviderIndices;
 	
-	public ResultSetDataProvider(ResultSet resultSet) {
+	public ResultSetDataProvider(ResultSet resultSet) throws SQLException {
 		this.resultSet = resultSet;
+		ResultSetMetaData rsmd = resultSet.getMetaData();
+		originalIndices = new int[rsmd.getColumnCount()];
+		dataProviderIndices  = new int[rsmd.getColumnCount()];
+		for (int i=0; i < rsmd.getColumnCount(); i++) {
+			originalIndices[i] = i+1;
+			dataProviderIndices[i] = i+1;
+		}
 	}
 
-	@Override
-	public ResultSetMetaData getMetaData() throws DataException {
-		try {
-			return new ResultSetMetaData(resultSet.getMetaData());
-		} catch (SQLException e) {
-			throw new DataException(e);
+	public ResultSetDataProvider(ResultSet resultSet, int[] excludeColumns) throws SQLException {
+		this.resultSet = resultSet;
+		ResultSetMetaData rsmd = resultSet.getMetaData();
+		
+		boolean[] columnExcluded = new boolean[rsmd.getColumnCount()];
+		for (int i=1; i <= rsmd.getColumnCount(); i++) {
+			columnExcluded[i-1] = false;
+		}
+		
+		int excludedCount = 0;
+		if (excludeColumns != null) {
+			for (int i=0; i < excludeColumns.length; i++) {
+				if (excludeColumns[i] > 0 && excludeColumns[i] <= rsmd.getColumnCount()) {
+					excludedCount++;
+					columnExcluded[excludeColumns[i]-1] = true;
+				}
+			}
+		}
+		
+		originalIndices = new int[rsmd.getColumnCount() - excludedCount];
+		dataProviderIndices  = new int[rsmd.getColumnCount()];
+		for (int i=1, r=0; i <= rsmd.getColumnCount(); i++) {
+			if (columnExcluded[i-1]) {
+				dataProviderIndices[i-1] = -1;
+			} else {
+				dataProviderIndices[i-1] = r+1;
+				originalIndices[r] = i;
+				r++;
+			}
 		}
 	}
 
@@ -34,27 +68,42 @@ public class ResultSetDataProvider extends DataProvider {
 	}
 
 	@Override
-	public boolean getBoolean(int index) throws DataException {
+	public Boolean getBoolean(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getBoolean(index);
+			Boolean result = resultSet.getBoolean(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
 	}
 
 	@Override
-	public long getLong(int index) throws DataException {
+	public Long getLong(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getLong(index);
+			Long result = resultSet.getLong(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
 	}
 
 	@Override
-	public double getDouble(int index) throws DataException {
+	public Double getDouble(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getLong(index);
+			Double result = resultSet.getDouble(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
@@ -62,8 +111,13 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public Timestamp getTimestamp(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getTimestamp(index);
+			Timestamp result = resultSet.getTimestamp(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
@@ -71,17 +125,13 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public BigDecimal getBigDecimal(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getBigDecimal(index);
-		} catch (SQLException e) {
-			throw new DataException(e);
-		}
-	}
-
-	@Override
-	public boolean wasNull() throws DataException {
-		try {
-			return resultSet.wasNull();
+			BigDecimal result = resultSet.getBigDecimal(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
@@ -89,8 +139,13 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public String getString(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getString(index);
+			String result = resultSet.getString(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
@@ -98,8 +153,73 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public Object getObject(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
-			return resultSet.getObject(index);
+			Object result = resultSet.getObject(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+	}
+
+	@Override
+	public int getColumnType(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		try {
+			return resultSet.getMetaData().getColumnType(originalIndices[index-1]);
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+	}
+
+	@Override
+	public String getColumnLabel(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		try {
+			return resultSet.getMetaData().getColumnLabel(originalIndices[index-1]);
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+	}
+
+	@Override
+	public String getColumnName(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		try {
+			return resultSet.getMetaData().getColumnName(originalIndices[index-1]);
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+	}
+
+	@Override
+	public int getColumnCount() throws DataException {
+		return originalIndices.length;
+	}
+
+	@Override
+	public int getOriginalIndex(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		return originalIndices[index-1];
+	}
+
+	@Override
+	public int getIndex(int originalIndex) throws DataException {
+		try {
+			Assert.assertTrue(originalIndex > 0 && originalIndex <= resultSet.getMetaData().getColumnCount());
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+		return dataProviderIndices[originalIndex-1];
+	}
+
+	@Override
+	public boolean wasNull() throws DataException {
+		try {
+			return resultSet.wasNull();
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}

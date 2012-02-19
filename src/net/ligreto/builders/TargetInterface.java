@@ -1,12 +1,12 @@
 package net.ligreto.builders;
 
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface.CellFormat;
 import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.data.DataProvider;
+import net.ligreto.exceptions.DataException;
 
 public interface TargetInterface {
 	
@@ -15,8 +15,8 @@ public interface TargetInterface {
 	 * and taking the rsi-th position value from the specified result set.
 	 * 
 	 * @param i The report output column index.
-	 * @param rs The result set where to get the data.
-	 * @param rsi The result set index number where to get the value from.
+	 * @param dp The data provider where to get the data.
+	 * @param dpi The data provider index number where to get the value from.
 	 * @throws SQLException in case of database related problems.
 	 * 
 	 * <p>
@@ -25,21 +25,21 @@ public interface TargetInterface {
 	 * The first result set column index is 1.
 	 * </p>
 	 */
-	public abstract void dumpColumn(int i, ResultSet rs, int rsi) throws SQLException;
+	public abstract void dumpColumn(int i, DataProvider dp, int rsi) throws DataException;
 
 	/**
 	 * This method will set the value in the output report at the i-th position
 	 * and taking the i-th position value from the specified result set.
 	 * 
 	 * @param i The report output column index.
-	 * @param rs The result set where to get the data.
+	 * @param dp The data provider where to get the data.
 	 * @throws SQLException in case of database related problems.
 	 * 
 	 * <p>
 	 * The first output column index is 1.
 	 * </p>
 	 */
-	public abstract void dumpColumn(int i, ResultSet rs) throws SQLException;
+	public abstract void dumpColumn(int i, DataProvider dp) throws DataException;
 
 	/** 
 	 * Move the output processing to the next row. The <code>highlightArray</code>
@@ -101,15 +101,15 @@ public interface TargetInterface {
 	 */
 	public abstract void dumpColumn(int i, Object o, CellFormat cellFormat, boolean highlight);
 
-	public abstract void dumpHeader(ResultSet rs, int[] excl) throws SQLException, IOException;
+	public abstract void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException;
 
-	public abstract void dumpJoinOnHeader(ResultSet rs, int[] on, String dataSourceDesc) throws SQLException;
+	public abstract void dumpJoinOnHeader(DataProvider dp, int[] on, String dataSourceDesc) throws DataException;
 
-	public abstract void dumpOtherHeader(ResultSet rs, int[] on, int[] excl, String dataSourceDesc) throws SQLException;
+	public abstract void dumpOtherHeader(DataProvider dp, int[] on, int[] excl, String dataSourceDesc) throws DataException;
 
-	public abstract void dumpJoinOnColumns(ResultSet rs, int[] on) throws SQLException;
+	public abstract void dumpJoinOnColumns(DataProvider dp, int[] on) throws DataException;
 
-	public abstract void dumpOtherColumns(ResultSet rs, int[] on, int[] excl) throws SQLException;
+	public abstract void dumpOtherColumns(DataProvider dp, int[] on, int[] excl) throws DataException;
 
 	/**
 	 * Store the specified object into the result column of the current row.

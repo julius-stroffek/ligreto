@@ -1,6 +1,5 @@
 package net.ligreto.executor;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -8,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.ResultStatus;
 import net.ligreto.data.ColumnAggregationResult;
+import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.parser.nodes.LimitNode;
@@ -91,7 +91,7 @@ public class ResultExecutor extends Executor {
 		}
 	}
 	
-	private void processLimitNode(LimitNode limitNode, int columnIndex) throws SQLException {
+	private void processLimitNode(LimitNode limitNode, int columnIndex) throws LigretoException {
 		Double absoluteCountLimit = limitNode.getAbsoluteCount();
 		Double relativeCountLimit = limitNode.getRelativeCount();
 		Double absoluteDifferenceLimit = limitNode.getAbsoluteDifference();
@@ -140,13 +140,13 @@ public class ResultExecutor extends Executor {
 		}
 	}
 	
-	private void processLimitNode(LimitNode limitNode) throws SQLException {
+	private void processLimitNode(LimitNode limitNode) throws LigretoException {
 		if (limitNode.getColumns() != null) {
 			for (int col : limitNode.getColumns()) {
 				processLimitNode(limitNode, col);
 			}
 		} else {
-			for (int col = 0; col < joinLayout.getColumnCount(); col++) {
+			for (int col = 1; col <= joinLayout.getColumnCount(); col++) {
 				processLimitNode(limitNode, col);
 			}
 		}
@@ -172,7 +172,7 @@ public class ResultExecutor extends Executor {
 			} else if (joinLayout.getLayoutNode().getResult() && resultStatus.getDifferentRowCount() > 0) {
 					resultStatus.setAccepted(false);
 			}
-		} catch (SQLException e) {
+		} catch (DataException e) {
 			throw new LigretoException("Error checking the result of comparison.", e);
 		}
 		return resultStatus;
