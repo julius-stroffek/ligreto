@@ -57,12 +57,16 @@ public class ExcelReportBuilder extends ReportBuilder {
 		int row;
 		int column;
 		int lastRow;
+		boolean inUse;
+		String name;
 		
-		public TargetInfo(int sheet, int row, int column) {
+		public TargetInfo(String name, int sheet, int row, int column) {
+			this.name = name;
 			this.sheet = sheet;
 			this.row = row;
 			this.column = column;
 			this.lastRow = this.row - 1;
+			this.inUse = false;
 		}
 		
 		@Override
@@ -209,7 +213,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	}
 	
 	@Override
-	public  TargetInterface getTargetBuilder(String target, boolean append) throws InvalidTargetException {
+	public  TargetInterface getTargetBuilder(String target, boolean append) throws TargetException {
 		ExcelReportTarget newTarget = null;
 		CellReference ref = new CellReference(target);
 		Sheet sheet;
@@ -227,7 +231,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 		int rowNum = ref.getRow();
 		int colNum = ref.getCol();
 		if (sheet != null) {
-			TargetInfo info = new TargetInfo(wb.getSheetIndex(sheet), rowNum, colNum);
+			TargetInfo info = new TargetInfo(target, wb.getSheetIndex(sheet), rowNum, colNum);
 			newTarget = createTarget(sheet, rowNum, colNum);
 			TargetInfo prevInfo = targetMap.get(info);
 			if (append &&  prevInfo != null) {

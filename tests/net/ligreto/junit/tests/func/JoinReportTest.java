@@ -15,6 +15,7 @@ import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
+import net.ligreto.junit.util.TestUtil;
 import net.ligreto.junit.util.XSSFWorkbookComparator;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
@@ -214,5 +215,10 @@ public class JoinReportTest {
 				new XSSFWorkbook(new FileInputStream("wrongcollationdumpreport.xlsx")),
 				new XSSFWorkbook(new FileInputStream("desired/wrongcollationdumpreport.xlsx"))
 		).areSame());
+	}
+
+	@Test
+	public void testInternalSort() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("internalsortreport", true);
 	}
 }

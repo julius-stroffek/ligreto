@@ -59,7 +59,7 @@ public class WorkbookComparator {
 		}
 		for (int i=0; i < w1.getNumberOfSheets(); i++) {
 			if (!areSame(w1.getSheetAt(i), w2.getSheetAt(i))) {
-				log.info("The sheet content differs.");
+				log.error("The sheet content differs: " + w1.getSheetAt(i).getSheetName() + ", " + w2.getSheetAt(i).getSheetName());
 				result = false;
 			}
 		}
@@ -92,7 +92,7 @@ public class WorkbookComparator {
 		}
 		for (int i = s1.getFirstRowNum(); i < s1.getLastRowNum(); i++) {
 			if (!areSame(s1.getRow(i), s2.getRow(i))) {
-				log.error("The row content differs.");
+				log.error("The row content differs; row: " + i);
 				result = false;
 			}
 		}
@@ -125,7 +125,7 @@ public class WorkbookComparator {
 		}
 		for (int i = r1.getFirstCellNum(); i < r1.getLastCellNum(); i++) {
 			if (!areSame(r1.getCell(i), r2.getCell(i))) {
-				log.error("The cell content differs.");
+				log.error("The cell content differs in column: " + i);
 				result = false;
 			}
 		}

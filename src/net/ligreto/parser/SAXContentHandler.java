@@ -195,7 +195,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case PARAM:
 			try {
-				ligretoNode.addParam(paramName, paramValue.toString());
+				String paramValueStr = paramValue.toString();
+				log.info("Setting up parameter: \"" + paramName + "\"");
+				log.debug("Parameter value: \"" + paramValueStr + "\"");
+				ligretoNode.addParam(paramName, paramValueStr);
 			} catch (LigretoException e) {
 				throw new SAXException("Error parsing input file.", e);
 			}
@@ -264,6 +267,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					ptpNode.setName(getAttributeValue(atts, "name"));
 					ligretoNode.addPTP(ptpNode);
 					objectStack.push(ObjectType.PTP);
+				} else if ("ligreto".equals(localName)) {
+					objectStack.push(ObjectType.LIGRETO);
 				} else {
 					objectStack.push(ObjectType.NONE);
 				}
@@ -352,6 +357,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					}
 					if (getAttributeValue(atts, "exclude") != null) {
 						join.setExclude(getAttributeValue(atts, "exclude"));
+					}
+					if (getAttributeValue(atts, "sort") != null) {
+						join.setSortingStrategy(getAttributeValue(atts, "sort"));
 					}
 					join.setLocale(getAttributeValue(atts, "locale"));
 					if (getAttributeValue(atts, "collation") != null) {
@@ -619,6 +627,13 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("ligreto".equals(localName)) {
 					objectStack.push(ObjectType.LIGRETO);
 				} else {
+					log.debug("Parser error on node: \"" + localName + "\"; parser state: "
+						+ (objectStack.empty() ? ObjectType.NONE : objectStack.peek())
+					);
+					log.debug("Parser state stack:");
+					for (int i=0; i < objectStack.size(); i++) {
+						log.debug("Depth: " + i + "; State: " + objectStack.get(objectStack.size() - 1 - i));
+					}
 					objectStack.push(ObjectType.NONE);
 				}
 				break;

@@ -1,6 +1,8 @@
 package net.ligreto.exceptions;
 
-public class InvalidTargetException extends LigretoException {
+import net.ligreto.builders.TargetException;
+
+public class InvalidTargetException extends TargetException {
 
 	/**
 	 * Auto-generated stuff.

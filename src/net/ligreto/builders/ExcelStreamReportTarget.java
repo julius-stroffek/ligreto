@@ -49,6 +49,7 @@ public class ExcelStreamReportTarget extends ExcelReportTarget {
 		flush(true, true);
 		ss.flushRows();
 		targetInfo.lastRow = actRow;
+		targetInfo.inUse = false;
 	}
 
 }

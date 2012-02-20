@@ -85,6 +85,20 @@ public class ResultSetDataProvider extends DataProvider {
 	}
 
 	@Override
+	public Integer getInteger(int index) throws DataException {
+		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		try {
+			Integer result = resultSet.getInt(originalIndices[index-1]);
+			if (resultSet.wasNull())
+				return null;
+			else
+				return result;
+		} catch (SQLException e) {
+			throw new DataException(e);
+		}
+	}
+
+	@Override
 	public Long getLong(int index) throws DataException {
 		Assert.assertTrue(index > 0 && index <= originalIndices.length);
 		try {
@@ -192,8 +206,10 @@ public class ResultSetDataProvider extends DataProvider {
 			columnValue = getBoolean(index);
 			break;
 		case Types.BIGINT:
-		case Types.INTEGER:
 			columnValue = getLong(index);
+			break;
+		case Types.INTEGER:
+			columnValue = getInteger(index);
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:

@@ -41,8 +41,9 @@ public interface BuilderInterface {
 	 * @param target The target location to set.
 	 * @param append Indicates whether the data should be appended.
 	 * @throws InvalidTargetException
+	 * @throws TargetException 
 	 */
-	public abstract TargetInterface getTargetBuilder(String target, boolean append) throws InvalidTargetException;
+	public abstract TargetInterface getTargetBuilder(String target, boolean append) throws TargetException;
 
 	/**
 	 * The function called before the building of the report is started, i.e. any of the

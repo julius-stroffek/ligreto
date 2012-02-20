@@ -187,9 +187,14 @@ public class ExcelReportTarget extends ReportTarget {
 
 	/**
 	 * @param targetInfo the targetInfo to set
+	 * @throws TargetException 
 	 */
-	public void setTargetInfo(ExcelReportBuilder.TargetInfo targetInfo) {
+	public void setTargetInfo(ExcelReportBuilder.TargetInfo targetInfo) throws TargetException {
+		if (targetInfo.inUse) {
+			throw new TargetException("Target \"" + targetInfo.name + "\" already in use.");
+		}
 		this.targetInfo = targetInfo;
+		this.targetInfo.inUse = true;
 	}
 
 	/**
@@ -727,5 +732,6 @@ public class ExcelReportTarget extends ReportTarget {
 	public void finish() throws IOException {
 		flush(true, false);
 		targetInfo.lastRow = actRow;
+		targetInfo.inUse = false;
 	}
 }

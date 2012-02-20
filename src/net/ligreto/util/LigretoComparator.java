@@ -238,8 +238,10 @@ public class LigretoComparator {
 				result = compare((Boolean) fieldValue1, (Boolean) fieldValue2);
 				break;
 			case Types.BIGINT:
-			case Types.INTEGER:
 				result = compare((Long) fieldValue1, (Long) fieldValue2);
+				break;
+			case Types.INTEGER:
+				result = compare((Integer) fieldValue1, (Integer) fieldValue2);
 				break;
 			case Types.DOUBLE:
 			case Types.FLOAT:
@@ -307,8 +309,10 @@ public class LigretoComparator {
 			result = compare((Boolean) fieldValue1, (Boolean) fieldValue2);
 			break;
 		case Types.BIGINT:
-		case Types.INTEGER:
 			result = compare((Long) fieldValue1, (Long) fieldValue2);
+			break;
+		case Types.INTEGER:
+			result = compare((Integer) fieldValue1, (Integer) fieldValue2);
 			break;
 		case Types.DOUBLE:
 		case Types.FLOAT:

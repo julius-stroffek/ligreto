@@ -327,6 +327,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			if (joinNode.getSortingStrategy() == SortingStrategy.INTERNAL) {
 				SortingDataProvider sdp1 = new SortingDataProvider(dp1, on1);
 				SortingDataProvider sdp2 = new SortingDataProvider(dp2, on2);
+				sdp1.prepareData();
+				sdp2.prepareData();
 				dp1 = sdp1;
 				dp2 = sdp2;
 			}
@@ -351,6 +353,13 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Remember the first target for error messages only
 				if (firstTarget != null) {
 					firstTarget = layoutNode.getTarget();
+				}
+				
+				/* Dump the information about target output. */
+				if (layoutNode.isAppend()) {
+					log.info("The output will be appended to target: \"" + layoutNode.getTarget() + "\"");
+				} else {
+					log.info("The output will be written to target: \"" + layoutNode.getTarget() + "\"");
 				}
 				
 				/* Create the report target object first. */

@@ -58,7 +58,8 @@ public class SqlNode extends Node {
 	 * @throws LigretoException 
 	 */
 	public String getQuery() throws LigretoException {
-		String result = queryName != null ? ligretoNode.getQuery(queryName) : query.toString();		
+		String result = queryName != null ? ligretoNode.getQuery(queryName) : "";
+		result += query.toString();		
 		return ligretoNode.substituteParams(result);
 	}
 	

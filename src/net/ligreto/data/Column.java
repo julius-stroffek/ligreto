@@ -1,9 +1,5 @@
 package net.ligreto.data;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.sql.Types;
-
 import net.ligreto.exceptions.DataException;
 import net.ligreto.util.LigretoComparator;
 
@@ -35,51 +31,6 @@ public class Column implements Comparable<Object> {
 		columnType = dp.getColumnType(index);
 		columnValue = dp.getObject(index);
 		numeric = dp.isNumeric(index);
-		switch (columnType) {
-		case Types.BOOLEAN:
-			columnValue = dp.getBoolean(index);
-			break;
-		case Types.BIGINT:
-		case Types.INTEGER:
-			columnValue = dp.getLong(index);
-			numeric = true;
-			break;
-		case Types.DOUBLE:
-		case Types.FLOAT:
-			columnValue = dp.getDouble(index);
-			numeric = true;
-			break;
-		case Types.DATE:
-		case Types.TIMESTAMP:
-		case Types.TIME:
-			Timestamp ts = dp.getTimestamp(index);
-			if (ts != null) {
-				columnValue = new Timestamp(ts.getTime());
-			} else {
-				columnValue = null;
-			}
-			break;
-		case Types.DECIMAL:
-		case Types.NUMERIC:
-			BigDecimal bd = dp.getBigDecimal(index);
-			if (bd != null) {
-				columnValue = new BigDecimal(bd.unscaledValue(), bd.scale());
-			} else {
-				columnValue = null;
-			}
-			numeric = true;
-			break;
-		default:
-			columnType = Types.VARCHAR;
-			String tmpValue = dp.getString(index);
-			if (tmpValue != null)
-				columnValue = new String(tmpValue);
-			else
-				columnValue = null;
-			break;			
-		}
-		if (dp.wasNull())
-			columnValue = null;
 	}
 
 	/**

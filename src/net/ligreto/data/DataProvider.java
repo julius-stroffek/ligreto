@@ -13,6 +13,8 @@ public abstract class DataProvider {
 
 	public abstract Boolean getBoolean(int index) throws DataException;
 
+	public abstract Integer getInteger(int index) throws DataException;
+	
 	public abstract Long getLong(int index) throws DataException;
 
 	public abstract Double getDouble(int index) throws DataException;
