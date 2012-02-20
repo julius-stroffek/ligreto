@@ -349,8 +349,26 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
 					sql.setResult(getAttributeValue(atts, "result"));
-				} else if ("join".equals(localName)) {
+				} else if ("comparison".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
+					join = new JoinNode(ligretoNode);
+					if (getAttributeValue(atts, "key") != null) {
+						join.setOn(getAttributeValue(atts, "key"));
+					}
+					if (getAttributeValue(atts, "exclude") != null) {
+						join.setExclude(getAttributeValue(atts, "exclude"));
+					}
+					if (getAttributeValue(atts, "sort") != null) {
+						join.setSortingStrategy(getAttributeValue(atts, "sort"));
+					}
+					join.setLocale(getAttributeValue(atts, "locale"));
+					if (getAttributeValue(atts, "collation") != null) {
+						join.setCollation(getAttributeValue(atts, "collation"));
+					}
+				} else if ("join".equals(localName)) {
+					log.warn("Use of <join> node is deprecated and might not work in the future releases.");
+					log.warn("Please use <comparison> node instead.");
+				objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
 					if (getAttributeValue(atts, "on") != null) {
 						join.setOn(getAttributeValue(atts, "on"));
@@ -366,6 +384,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						join.setCollation(getAttributeValue(atts, "collation"));
 					}
 					if (getAttributeValue(atts, "target") != null) {
+						log.warn("Use of 'target' attribute in <join> node is deprecated and might not work in the future releases.");
+						log.warn("Please use <layout> node instead.");
 						layout = new LayoutNode(ligretoNode);
 						if (getAttributeValue(atts, "target") != null) {
 							layout.setTarget(getAttributeValue(atts, "target"));
@@ -420,7 +440,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "data-source") != null) {
 						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
-					if (getAttributeValue(atts, "on") != null) {
+					if (getAttributeValue(atts, "key") != null) {
+						sql.setOn(getAttributeValue(atts, "key"));
+					} else if (getAttributeValue(atts, "on") != null) {
 						sql.setOn(getAttributeValue(atts, "on"));
 					}
 					if (getAttributeValue(atts, "exclude") != null) {
