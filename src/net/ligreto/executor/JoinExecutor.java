@@ -36,6 +36,7 @@ import net.ligreto.parser.nodes.JoinNode.SortingStrategy;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
+import net.ligreto.util.Assert;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.LigretoComparator;
 
@@ -172,12 +173,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			stm1 = cnn1.createStatement();
 			stm2 = cnn2.createStatement();
 			
-			int on1[] = sqlQueries.get(0).getOn();
-			int on2[] = sqlQueries.get(1).getOn();
+			int on1[] = sqlQueries.get(0).getKey();
+			int on2[] = sqlQueries.get(1).getKey();
 			if (on1 == null)
-				on1 = joinNode.getOn();
+				on1 = joinNode.getKey();
 			if (on2 == null)
-				on2 = joinNode.getOn();
+				on2 = joinNode.getKey();
 			
 			if (on1 == null || on2 == null)
 				throw new LigretoException("The \"on\" attribute have to be present in <join> node or all <sql> children.");
@@ -316,10 +317,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			DataProvider dp1 = new ResultSetDataProvider(rs1, excl1);
 			DataProvider dp2 = new ResultSetDataProvider(rs2, excl2);
-			
-			//int rs1ColCount = rs1.getMetaData().getColumnCount() - excl1.length;
-			//int rs2ColCount = rs2.getMetaData().getColumnCount() - excl2.length;
-			
+						
 			if (dp1.getColumnCount() != dp2.getColumnCount()) {
 				throw new LigretoException("Result set column counts differs: " + dp1.getColumnCount() + " and " + dp2.getColumnCount());
 			}
@@ -333,13 +331,55 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				dp2 = sdp2;
 			}
 			
+			// Get the list of columns to compare
+			int[] columns1 = joinNode.getSqlQueries().get(0).getColumns();
+			int[] columns2 = joinNode.getSqlQueries().get(1).getColumns();
+			
+			if (columns1 == null)
+				columns1 = joinNode.getColumns();
+			if (columns2 == null)
+				columns2 = joinNode.getColumns();
+			
+			if (columns1 == null && columns2 == null) {
+				columns1 = new int[dp1.getColumnCount() - on1.length];
+				columns2 = new int[dp2.getColumnCount() - on2.length];
+				for (int i=0, i1=1, i2=1; i < columns1.length; i++, i1++, i2++) {
+					while (MiscUtils.arrayContains(on1, i1))
+						i1++;
+					while (MiscUtils.arrayContains(on2, i2))
+						i2++;
+					
+					Assert.assertTrue(i1 <= dp1.getColumnCount());
+					Assert.assertTrue(i2 <= dp1.getColumnCount());
+
+					columns1[i] = i1;
+					columns2[i] = i2;
+				}
+			} else if (columns1 == null || columns2 == null) {
+				throw new LigretoException("Columns to compare have to be specified for both SQL queries.");
+			}
+			
 			// Create the arrays to be used to highlight
 			// differences for left, right, outer joins
-			int[] lowerArray = new int[dp1.getColumnCount()];
+			int[] lowerArray = new int[dp1.getColumnCount() - on1.length];
 			int[] higherArray = new int[lowerArray.length];
 			for (int i=0; i < lowerArray.length; i++) {
-				lowerArray[i] = -1;
-				higherArray[i] = 1;
+				lowerArray[i] = 0;
+				higherArray[i] = 0;
+			}
+			for (int i=0; i < columns1.length; i++) {
+				lowerArray[columns1[i] - on1.length - 1] = -1;
+				higherArray[columns1[i] - on2.length - 1] = 1;
+			}
+			for (int i=0; i < columns1.length; i++) {
+				if (MiscUtils.arrayContains(on1, columns1[i])) {
+					throw new LigretoException("The key columns could not be listed in columns for comparison; columns: " + columns1[i]);
+				}
+			}
+			for (int i=0; i < columns2.length; i++) {
+				if (MiscUtils.arrayContains(on2, columns2[i])) {
+					throw new LigretoException("The key columns could not be listed in columns for comparison; columns: " + columns2[i]);
+				}
 			}
 			
 			// Calculate the number of columns to compare
@@ -447,7 +487,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
-						joinLayout.processRow(otherColumnCount, JoinResultType.LEFT);
+						joinLayout.processRow(otherColumnCount, lowerArray, JoinResultType.LEFT);
 					}
 					hasNext1 = dp1.next();
 					pCol1 = col1;
@@ -455,7 +495,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, on1, dp2, on2);
+					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, on1, columns1, dp2, on2, columns2);
 					
 					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
 					for (JoinLayout joinLayout : layouts) {
@@ -471,7 +511,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				case 1:
 					for (JoinLayout joinLayout : layouts) {
-						joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT);
+						joinLayout.processRow(otherColumnCount, higherArray, JoinResultType.RIGHT);
 					}						
 					pCol2 = col2;
 					hasNext2 = dp2.next();
@@ -505,7 +545,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				pCol1 = col1;
 
 				for (JoinLayout joinLayout : layouts) {
-					joinLayout.processRow(otherColumnCount, JoinResultType.LEFT);
+					joinLayout.processRow(otherColumnCount, lowerArray, JoinResultType.LEFT);
 				}
 				hasNext1 = dp1.next();
 			}
@@ -537,7 +577,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				pCol2 = col2;
 				
 				for (JoinLayout joinLayout : layouts) {
-					joinLayout.processRow(otherColumnCount, JoinResultType.RIGHT);
+					joinLayout.processRow(otherColumnCount, higherArray, JoinResultType.RIGHT);
 				}
 				hasNext2 = dp2.next();
 			}

@@ -31,13 +31,12 @@ public class NormalJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		switch (resultType) {
 		case LEFT:
-			targetBuilder.setHighlightArray(higherArray);
 			targetBuilder.dumpColumn(0, rowDiffs, CellFormat.UNCHANGED, rowDiffs > 0);
-			targetBuilder.setColumnPosition(1, 1, null);
+			targetBuilder.setColumnPosition(1, 1, higherArray);
 			targetBuilder.dumpJoinOnColumns(dp1, on1);
-			targetBuilder.setColumnPosition(onLength + 1, 1, lowerArray);							
+			targetBuilder.setColumnPosition(onLength + 1, 1, cmpArray);							
 			targetBuilder.dumpOtherColumns(dp1, on1, null);
-			targetBuilder.setColumnPosition(rsColCount + 1, 1, higherArray);
+			targetBuilder.setColumnPosition(rsColCount + 1, 1, cmpArray);
 			for (int i=0; i < rsColCount - onLength; i++) {
 				targetBuilder.dumpColumn(
 					i, ligretoParameters.getMissingString(),
@@ -46,18 +45,17 @@ public class NormalJoinLayout extends JoinLayout {
 			}
 			break;
 		case RIGHT:
-			targetBuilder.setHighlightArray(lowerArray);
 			targetBuilder.dumpColumn(0, rowDiffs, CellFormat.UNCHANGED, rowDiffs > 0);
-			targetBuilder.setColumnPosition(1, 1, null);
+			targetBuilder.setColumnPosition(1, 1, higherArray);
 			targetBuilder.dumpJoinOnColumns(dp2, on2);
-			targetBuilder.setColumnPosition(onLength + 1, 1, higherArray);							
+			targetBuilder.setColumnPosition(onLength + 1, 1, cmpArray);							
 			for (int i=0; i < rsColCount - onLength; i++) {
 				targetBuilder.dumpColumn(
 					i, ligretoParameters.getMissingString(),
 					CellFormat.UNCHANGED, true
 				);
 			}
-			targetBuilder.setColumnPosition(rsColCount + 1, 1, higherArray);							
+			targetBuilder.setColumnPosition(rsColCount + 1, 1, cmpArray);							
 			targetBuilder.dumpOtherColumns(dp2, on2, null);
 			break;
 		case INNER:

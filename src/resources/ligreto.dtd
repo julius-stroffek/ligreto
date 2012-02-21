@@ -30,6 +30,7 @@
 <!ATTLIST sql query CDATA #IMPLIED>
 <!ATTLIST sql on CDATA #IMPLIED>
 <!ATTLIST sql key CDATA #IMPLIED>
+<!ATTLIST sql columns CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
 <!ATTLIST sql header CDATA "true">			<!--(true|false)-->
@@ -42,7 +43,8 @@
 
 <!ELEMENT comparison (layout*,sql,layout*,sql+,layout*)>
 <!ATTLIST comparison key CDATA #IMPLIED>
-<!ATTLIST comparison exclude CDATA #IMPLIED>
+<!ATTLIST comparison columns CDATA #IMPLIED>	<!-- comma separated list of columns to be compared -->
+<!ATTLIST comparison exclude CDATA #IMPLIED>	<!-- comma separated list of columns to be exceluded -->
 <!ATTLIST comparison locale CDATA #IMPLIED>
 <!ATTLIST comparison collation CDATA "fail">	<!--(ignore|dump|fail)-->
 <!ATTLIST comparison sort CDATA "external">		<!--(external|internal)-->

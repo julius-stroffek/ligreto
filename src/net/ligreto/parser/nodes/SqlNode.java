@@ -19,7 +19,8 @@ public class SqlNode extends Node {
 	protected boolean header;
 	protected boolean append;
 	protected boolean result;
-	protected String on;
+	protected String key;
+	protected String columns;
 	protected String exclude;
 	protected Attitude exceptions = Attitude.FAIL;
 	protected QueryType queryType = QueryType.STATEMENT;
@@ -151,22 +152,43 @@ public class SqlNode extends Node {
 	 * 
 	 * @param on the comma separated list of column indices to be used for join condition
 	 */
-	public void setOn(String on) {
-		this.on = on;
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	/**
 	 * @return the array of column indices to be used for join condition
 	 */
-	public int[] getOn() {
-		if (on == null)
+	public int[] getKey() {
+		if (key == null)
 			return null;
-		String[] ons = ligretoNode.substituteParams(on).split(",");
-		int onn[] = new int[ons.length];
-		for (int i=0; i < onn.length; i++) {
-			onn[i] = Integer.parseInt(ons[i]);
+		String[] skey = ligretoNode.substituteParams(key).split(",");
+		int ikey[] = new int[skey.length];
+		for (int i=0; i < ikey.length; i++) {
+			ikey[i] = Integer.parseInt(skey[i]);
 		}
-		return onn;
+		return ikey;
+	}
+
+	/**
+	 * @return the columns
+	 */
+	public int[] getColumns() {
+		if (columns == null)
+			return null;
+		String[] scols = ligretoNode.substituteParams(columns).split(",");
+		int icols[] = new int[scols.length];
+		for (int i=0; i < icols.length; i++) {
+			icols[i] = Integer.parseInt(scols[i]);
+		}
+		return icols;
+	}
+
+	/**
+	 * @param columns the columns to set
+	 */
+	public void setColumns(String columns) {
+		this.columns = columns;
 	}
 
 	/**

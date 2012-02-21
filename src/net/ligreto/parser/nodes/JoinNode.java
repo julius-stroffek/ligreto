@@ -14,7 +14,8 @@ public class JoinNode extends Node {
 	public enum SortingStrategy {INTERNAL, EXTERNAL};
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<LayoutNode> layouts = new ArrayList<LayoutNode>();
-	protected String on;
+	protected String key;
+	protected String columns;
 	protected String exclude;
 	protected String locale;
 	protected SortingStrategy sortingStrategy = SortingStrategy.EXTERNAL;
@@ -40,18 +41,40 @@ public class JoinNode extends Node {
 	 * 
 	 * @param on the comma separated list of column indices to be used for join condition
 	 */
-	public void setOn(String on) {
-		this.on = on;
+	public void setKey(String on) {
+		this.key = on;
 	}
 
 	/**
 	 * @return the array of column indices to be used for join condition
 	 */
-	public int[] getOn() {
-		if (on == null) {
+	public int[] getKey() {
+		if (key == null) {
 			return new int[0];
 		}
-		String[] sValues = ligretoNode.substituteParams(on).split(",");
+		String[] sValues = ligretoNode.substituteParams(key).split(",");
+		int values[] = new int[sValues.length];
+		for (int i=0; i < values.length; i++) {
+			values[i] = Integer.parseInt(sValues[i]);
+		}
+		return values;
+	}
+	
+	/**
+	 * @param columns the columns to set
+	 */
+	public void setColumns(String columns) {
+		this.columns = columns;
+	}
+
+	/**
+	 * @return the array of column indices to be used for join condition
+	 */
+	public int[] getColumns() {
+		if (columns == null) {
+			return null;
+		}
+		String[] sValues = ligretoNode.substituteParams(columns).split(",");
 		int values[] = new int[sValues.length];
 		for (int i=0; i < values.length; i++) {
 			values[i] = Integer.parseInt(sValues[i]);

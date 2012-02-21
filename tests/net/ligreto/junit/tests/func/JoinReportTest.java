@@ -221,4 +221,9 @@ public class JoinReportTest {
 	public void testInternalSort() throws SAXException, IOException, LigretoException {
 		TestUtil.testReport("internalsortreport", true);
 	}
+	
+	@Test
+	public void testColumnComparison() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("columnscomparisonreport", true);
+	}
 }

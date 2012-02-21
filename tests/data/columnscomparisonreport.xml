@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
+	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Simple Report" options="autoFilter,autoSize,headerStyle">
+		<output file="columnscomparisonreport.xlsx"/>
+		<data>
+			<comparison key="1" columns="2">
+				<layout target="interlaced!B2" type="interlaced"/>
+				<layout target="normal!B2" type="normal"/>
+				<layout target="detailed!B2" type="detailed"/>
+				<layout target="aggregated!B2" type="aggregated"/>
+				<layout target="summary!B2" type="summary"/>
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</comparison>
+			<comparison key="1" columns="2,3">
+				<layout target="interlaced2!B2" type="interlaced"/>
+				<layout target="normal2!B2" type="normal"/>
+				<layout target="detailed2!B2" type="detailed"/>
+				<layout target="aggregated2!B2" type="aggregated"/>
+				<layout target="summary2!B2" type="summary"/>
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</comparison>
+		</data>
+	</report>
+</ligreto>

@@ -353,10 +353,13 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
 					if (getAttributeValue(atts, "key") != null) {
-						join.setOn(getAttributeValue(atts, "key"));
+						join.setKey(getAttributeValue(atts, "key"));
 					}
 					if (getAttributeValue(atts, "exclude") != null) {
 						join.setExclude(getAttributeValue(atts, "exclude"));
+					}
+					if (getAttributeValue(atts, "columns") != null) {
+						join.setColumns(getAttributeValue(atts, "columns"));
 					}
 					if (getAttributeValue(atts, "sort") != null) {
 						join.setSortingStrategy(getAttributeValue(atts, "sort"));
@@ -368,10 +371,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("join".equals(localName)) {
 					log.warn("Use of <join> node is deprecated and might not work in the future releases.");
 					log.warn("Please use <comparison> node instead.");
-				objectStack.push(ObjectType.JOIN);
+					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
 					if (getAttributeValue(atts, "on") != null) {
-						join.setOn(getAttributeValue(atts, "on"));
+						join.setKey(getAttributeValue(atts, "on"));
 					}
 					if (getAttributeValue(atts, "exclude") != null) {
 						join.setExclude(getAttributeValue(atts, "exclude"));
@@ -441,9 +444,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
 					if (getAttributeValue(atts, "key") != null) {
-						sql.setOn(getAttributeValue(atts, "key"));
+						sql.setKey(getAttributeValue(atts, "key"));
 					} else if (getAttributeValue(atts, "on") != null) {
-						sql.setOn(getAttributeValue(atts, "on"));
+						sql.setKey(getAttributeValue(atts, "on"));
+					}
+					if (getAttributeValue(atts, "columns") != null) {
+						sql.setColumns(getAttributeValue(atts, "columns"));
 					}
 					if (getAttributeValue(atts, "exclude") != null) {
 						sql.setExclude(getAttributeValue(atts, "exclude"));

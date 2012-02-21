@@ -59,12 +59,16 @@ public class DetailedJoinLayout extends JoinLayout {
 			case LEFT:
 				targetBuilder.nextRow();
 				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
-				targetBuilder.setHighlightArray(higherArray);
+				if (cmpArray[i] != 0) {
+					targetBuilder.setHighlightArray(higherArray);
+				} else {
+					targetBuilder.setHighlightArray(null);
+				}
 				targetBuilder.setColumnPosition(1);
 				targetBuilder.dumpJoinOnColumns(dp1, on1);
 				targetBuilder.setColumnPosition(onLength + 1);
 				targetBuilder.dumpColumn(0, dp1, i1);
-				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
+				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED);
 				if (DataProviderUtils.getNumericObject(dp1, i1) != null) {
 					targetBuilder.dumpColumn(2, dp1, i1);
 					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
@@ -75,11 +79,15 @@ public class DetailedJoinLayout extends JoinLayout {
 			case RIGHT:
 				targetBuilder.nextRow();
 				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
-				targetBuilder.setHighlightArray(lowerArray);
+				if (cmpArray[i] != 0) {
+					targetBuilder.setHighlightArray(higherArray);
+				} else {
+					targetBuilder.setHighlightArray(null);
+				}
 				targetBuilder.setColumnPosition(1);
 				targetBuilder.dumpJoinOnColumns(dp2, on2);
 				targetBuilder.setColumnPosition(onLength + 1);
-				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED, true);
+				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED);
 				targetBuilder.dumpColumn(1, dp2, i2);
 				if (DataProviderUtils.getNumericObject(dp2, i2) != null) {
 					targetBuilder.dumpColumn(2, dp2, i2);
@@ -95,9 +103,7 @@ public class DetailedJoinLayout extends JoinLayout {
 					targetBuilder.setColumnPosition(1);
 					targetBuilder.dumpJoinOnColumns(dp1, on1);
 					targetBuilder.setColumnPosition(onLength + 1);
-					if (cmpArray[i] < 0) {
-						targetBuilder.setHighlightArray(lowerArray);
-					} else if (cmpArray[i] > 0) {
+					if (cmpArray[i] != 0) {
 						targetBuilder.setHighlightArray(higherArray);
 					}
 					targetBuilder.dumpColumn(0, dp1, i1);

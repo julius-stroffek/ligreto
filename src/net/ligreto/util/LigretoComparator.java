@@ -362,18 +362,19 @@ public class LigretoComparator {
 	 * is defined using {@code ligreto.collatorName} and {@code ligreto.collationName}
 	 * parameters. Null values are always collated first.
 	 * 
-	 * @param rs1 The first result set.
+	 * @param dp1 The first data provider.
 	 * @param on1 The join columns for the first result set.
 	 * @param excl1 The exclude columns for the first result set.
-	 * @param rs2 The second result set.
+	 * @param dp2 The second data provider.
 	 * @param on2 The join columns for the second result set.
 	 * @param excl2 The exclude columns for the second result set.
 	 * @return The array of comparison results
 	 * @throws SQLException
 	 * @throws LigretoException
 	 */
-	public int[] compareOthersAsDataSource(DataProvider dp1, int[] on1, DataProvider dp2, int[] on2) throws SQLException, LigretoException {
+	public int[] compareOthersAsDataSource(DataProvider dp1, int[] on1, int[] columns1, DataProvider dp2, int[] on2, int[] columns2) throws SQLException, LigretoException {
 		Assert.assertTrue(on1.length == on2.length);
+		Assert.assertTrue(columns1.length == columns2.length);
 		
 		int colCount1 = dp1.getColumnCount();
 		int colCount2 = dp2.getColumnCount();
@@ -398,18 +399,49 @@ public class LigretoComparator {
 				i1++;
 			while (MiscUtils.arrayContains(on2, i2))
 				i2++;
-			if (i1 <= colCount1 && i2 <= colCount2)
+			
+			Assert.assertTrue(i1 <= colCount1);
+			Assert.assertTrue(i2 <= colCount2);
+			
+			boolean i1Valid = MiscUtils.arrayContains(columns1, i1);
+			boolean i2Valid = MiscUtils.arrayContains(columns2, i2);
+
+			if (i1Valid && i2Valid) {
 				result[i] = compareAsDataSource(dp1, i1, dp2, i2);
+			} else if (i1Valid || i2Valid) {
+				throw new LigretoException("Only one from two matching columns is listed for comparison. 1st: " + i1 + "; 2nd: "
+						+ i2);
+			} else {
+				result[i] = 0;
+			}
 		}
 		for (int j=i+1; j < maxCount; j++, i1++, i2++) {
-			if (colCount1 > colCount2) {
-				dp1.getString(i1);
-				result[j] = compareNulls(dp1.wasNull(), true);
-			} else if (colCount1 < colCount2) {
-				dp2.getString(i1);
-				result[j] = compareNulls(true, dp2.wasNull());
+			while (MiscUtils.arrayContains(on1, i1))
+				i1++;
+			while (MiscUtils.arrayContains(on2, i2))
+				i2++;
+			
+			Assert.assertTrue(i1 <= colCount1);
+			Assert.assertTrue(i2 <= colCount2);
+			
+			boolean i1Valid = MiscUtils.arrayContains(columns1, i1);
+			boolean i2Valid = MiscUtils.arrayContains(columns2, i2);
+
+			if (i1Valid && i2Valid) {
+				if (colCount1 > colCount2) {
+					dp1.getString(i1);
+					result[j] = compareNulls(dp1.wasNull(), true);
+				} else if (colCount1 < colCount2) {
+					dp2.getString(i1);
+					result[j] = compareNulls(true, dp2.wasNull());
+				} else {
+					Assert.assertTrue(false);
+				}
+			} else if (i1Valid || i2Valid) {
+				throw new LigretoException("Only one from two matching columns is listed for comparison. 1st: " + i1 + "; 2nd: "
+						+ i2);
 			} else {
-				result[j] = 0;
+				result[i] = 0;
 			}
 		}
 		return result;
