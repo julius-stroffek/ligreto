@@ -187,12 +187,12 @@ public abstract class ReportTarget implements TargetInterface {
 	 */
 	@Override
 	public void dumpColumn(int i, Object o, CellFormat cellFormat) {
-		dumpColumn(i, o, getHlColor(i), cellFormat);
+		dumpColumn(columnStep*i, o, getHlColor(i), cellFormat);
 	}
 	
 	@Override
 	public void dumpColumn(int i, Object o, CellFormat cellFormat, boolean highlight) {
-		dumpColumn(i, o, highlight && this.highlight ? rgbHlColor : null, cellFormat);
+		dumpColumn(columnStep*i, o, highlight && this.highlight ? rgbHlColor : null, cellFormat);
 	}
 
 	/* (non-Javadoc)
@@ -265,7 +265,7 @@ public abstract class ReportTarget implements TargetInterface {
 			
 			if (!skip) {
 				dumpHeaderColumn(
-					columnStep*idx,
+					idx,
 					dataSourceDesc != null
 						? dp.getColumnLabel(i+1) + " (" + dataSourceDesc + ")"
 						: dp.getColumnLabel(i+1),

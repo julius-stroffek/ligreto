@@ -40,7 +40,7 @@ public class NormalJoinLayout extends JoinLayout {
 			for (int i=0; i < rsColCount - onLength; i++) {
 				targetBuilder.dumpColumn(
 					i, ligretoParameters.getMissingString(),
-					CellFormat.UNCHANGED, true
+					CellFormat.UNCHANGED
 				);
 			}
 			break;
@@ -52,7 +52,7 @@ public class NormalJoinLayout extends JoinLayout {
 			for (int i=0; i < rsColCount - onLength; i++) {
 				targetBuilder.dumpColumn(
 					i, ligretoParameters.getMissingString(),
-					CellFormat.UNCHANGED, true
+					CellFormat.UNCHANGED
 				);
 			}
 			targetBuilder.setColumnPosition(rsColCount + 1, 1, cmpArray);							

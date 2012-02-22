@@ -124,7 +124,7 @@ public class AggregatedLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
+	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
 
 		// Get the value of group by columns first
 		Row row = new Row();
@@ -149,24 +149,32 @@ public class AggregatedLayout extends JoinLayout {
 			int i2 = resultColumns2[i];
 			
 			Column columnValue1, columnValue2;
+			ColumnAggregationResult colResult = null;
 			switch (resultType) {
 			case LEFT:
 				columnValue1 = new Column(dp1, i1);
-				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
+				colResult = new ColumnAggregationResult(columnValue1, null);
 				break;
 			case RIGHT:
 				columnValue2 = new Column(dp2, i2);
-				result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
+				colResult = new ColumnAggregationResult(null, columnValue2);
 				break;
 			case INNER:
 				columnValue1 = new Column(dp1, i1);
 				columnValue2 = new Column(dp2, i2);
-				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
+				colResult = new ColumnAggregationResult(columnValue1, columnValue2);
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 			}
+			if (cmpArray[i] == 0) {
+				colResult.setDifference(0);
+				colResult.setDifferenceCount(0);
+				colResult.setDifferenceRatio(0);
+			}
+			result.setColumnResult(i, colResult);
 		}
+		
 		
 		// We have all the columns processed, so we will either merge the new results with
 		// the previous one or we will store a new result into the aggregation map.

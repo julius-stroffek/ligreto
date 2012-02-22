@@ -16,7 +16,7 @@
 	<report name="Simple Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
 		<output file="joinreport.xlsx"/>
 		<data>
-			<join on="1" target="full!B2" type="full" header="true" result="true" highlight="true" layout="normal" locale="en">
+ 			<join on="1" target="full!B2" type="full" header="true" result="true" highlight="true" layout="normal" locale="en">
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</join>

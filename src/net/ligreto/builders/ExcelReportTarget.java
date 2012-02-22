@@ -342,7 +342,7 @@ public class ExcelReportTarget extends ReportTarget {
 		// Format the header column
 		if (headerStyle) {
 			// We can call createCell as the cell already exists and it will be returned
-			Cell cell = createCell(row, actCol + i);
+			Cell cell = createCell(row, actCol + columnStep*i);
 			setHeaderStyle(cell, headerType);
 		}
 	}

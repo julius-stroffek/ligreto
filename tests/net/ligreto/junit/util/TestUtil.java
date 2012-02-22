@@ -81,9 +81,16 @@ public class TestUtil {
 	 * @throws IOException
 	 */
 	public static void compareReport(String reportName, String desiredReportName) throws FileNotFoundException, IOException {
+		String generatedReportFile = reportName + ".xlsx";
+		String desiredReportFile = "desired/" + desiredReportName + ".xlsx";
+		
+		log.info("Comparing reports... ");
+		log.info("Generated report file: " + generatedReportFile);
+		log.info("Desired report file: " + desiredReportFile);
+
 		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream(reportName + ".xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/" + desiredReportName + ".xlsx"))
+				new XSSFWorkbook(new FileInputStream(generatedReportFile)),
+				new XSSFWorkbook(new FileInputStream(desiredReportFile))
 		).areSame());						
 	}
 	

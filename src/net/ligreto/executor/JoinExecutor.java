@@ -368,8 +368,21 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				higherArray[i] = 0;
 			}
 			for (int i=0; i < columns1.length; i++) {
-				lowerArray[columns1[i] - on1.length - 1] = -1;
-				higherArray[columns1[i] - on2.length - 1] = 1;
+				int index1 = columns1[i];
+				int index2 = columns2[i];
+				for (int j=0; j < on1.length; j++) {
+					if (on1[j] < columns1[i]) {
+						index1--;
+					}
+				}
+				for (int j=0; j < on2.length; j++) {
+					if (on2[j] < columns2[i]) {
+						index2--;
+					}
+				}
+				Assert.assertTrue(index1 == index2);
+				lowerArray[index1-1] = -1;
+				higherArray[index1-1] = 1;
 			}
 			for (int i=0; i < columns1.length; i++) {
 				if (MiscUtils.arrayContains(on1, columns1[i])) {

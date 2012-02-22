@@ -90,7 +90,7 @@ public class WorkbookComparator {
 			log.error("The last row number differs for matching sheets: " + s1.getLastRowNum() + ", " + s2.getLastRowNum());
 			result = false;
 		}
-		for (int i = s1.getFirstRowNum(); i < s1.getLastRowNum(); i++) {
+		for (int i = s1.getFirstRowNum(); i <= s1.getLastRowNum(); i++) {
 			if (!areSame(s1.getRow(i), s2.getRow(i))) {
 				log.error("The row content differs; row: " + i);
 				result = false;
@@ -123,7 +123,7 @@ public class WorkbookComparator {
 			log.error("The last cell number differs for matching rows: " + r1.getLastCellNum() + ", " + r2.getLastCellNum());
 			result = false;
 		}
-		for (int i = r1.getFirstCellNum(); i < r1.getLastCellNum(); i++) {
+		for (int i = r1.getFirstCellNum(); i <= r1.getLastCellNum(); i++) {
 			if (!areSame(r1.getCell(i), r2.getCell(i))) {
 				log.error("The cell content differs in column: " + i);
 				result = false;

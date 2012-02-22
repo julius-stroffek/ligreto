@@ -39,8 +39,8 @@ public class InterlacedJoinLayout extends JoinLayout {
 			targetBuilder.setColumnPosition(onLength + 2, 2, cmpArray);
 			for (int i=0; i < rsColCount - onLength; i++) {
 				targetBuilder.dumpColumn(
-					2*i, ligretoParameters.getMissingString(),
-					CellFormat.UNCHANGED, true
+					i, ligretoParameters.getMissingString(),
+					CellFormat.UNCHANGED
 				);
 			}
 			break;
@@ -51,8 +51,8 @@ public class InterlacedJoinLayout extends JoinLayout {
 			targetBuilder.setColumnPosition(onLength + 1, 2, cmpArray);							
 			for (int i=0; i < rsColCount - onLength; i++) {
 				targetBuilder.dumpColumn(
-					2*i, ligretoParameters.getMissingString(),
-					CellFormat.UNCHANGED, true
+					i, ligretoParameters.getMissingString(),
+					CellFormat.UNCHANGED
 				);
 			}
 			targetBuilder.setColumnPosition(onLength + 2, 2, cmpArray);
