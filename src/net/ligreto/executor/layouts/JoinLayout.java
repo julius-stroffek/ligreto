@@ -401,8 +401,11 @@ public abstract class JoinLayout {
 		}
 		
 		// And finally we will dump the row after the current result
-		// and aggregation results are available. 
-		dumpRow(rowDiffs, highlightArray, resultType);
+		// and aggregation results are available.
+		// But we will not dump differences if they were not requested.
+		if (!layoutNode.getDiffs() || resultType != JoinResultType.INNER || rowDiffs > 0) {
+			dumpRow(rowDiffs, highlightArray, resultType);
+		}
 		
 		return true;
 	}

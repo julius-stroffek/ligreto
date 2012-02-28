@@ -1,6 +1,5 @@
 package net.ligreto.junit.tests.func;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,18 +7,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
-import net.ligreto.parser.Parser;
-import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.junit.util.TestUtil;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
-
 
 public class SqlReportTest {
 	@BeforeClass
@@ -45,12 +38,16 @@ public class SqlReportTest {
 
 	@Test
 	public void testSqlReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("sqlreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("sqlreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/sqlreport.xlsx"))
-		).areSame());
+		TestUtil.testReport("sqlreport");
+	}
+	
+	@Test
+	public void testRandomTarget() throws Exception {
+		TestUtil.testReport("randomtargetreport");
+	}
+
+	@Test
+	public void testRandomStreamTarget() throws Exception {
+		TestUtil.testReport("randomtargetstreamreport");
 	}
 }

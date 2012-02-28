@@ -17,6 +17,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -31,6 +33,9 @@ public class Ligreto {
 	/** The exit status returned when the exception have occurred. */
 	public static final int EXCEPTION_EXIT_STATUS = 255;
 	
+	/** The logger instance for the class. */
+	private static Log log = LogFactory.getLog(Ligreto.class);
+
 	/**
 	 * @param args The command-line arguments
 	 */
@@ -58,7 +63,9 @@ public class Ligreto {
 		try {
 			cmd = parser.parse(options, args);
 		} catch (ParseException e) {
-			System.err.println("Parsing failed.  Reason: " + e.getMessage());
+			System.err.println(e.getMessage());
+			System.err.println("Command line option parsing failed.");
+			System.exit(EXCEPTION_EXIT_STATUS);
 		}
 		String[] files = cmd.getArgs();
 		
@@ -100,7 +107,7 @@ public class Ligreto {
 			resultStatus = executor.execute();
 			resultCount = resultStatus.getDifferentRowCount();
 		} catch (SAXException e) {
-			// SAXException message should be already printed
+			log.error(e);
 			System.exit(EXCEPTION_EXIT_STATUS);
 		} catch (IOException e) {
 			e.printStackTrace();

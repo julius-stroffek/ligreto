@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="dummy" value="sysibm.sysdummy1"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Multi Summary Stream Report" options="autoSize,headerStyle" type="excel.stream">
+		<output file="multisummarystreamreport.xlsx"/>
+		<data>
+			<sql data-source="Source1" target="summary!A1">select 'Full' as "Full" from ${dummy} where 1=0</sql>
+			<sql data-source="Source1" target="summary!G1">select 'Inner' as "Inner" from ${dummy} where 1=0</sql>
+			<sql data-source="Source1" target="summary!A15">select 'Left' as "Left" from ${dummy} where 1=0</sql>
+			<sql data-source="Source1" target="summary!G15">select 'Right' as "Right" from ${dummy} where 1=0</sql>
+ 			<join on="1">
+ 				<layout type="summary" join="full" target="summary!A2">
+ 					<result>
+ 						<row-limit rel-diff-count="80%"/>
+ 					</result>
+ 				</layout>
+				<layout type="summary" join="inner" target="summary!G2"/>
+				<layout type="summary" join="left" target="summary!A16">
+ 					<result>
+ 						<row-limit rel-non-matched-count="80%"/>
+ 					</result>
+				</layout>
+				<layout type="summary" join="right" target="summary!G16"/>
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+ 			<join on="1">
+				<layout type="summary" join="right" target="revsummary!G16"/>
+				<layout type="summary" join="left" target="revsummary!A16">
+ 					<result>
+ 						<row-limit rel-diff-count="80%"/>
+ 					</result>
+ 				</layout>
+				<layout type="summary" join="inner" target="revsummary!G2"/>
+ 				<layout type="summary" join="full" target="revsummary!A2">
+ 					<result>
+ 						<row-limit rel-diff-count="80%"/>
+ 					</result>
+ 				</layout>
+				<sql data-source="Source1">select Id from aggregation_table1</sql>
+				<sql data-source="Source2">select Id from aggregation_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

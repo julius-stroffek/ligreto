@@ -15,7 +15,7 @@
 		<output file="summaryreport.xlsx"/>
 		<data>
  			<join on="1">
- 				<layout type="summary" join="full" target="full!A1"/>
+ 				<layout type="summary" join="full" target="full!A1" diffs="true"/>
 				<layout type="summary" join="left" target="left!A1"/>
 				<layout type="summary" join="right" target="right!A1"/>
 				<layout type="summary" join="inner" target="inner!A1"/>

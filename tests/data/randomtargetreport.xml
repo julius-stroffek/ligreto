@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="dummy" value="sysibm.sysdummy1"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Random Target Report" options="autoSize,headerStyle" type="excel.stream">
+		<output file="randomtargetreport.xlsx"/>
+		<data>
+			<sql data-source="Source1" target="summary!A1">select 'Full' as "Full" from ${dummy} where 1=0</sql>
+			<sql data-source="Source1" target="summary!G1">select 'Inner' as "Inner" from ${dummy} where 1=0</sql>
+			<sql data-source="Source1" target="summary!A5">select 'Left' as "Left" from ${dummy} where 1=0</sql>
+			<sql data-source="Source1" target="summary!G5">select 'Right' as "Right" from ${dummy} where 1=0</sql>
+ 		</data>
+	</report>
+</ligreto>

@@ -512,9 +512,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					
 					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
 					for (JoinLayout joinLayout : layouts) {
-						if (!joinLayout.getLayoutNode().getDiffs() || rowDiffs > 0) {
-							joinLayout.processRow(rowDiffs, cmpArray, JoinResultType.INNER);
-						}
+						joinLayout.processRow(rowDiffs, cmpArray, JoinResultType.INNER);
 					}
 					
 					hasNext1 = dp1.next();

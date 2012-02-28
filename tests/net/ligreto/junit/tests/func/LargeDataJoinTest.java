@@ -134,26 +134,34 @@ public class LargeDataJoinTest {
 	}
 
 	@Test
+	public void testMultiSummaryReport() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("multisummaryreport", true);
+	}
+
+	@Test
+	public void testMultiSummaryStreamReport() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("multisummarystreamreport", true);
+	}
+
+	@Test
 	public void testMultipleLayoutsReport() throws SAXException, IOException, LigretoException {
 		TestUtil.testReport("multilayoutreport", true);
 	}
 	
 	@Test
 	public void testResultRowRelativeLimits() throws SAXException, IOException, LigretoException {
-		final String desiredReportFile = "result-row-report";
-		TestUtil.testReport("result-row-rdc-succ-report", desiredReportFile, true);		
-		TestUtil.testReport("result-row-rdc-fail-report", desiredReportFile, false);		
-		TestUtil.testReport("result-row-rnmc-succ-report", desiredReportFile, true);		
-		TestUtil.testReport("result-row-rnmc-fail-report", desiredReportFile, false);		
+		TestUtil.testReport("result-row-rdc-succ-report", true);		
+		TestUtil.testReport("result-row-rdc-fail-report", false);		
+		TestUtil.testReport("result-row-rnmc-succ-report", true);		
+		TestUtil.testReport("result-row-rnmc-fail-report", false);		
 	}
 
 	@Test
 	public void testResultRowAbsoluteLimits() throws SAXException, IOException, LigretoException {
-		final String desiredReportFile = "result-row-report";
-		TestUtil.testReport("result-row-adc-succ-report", desiredReportFile, true);		
-		TestUtil.testReport("result-row-adc-fail-report", desiredReportFile, false);		
-		TestUtil.testReport("result-row-anmc-succ-report", desiredReportFile, true);		
-		TestUtil.testReport("result-row-anmc-fail-report", desiredReportFile, false);		
+		TestUtil.testReport("result-row-adc-succ-report", true);		
+		TestUtil.testReport("result-row-adc-fail-report", false);		
+		TestUtil.testReport("result-row-anmc-succ-report", true);		
+		TestUtil.testReport("result-row-anmc-fail-report", false);		
 	}
 	
 	@Test

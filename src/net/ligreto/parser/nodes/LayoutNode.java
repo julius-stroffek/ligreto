@@ -3,6 +3,9 @@
  */
 package net.ligreto.parser.nodes;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.util.MiscUtils;
@@ -15,6 +18,9 @@ public class LayoutNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER, COMPLEMENT, LEFT_COMPLEMENT, RIGHT_COMPLEMENT};
 	public enum LayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY, SUMMARY};
 	
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(LayoutNode.class);
+
 	protected LayoutType layoutType = LayoutType.INTERLACED;
 	protected JoinType joinType = JoinType.FULL;
 	protected String target;
@@ -157,6 +163,9 @@ public class LayoutNode extends Node {
 	 */
 	public void setDiffs(String diffs) throws InvalidValueException {
 		this.diffs = MiscUtils.parseBoolean(diffs);
+		if (this.diffs && layoutType == LayoutType.SUMMARY) {
+			log.warn("Attribute 'diffs' is ignored for summary layout.");
+		}
 	}
 
 	/**

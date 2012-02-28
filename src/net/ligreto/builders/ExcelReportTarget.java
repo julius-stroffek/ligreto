@@ -293,6 +293,7 @@ public class ExcelReportTarget extends ReportTarget {
 		if (rgb != null) {
 			setCellColor(cell, rgb);
 		}
+		
 		if (!noDataFormat && dataFormat != null && !"".equals(dataFormat)) {
 			setDataFormat(cell, dataFormat);
 		}
