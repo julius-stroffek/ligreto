@@ -119,6 +119,12 @@ public abstract class JoinLayout {
 	
 	/** Stores whether the initialization was done. */
 	private boolean startCalled = false;
+	
+	/** The number of rows processed/dumped by this layout object. */
+	protected int dumpedRawCount = 0;
+	
+	/** The maximal number of rows to be processed by this layout. */ 
+	protected Integer dumpedRawCountLimit = null;
 
 	/** Column metrics related fields. */
 	protected HashMap<Integer, Void> noResultColumns1 = new HashMap<Integer, Void>();
@@ -151,11 +157,11 @@ public abstract class JoinLayout {
 		case DETAILED:
 			return new DetailedJoinLayout(targetBuilder, ligretoParameters);
 		case AGGREGATED:
-			return new AggregatedLayout(targetBuilder, ligretoParameters);
+			return new AggregatedJoinLayout(targetBuilder, ligretoParameters);
 		case KEY:
 			return new KeyJoinLayout(targetBuilder, ligretoParameters);
 		case SUMMARY:
-			return new SummaryLayout(targetBuilder, ligretoParameters);
+			return new SummaryJoinLayout(targetBuilder, ligretoParameters);
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinLayoutType.");
 		}
@@ -234,7 +240,7 @@ public abstract class JoinLayout {
 	/**
 	 * This function is called to calculate the column result metrics.
 	 * 
-	 * @param resultType the type of the result being processed {@see JoinResultType}.
+	 * @param resultType the type of the result being processed
 	 * @return the metrics calculated for the current row produced as output
 	 * @throws SQLException 
 	 */
@@ -282,12 +288,19 @@ public abstract class JoinLayout {
 	 *                   second or both result sets.
 	 * @throws SQLException 
 	 * @throws LigretoException 
-	 * @throws IOException 
+	 * @throws IOException
+	 * 
+	 * @return Whether the presented row was part of the join type (full, inner, etc.) in this layout
 	 */
 	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
 		
 		// Check for proper initialization
 		Assert.assertTrue(startCalled);
+		
+		// We will not accept more rows if we are over limit
+		if (isOverLimit()) {
+			return false;
+		}
 		
 		/*
 		 * First switch on the type of join and then decide whether the specified
@@ -404,12 +417,21 @@ public abstract class JoinLayout {
 		// and aggregation results are available.
 		// But we will not dump differences if they were not requested.
 		if (!layoutNode.getDiffs() || resultType != JoinResultType.INNER || rowDiffs > 0) {
+			dumpedRawCount++;
 			dumpRow(rowDiffs, highlightArray, resultType);
 		}
 		
 		return true;
 	}
 
+	/**
+	 * @return true if the limit number of rows was reached and no more raws are
+	 *         dumped in later processing.
+	 */
+	public boolean isOverLimit() {
+		return dumpedRawCountLimit != null && dumpedRawCount >= dumpedRawCountLimit;
+	}
+	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
 	 * call the ResultSet.next() method on the result sets where the row was processed.
@@ -468,6 +490,7 @@ public abstract class JoinLayout {
 	 */
 	public void setLayoutNode(LayoutNode layoutNode) {
 		this.layoutNode = layoutNode;
+		dumpedRawCountLimit = layoutNode.getLimit();
 	}
 
 	/**

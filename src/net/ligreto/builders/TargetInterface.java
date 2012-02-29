@@ -25,7 +25,7 @@ public interface TargetInterface {
 	 * The first result set column index is 1.
 	 * </p>
 	 */
-	public abstract void dumpColumn(int i, DataProvider dp, int rsi) throws DataException;
+	public abstract void dumpColumn(int i, DataProvider dp, int dpi) throws DataException;
 
 	/**
 	 * This method will set the value in the output report at the i-th position

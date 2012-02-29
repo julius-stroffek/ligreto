@@ -150,7 +150,7 @@ public class SqlNode extends Node {
 
 	/**
 	 * 
-	 * @param on the comma separated list of column indices to be used for join condition
+	 * @param key the comma separated list of column indices to be used for join condition
 	 */
 	public void setKey(String key) {
 		this.key = key;

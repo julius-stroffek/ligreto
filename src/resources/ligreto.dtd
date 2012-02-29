@@ -81,6 +81,7 @@
 <!ATTLIST layout target CDATA #REQUIRED>
 <!ATTLIST layout join CDATA "full">			<!--(full|left|right|inner|complement|left complement|right complement)-->
 <!ATTLIST layout type CDATA "detailed">		<!--(normal|interlaced|detailed|aggregated|key|summary)-->
+<!ATTLIST layout limit CDATA #IMPLIED> 		
 <!ATTLIST layout diffs CDATA "false"> 		<!--(true|false)-->
 <!ATTLIST layout highlight CDATA "true">	<!--(true|false)-->
 <!ATTLIST layout header CDATA "true">		<!--(true|false)-->

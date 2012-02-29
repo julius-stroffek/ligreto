@@ -475,6 +475,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "join") != null) {
 						layout.setJoinType(getAttributeValue(atts, "join"));
 					}
+					if (getAttributeValue(atts, "limit") != null) {
+						layout.setLimit(getAttributeValue(atts, "limit"));
+					}
 					if (getAttributeValue(atts, "diffs") != null) {
 						layout.setDiffs(getAttributeValue(atts, "diffs"));
 					}

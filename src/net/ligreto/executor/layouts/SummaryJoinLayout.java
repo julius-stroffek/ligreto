@@ -30,9 +30,9 @@ import net.ligreto.parser.nodes.RowLimitNode;
  * @author Julius Stroffek
  *
  */
-public class SummaryLayout extends JoinLayout {
+public class SummaryJoinLayout extends JoinLayout {
 
-	public SummaryLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
+	public SummaryJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		super(targetBuilder, ligretoParameters);
 	}
 

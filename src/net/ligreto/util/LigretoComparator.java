@@ -363,17 +363,17 @@ public class LigretoComparator {
 	 * parameters. Null values are always collated first.
 	 * 
 	 * @param dp1 The first data provider.
-	 * @param on1 The join columns for the first result set.
-	 * @param excl1 The exclude columns for the first result set.
+	 * @param key1 The join columns for the first result set.
+	 * @param columns1 The list of columns to compare for the first result set.
 	 * @param dp2 The second data provider.
-	 * @param on2 The join columns for the second result set.
-	 * @param excl2 The exclude columns for the second result set.
+	 * @param key2 The join columns for the second result set.
+	 * @param columns2 The list of columns to compare for the second result set.
 	 * @return The array of comparison results
 	 * @throws SQLException
 	 * @throws LigretoException
 	 */
-	public int[] compareOthersAsDataSource(DataProvider dp1, int[] on1, int[] columns1, DataProvider dp2, int[] on2, int[] columns2) throws SQLException, LigretoException {
-		Assert.assertTrue(on1.length == on2.length);
+	public int[] compareOthersAsDataSource(DataProvider dp1, int[] key1, int[] columns1, DataProvider dp2, int[] key2, int[] columns2) throws SQLException, LigretoException {
+		Assert.assertTrue(key1.length == key2.length);
 		Assert.assertTrue(columns1.length == columns2.length);
 		
 		int colCount1 = dp1.getColumnCount();
@@ -381,23 +381,23 @@ public class LigretoComparator {
 		
 		// The assertion checks that on1/2[] pointers are less than
 		// the number of columns in result set should be done.
-		for (int i=0; i < on1.length; i++) {
-			if (on1[i] > colCount1)
-				throw new LigretoException("The index in \"on\" attribute (" + on1[i] + ") is larger than the number of columns (" + colCount1 + ").");
-			if (on2[i] > colCount2)
-				throw new LigretoException("The index in \"on\" attribute (" + on2[i] + ") is larger than the number of columns (" + colCount2 + ").");
+		for (int i=0; i < key1.length; i++) {
+			if (key1[i] > colCount1)
+				throw new LigretoException("The index in \"on\" attribute (" + key1[i] + ") is larger than the number of columns (" + colCount1 + ").");
+			if (key2[i] > colCount2)
+				throw new LigretoException("The index in \"on\" attribute (" + key2[i] + ") is larger than the number of columns (" + colCount2 + ").");
 		}
-		int cmpCount1 = dp1.getColumnCount() - on1.length;
-		int cmpCount2 = dp2.getColumnCount() - on2.length;
+		int cmpCount1 = dp1.getColumnCount() - key1.length;
+		int cmpCount2 = dp2.getColumnCount() - key2.length;
 
 		int maxCount = cmpCount1 > cmpCount2 ? cmpCount1 : cmpCount2;
 		int minCount = cmpCount1 < cmpCount2 ? cmpCount1 : cmpCount2;
 		int[] result = new int[maxCount];
 		int i=0, i1=1, i2=1;
 		for (; i < minCount && i1 <= colCount1 && i2 <= colCount2; i1++, i2++, i++) {
-			while (MiscUtils.arrayContains(on1, i1))
+			while (MiscUtils.arrayContains(key1, i1))
 				i1++;
-			while (MiscUtils.arrayContains(on2, i2))
+			while (MiscUtils.arrayContains(key2, i2))
 				i2++;
 			
 			Assert.assertTrue(i1 <= colCount1);
@@ -416,9 +416,9 @@ public class LigretoComparator {
 			}
 		}
 		for (int j=i+1; j < maxCount; j++, i1++, i2++) {
-			while (MiscUtils.arrayContains(on1, i1))
+			while (MiscUtils.arrayContains(key1, i1))
 				i1++;
-			while (MiscUtils.arrayContains(on2, i2))
+			while (MiscUtils.arrayContains(key2, i2))
 				i2++;
 			
 			Assert.assertTrue(i1 <= colCount1);

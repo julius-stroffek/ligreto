@@ -177,4 +177,9 @@ public class LargeDataJoinTest {
 		TestUtil.testReport("result-col-exclude-succ-report", desiredReportFile, true);
 		TestUtil.testReport("result-col-exclude-fail-report", desiredReportFile, false);
 	}
+	
+	@Test
+	public void testLayoutLimitsReport() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("layoutlimitsreport", true);
+	}
 }

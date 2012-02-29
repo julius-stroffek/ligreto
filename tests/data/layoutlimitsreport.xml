@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Limit Report" options="autoFilter,autoSize,headerStyle" type="excel.stream">
+		<output file="layoutlimitsreport.xlsx"/>
+		<data>
+ 			<join on="1">
+ 				<layout type="summary" join="full" limit="100" target="limit100!A1"/>
+ 				<layout type="summary" join="full" limit="100" target="limit100diffs!A1" diffs="true"/>
+ 				<layout type="summary" join="full" limit="20" target="limit20!A1"/>
+				<layout type="detailed" join="left" limit="20" target="detailed!A1"/>
+				<layout type="aggregated" join="left" limit="20" target="aggregated!A1"/>
+				<layout type="interlaced" join="right" limit="20" target="interlaced!A1"/>
+				<layout type="normal" join="inner" limit="20" target="normal!A1"/>
+				<layout type="key" join="inner" limit="10" target="key!A1"/>
+				<layout type="interlaced" join="complement" limit="5" target="intercomp!A1"/>
+				<layout type="interlaced" join="left complement" limit="5" target="interlcomp!A1"/>
+				<layout type="normal" join="right complement" limit="5" target="normalrcomp!A1"/>
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

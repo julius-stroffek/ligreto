@@ -17,7 +17,6 @@ import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.LigretoComparator;
-import net.ligreto.util.MiscUtils;
 
 /**
  * The layout doing group by aggregation on the calculated comparison results. The output
@@ -35,7 +34,7 @@ import net.ligreto.util.MiscUtils;
  * @author Julius Stroffek
  *
  */
-public class AggregatedLayout extends JoinLayout {
+public class AnalysisJoinLayout extends JoinLayout {
 
 	protected HashMap<Row, AggregationResult> aggregationMap = new HashMap<Row, AggregationResult>();
 	protected HashMap<Integer, Void> noResultColumns1 = new HashMap<Integer, Void>();
@@ -44,25 +43,18 @@ public class AggregatedLayout extends JoinLayout {
 	int[] resultColumns2 = null;
 	int resultCount = 0;
 
-	public AggregatedLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
+	public AnalysisJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		super(targetBuilder, ligretoParameters);
 	}
 
 	@Override
 	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
-		targetBuilder.dumpHeaderColumn(0, "Column Name", HeaderType.TOP);
-		targetBuilder.setColumnPosition(1, 1, null);
-		if (groupByLength > 0)
-			targetBuilder.dumpJoinOnHeader(dp1, groupBy, null);
-		targetBuilder.setColumnPosition(groupByLength + 1, 1, null);
-
 		targetBuilder.dumpHeaderColumn(0, "# of Diffs", HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(1, "Ratio of Diffs", HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(2, "Relative Difference", HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(3, "Difference", HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(4, "# of Rows", HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(5, "Total Value", HeaderType.TOP);
+		targetBuilder.setColumnPosition(1, 2, null);
+		targetBuilder.dumpOtherHeader(dp1, on1, null, dataSourceDesc1);
+		targetBuilder.setColumnPosition(2, 2, null);
+		targetBuilder.dumpOtherHeader(dp2, on2, null, dataSourceDesc2);				
 	}
 
 	@Override
@@ -74,26 +66,7 @@ public class AggregatedLayout extends JoinLayout {
 		for (int i=0; i < on2.length; i++) {
 			noResultColumns2.put(on2[i], null);
 		}
-		if (groupBy != null) {
-			for (int i=0; i < groupBy.length; i++) {
-				noResultColumns1.put(groupBy[i], null);
-				noResultColumns2.put(groupBy[i], null);
-				if (!MiscUtils.arrayContains(on1, groupBy[i])) {
-					throw new LigretoException(
-						"Columns listed in group-by have to be also listed in 'on' columns in join; column: "
-						+ groupBy[i] + "; data source: "
-						+ dataSourceDesc1
-					);
-				}
-				if (!MiscUtils.arrayContains(on2, groupBy[i])) {
-					throw new LigretoException(
-						"Columns listed in 'group-by' have to be also listed in 'on' columns in join; column: "
-						+ groupBy[i] + "; data source: "
-						+ dataSourceDesc2
-					);
-				}
-			}
-		}
+
 		// Do some sanity checks
 		int rs1Length = dp1.getColumnCount();
 		int rs2Length = dp2.getColumnCount();

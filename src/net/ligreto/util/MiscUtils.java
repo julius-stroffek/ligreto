@@ -107,18 +107,21 @@ public class MiscUtils {
 	}
 
 	/**
+	 * Parses the specified string as double.
 	 * 
 	 * @param doubleString
-	 * @return
+	 * @return the parsed double value
 	 */
 	public static Double parseDouble(String doubleString) {
 		return Double.parseDouble(doubleString);
 	}
 
 	/**
+	 * Parses the specified string as double. It will adjust the number (divide by 100)
+	 * of the value is specified as percentage.
 	 * 
 	 * @param doublePercentage
-	 * @return
+	 * @return the parsed double value
 	 */
 	public static Double parseDoublePercentage(String doublePercentage) {
 		String trimmed = doublePercentage.trim();

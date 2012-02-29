@@ -527,7 +527,19 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol2 = col2;
 					hasNext2 = dp2.next();
 					break;
-				}				
+				}
+				boolean stillProcessing = false;
+				for (JoinLayout joinLayout : layouts) {
+					if (!joinLayout.isOverLimit()) {
+						stillProcessing = true;
+						break;
+					}
+				}
+				if (!stillProcessing) {
+					hasNext1 = false;
+					hasNext2 = false;
+					break;
+				}
 			}
 			while (hasNext1) {
 				// Compare the subsequent rows in each result set and see whether they match
@@ -559,6 +571,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					joinLayout.processRow(otherColumnCount, lowerArray, JoinResultType.LEFT);
 				}
 				hasNext1 = dp1.next();
+				boolean stillProcessing = false;
+				for (JoinLayout joinLayout : layouts) {
+					if (!joinLayout.isOverLimit()) {
+						stillProcessing = true;
+						break;
+					}
+				}
+				if (!stillProcessing) {
+					hasNext1 = false;
+					hasNext2 = false;
+					break;
+				}
 			}
 
 			while (hasNext2) {
@@ -591,6 +615,18 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					joinLayout.processRow(otherColumnCount, higherArray, JoinResultType.RIGHT);
 				}
 				hasNext2 = dp2.next();
+				boolean stillProcessing = false;
+				for (JoinLayout joinLayout : layouts) {
+					if (!joinLayout.isOverLimit()) {
+						stillProcessing = true;
+						break;
+					}
+				}
+				if (!stillProcessing) {
+					hasNext1 = false;
+					hasNext2 = false;
+					break;
+				}
 			}
 
 			result = new ResultStatus();
