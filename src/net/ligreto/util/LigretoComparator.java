@@ -10,8 +10,8 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
+import net.ligreto.LigretoParameters;
 import net.ligreto.data.Column;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
@@ -40,11 +40,11 @@ public class LigretoComparator {
 	/** The collator object used for comparisons. */
 	protected Comparator<Object> comparator;
 	
-	/** The logger instance for the class. */
-	private Log log = LogFactory.getLog(LigretoComparator.class);
-
 	/** The map holding instances for the threads. */
 	private static Map<Long, LigretoComparator> instanceMap = new Hashtable<Long, LigretoComparator>();
+	
+	/** The ligreto global parameters. */
+	protected LigretoParameters ligretoParameters = null;
 	
 	/** Only static method could create instances. */
 	private LigretoComparator() {
@@ -54,12 +54,25 @@ public class LigretoComparator {
 	/**
 	 * @return The instance for the thread in which the function was called.
 	 */
-	public static LigretoComparator getInstance() {
+	public static LigretoComparator getInstance(LigretoParameters ligretoParameters) {
 		long threadId = Thread.currentThread().getId();
 		LigretoComparator instance = instanceMap.get(threadId);
 		if (instance == null) {
 			instance = new LigretoComparator();
 			instanceMap.put(threadId, instance);
+		}
+		instance.ligretoParameters = ligretoParameters;
+		return instance;
+	}
+	
+	/**
+	 * @return The instance for the thread in which the function was called.
+	 */
+	public static LigretoComparator getInstance() {
+		long threadId = Thread.currentThread().getId();
+		LigretoComparator instance = instanceMap.get(threadId);
+		if (instance == null) {
+			throw new RuntimeException("LigretoComparator was not previously created. Use getInstance(LigretoParameters) to create the object first.");
 		}
 		return instance;
 	}
@@ -221,17 +234,17 @@ public class LigretoComparator {
 		result = compareNullsAsDataSource(isNull1, isNull2);
 		if (result != 0)
 			return result;
-
-		if (fieldType1 != fieldType2) {
-			throw new DataException("Columns to compare have to be of the same data type.");
-		}
 		
 		if (fieldType1 != fieldType2) {
-			log.debug(
-				"Data types differ, using string comparison: "
-				+ DataProviderUtils.getJdbcTypeName(fieldType1) + "; " + DataProviderUtils.getJdbcTypeName(fieldType2)
-			);
-			result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
+			if (ligretoParameters.getStrictTypes()) {
+				throw new DataException(
+					"Data types differ: "
+					+ DataProviderUtils.getJdbcTypeName(fieldType1) + "; "
+					+ DataProviderUtils.getJdbcTypeName(fieldType2)
+				);
+			} else {
+				result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
+			}
 		} else {
 			switch (fieldType1) {
 			case Types.BOOLEAN:
@@ -301,35 +314,43 @@ public class LigretoComparator {
 			return result;
 
 		if (fieldType1 != fieldType2) {
-			throw new DataException("Columns to compare have to be of the same data type.");
-		}
-		
-		switch (fieldType1) {
-		case Types.BOOLEAN:
-			result = compare((Boolean) fieldValue1, (Boolean) fieldValue2);
-			break;
-		case Types.BIGINT:
-			result = compare((Long) fieldValue1, (Long) fieldValue2);
-			break;
-		case Types.INTEGER:
-			result = compare((Integer) fieldValue1, (Integer) fieldValue2);
-			break;
-		case Types.DOUBLE:
-		case Types.FLOAT:
-			result = compare((Double) fieldValue1, (Double) fieldValue2);
-			break;
-		case Types.DATE:
-		case Types.TIMESTAMP:
-		case Types.TIME:
-			result = compare((Timestamp) fieldValue1, (Timestamp) fieldValue2);
-			break;
-		case Types.DECIMAL:
-		case Types.NUMERIC:
-			result = compare((BigDecimal) fieldValue1, (BigDecimal) fieldValue2);
-			break;
-		default:
-			result = compare((String) fieldValue1, (String) fieldValue2);
-			break;
+			if (ligretoParameters.getStrictTypes()) {
+				throw new DataException(
+					"Data types differ: "
+					+ DataProviderUtils.getJdbcTypeName(fieldType1) + "; "
+					+ DataProviderUtils.getJdbcTypeName(fieldType2)
+				);
+			} else {
+				result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
+			}
+		} else {
+			switch (fieldType1) {
+			case Types.BOOLEAN:
+				result = compare((Boolean) fieldValue1, (Boolean) fieldValue2);
+				break;
+			case Types.BIGINT:
+				result = compare((Long) fieldValue1, (Long) fieldValue2);
+				break;
+			case Types.INTEGER:
+				result = compare((Integer) fieldValue1, (Integer) fieldValue2);
+				break;
+			case Types.DOUBLE:
+			case Types.FLOAT:
+				result = compare((Double) fieldValue1, (Double) fieldValue2);
+				break;
+			case Types.DATE:
+			case Types.TIMESTAMP:
+			case Types.TIME:
+				result = compare((Timestamp) fieldValue1, (Timestamp) fieldValue2);
+				break;
+			case Types.DECIMAL:
+			case Types.NUMERIC:
+				result = compare((BigDecimal) fieldValue1, (BigDecimal) fieldValue2);
+				break;
+			default:
+				result = compare((String) fieldValue1, (String) fieldValue2);
+				break;
+			}
 		}
 		return result;
 	}

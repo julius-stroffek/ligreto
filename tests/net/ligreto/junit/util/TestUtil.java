@@ -13,11 +13,11 @@ import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.util.Assert;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Assert;
 import org.xml.sax.SAXException;
 
 /**
@@ -91,7 +91,7 @@ public class TestUtil {
 		Assert.assertTrue(new XSSFWorkbookComparator(
 				new XSSFWorkbook(new FileInputStream(generatedReportFile)),
 				new XSSFWorkbook(new FileInputStream(desiredReportFile))
-		).areSame());						
+		).areSame(), reportName);						
 	}
 	
 	/**

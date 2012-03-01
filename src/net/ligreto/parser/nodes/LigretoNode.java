@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.Parameters;
@@ -19,6 +22,10 @@ import net.ligreto.util.Parameters;
  *
  */
 public class LigretoNode extends Node {
+
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(LigretoNode.class);
+
 	protected HashMap<String, DataSourceNode> dataSourceMap = new HashMap<String, DataSourceNode>();
 	protected HashMap<String, String> queryMap = new HashMap<String, String>();
 	protected HashMap<String, String> paramMap = new HashMap<String, String>();
@@ -42,9 +49,13 @@ public class LigretoNode extends Node {
 	public void addParam(String name, String value) throws LigretoException {
 		if (!lockedParams.containsKey(name)) {
 			if (name.startsWith("ligreto.")) {
+				log.info("Setting up ligreto parameter: \"" + name + "\"");
+				log.debug("Parameter value: \"" + value + "\"");
 				ligretoParameters.setParameter(name, value);
 				paramMap.put(name, value);
 			} else {
+				log.info("Setting up parameter: \"" + name + "\"");
+				log.debug("Parameter value: \"" + value + "\"");
 				paramMap.put(name, value);
 			}
 		}

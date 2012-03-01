@@ -93,7 +93,7 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "Non-matching Rows", HeaderType.ROW);
 		targetBuilder.setColumnPosition(1);
-		targetBuilder.dumpColumn(0, matchingRowCount, CellFormat.UNCHANGED);
+		targetBuilder.dumpColumn(0, totalRowCount - matchingRowCount, CellFormat.UNCHANGED);
 		targetBuilder.dumpColumn(1, (totalRowCount - matchingRowCount)/(double)totalRowCount, CellFormat.PERCENTAGE_2_DECIMAL_DIGITS);
 		if (rowLimitNode != null) {
 			if (rowLimitNode.getRelativeNonMatched() != null) {
@@ -113,7 +113,7 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "(" + dataSourceDesc1 +") - Matching Rows", HeaderType.ROW);
 		targetBuilder.setColumnPosition(1);
-		targetBuilder.dumpColumn(0, nonMatchingRowsSrc1, CellFormat.UNCHANGED);
+		targetBuilder.dumpColumn(0, rowCountSrc1 - nonMatchingRowsSrc1, CellFormat.UNCHANGED);
 		targetBuilder.dumpColumn(1, (rowCountSrc1 - nonMatchingRowsSrc1)/(double)rowCountSrc1, CellFormat.PERCENTAGE_2_DECIMAL_DIGITS);
 		
 		targetBuilder.nextRow();
@@ -131,7 +131,7 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		targetBuilder.dumpHeaderColumn(0, "(" + dataSourceDesc2 +") - Matching Rows", HeaderType.ROW);
 		targetBuilder.setColumnPosition(1);
-		targetBuilder.dumpColumn(0, nonMatchingRowsSrc2, CellFormat.UNCHANGED);
+		targetBuilder.dumpColumn(0, rowCountSrc2 - nonMatchingRowsSrc2, CellFormat.UNCHANGED);
 		targetBuilder.dumpColumn(1, (rowCountSrc2 - nonMatchingRowsSrc2)/(double)rowCountSrc2, CellFormat.PERCENTAGE_2_DECIMAL_DIGITS);
 		
 		targetBuilder.nextRow();

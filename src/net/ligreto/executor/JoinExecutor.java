@@ -442,7 +442,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 			
 			// The comparator instance
-			LigretoComparator rsComparator = LigretoComparator.getInstance();
+			LigretoComparator rsComparator = LigretoComparator.getInstance(joinNode.getLigretoNode().getLigretoParameters());
 			rsComparator.setComparator(comparator);
 			
 			boolean hasNext1 = dp1.next();

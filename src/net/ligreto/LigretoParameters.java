@@ -37,6 +37,9 @@ public class LigretoParameters {
 	/** Indicates whether the null values should be collated first. Otherwise they are collated last. */
 	protected boolean nullsFirst = true;
 	
+	/** Indicates whether we should use strict type checking. */
+	protected boolean strictTypes = true;
+	
 	/** Specifies the format for integer numbers in excel spread sheet. */
 	protected String excelIntegerFormat = null;
 
@@ -132,6 +135,18 @@ public class LigretoParameters {
 
 	public void setNullsFirst(String nullsFirst) {
 		this.nullsFirst = Boolean.parseBoolean(nullsFirst);
+	}
+
+	public void setStrictTypes(String strictTypes) {
+		this.strictTypes = Boolean.parseBoolean(strictTypes);
+	}
+
+	public boolean getStrictTypes() {
+		return strictTypes;
+	}
+
+	public String getStrictTypesAsString() {
+		return Boolean.toString(strictTypes);
 	}
 
 	public String getExcelIntegerFormat() {

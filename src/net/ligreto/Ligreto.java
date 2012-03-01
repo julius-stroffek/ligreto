@@ -27,6 +27,9 @@ import org.xml.sax.SAXException;
  */
 public class Ligreto {
 
+	/** The version string identifying the current version. */
+	public static final String version = "2012.1";
+	
 	/** The maximal exit status returned as result of ligreto operations. */
 	public static final int MAX_RESULT_EXIT_STATUS = 250;
 
@@ -44,6 +47,12 @@ public class Ligreto {
 		ResultStatus resultStatus = null;
 		Options options = new Options();
 
+		// Print out the version information
+		System.out.println("##############################################################################".substring(10 - version.length()));		
+		System.out.println("###                      ligreto - version " + version + "                      ###");
+		System.out.println("##############################################################################".substring(10 - version.length()));
+		
+		// Prepare the command line option parsing
 		Option help = new Option( "help", "print this help message" );
 		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file. Currently this is the only behavior regardless the option. [obsolete]" );
 		Option excel97 = new Option( "excel97", "uses \"Excel 97\" format instead of default \"Excel 2007\" format" );
