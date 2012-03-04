@@ -182,4 +182,9 @@ public class LargeDataJoinTest {
 	public void testLayoutLimitsReport() throws SAXException, IOException, LigretoException {
 		TestUtil.testReport("layoutlimitsreport", true);
 	}
+	
+	@Test
+	public void testAnalysisReport() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("analyticalreport", true);
+	}
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Analytical Report" options="autoFilter,autoSize,headerStyle" type="excel.stream">
+		<output file="analyticalreport.xlsx"/>
+		<data>
+ 			<comparison key="1">
+ 				<layout type="analytical" join="full" target="full!A1" diffs="true" limit="120"/>
+				<layout type="analytical" join="left" target="left!A1" diffs="true" limit="240"/>
+				<layout type="analytical" join="right" target="right!A1"/>
+				<layout type="analytical" join="inner" target="inner!A1"/>
+				<sql data-source="Source1">select id, party_type from aggregation_table1</sql>
+				<sql data-source="Source2">select id, party_type from aggregation_table2</sql>
+			</comparison>
+ 			<comparison key="1">
+				<layout type="analytical" join="full" target="full2!A1"/>
+				<layout type="analytical" join="complement" target="complement!A1"/>
+				<layout type="analytical" join="left complement" target="lcomp!A1"/>
+				<layout type="analytical" join="right complement" target="rcomp!A1"/>
+				<sql data-source="Source1">select id, party_type, age from aggregation_table1</sql>
+				<sql data-source="Source2">select id, party_type, age from aggregation_table2</sql>
+			</comparison>
+		</data>
+	</report>
+</ligreto>

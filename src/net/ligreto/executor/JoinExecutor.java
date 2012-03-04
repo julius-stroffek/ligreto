@@ -476,7 +476,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 					switch (joinNode.getCollation()) {
 					case DUMP:
-						e.printStackTrace();
+						log.error("Wrong collation found", e);
 						break;
 					case FAIL:
 						throw e;
@@ -489,7 +489,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
 					switch (joinNode.getCollation()) {
 					case DUMP:
-						e.printStackTrace();
+						log.error("Wrong collation found", e);
 						break;
 					case FAIL:
 						throw e;
@@ -559,7 +559,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
 					switch (joinNode.getCollation()) {
 					case DUMP:
-						e.printStackTrace();
+						log.error("Wrong collation found", e);
 						break;
 					case FAIL:
 						throw e;
@@ -603,7 +603,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					CollationException e = new CollationException(String.format(collationError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
 					switch (joinNode.getCollation()) {
 					case DUMP:
-						e.printStackTrace();
+						log.error("Wrong collation found", e);
 						break;
 					case FAIL:
 						throw e;

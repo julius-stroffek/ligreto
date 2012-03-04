@@ -16,7 +16,7 @@ import net.ligreto.util.MiscUtils;
  */
 public class LayoutNode extends Node {
 	public enum JoinType {FULL, LEFT, RIGHT, INNER, COMPLEMENT, LEFT_COMPLEMENT, RIGHT_COMPLEMENT};
-	public enum LayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY, SUMMARY, ANALYSIS};
+	public enum LayoutType {NORMAL, INTERLACED, DETAILED, AGGREGATED, KEY, SUMMARY, ANALYTICAL};
 	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(LayoutNode.class);
@@ -68,8 +68,8 @@ public class LayoutNode extends Node {
 			this.layoutType = LayoutType.KEY;			
 		else if ("summary".equals(layoutType))
 			this.layoutType = LayoutType.SUMMARY;			
-		else if ("analysis".equals(layoutType))
-			this.layoutType = LayoutType.ANALYSIS;			
+		else if ("analytical".equals(layoutType))
+			this.layoutType = LayoutType.ANALYTICAL;			
 		else
 			throw new IllegalArgumentException("The join layout could not be \"" + layoutType + "\"");
 	}

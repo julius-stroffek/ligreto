@@ -9,6 +9,7 @@ import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.util.MiscUtils;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,8 +18,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 /**
@@ -28,7 +29,7 @@ import org.xml.sax.SAXException;
 public class Ligreto {
 
 	/** The version string identifying the current version. */
-	public static final String version = "2012.1";
+	public static final String version = "2012.2";
 	
 	/** The maximal exit status returned as result of ligreto operations. */
 	public static final int MAX_RESULT_EXIT_STATUS = 250;
@@ -37,7 +38,7 @@ public class Ligreto {
 	public static final int EXCEPTION_EXIT_STATUS = 255;
 	
 	/** The logger instance for the class. */
-	private static Log log = LogFactory.getLog(Ligreto.class);
+	private static Logger log = Logger.getLogger(Ligreto.class);
 
 	/**
 	 * @param args The command-line arguments
@@ -56,6 +57,8 @@ public class Ligreto {
 		Option help = new Option( "help", "print this help message" );
 		Option concat = new Option( "concat", "logically concatenate the input files and process them as one input file. Currently this is the only behavior regardless the option. [obsolete]" );
 		Option excel97 = new Option( "excel97", "uses \"Excel 97\" format instead of default \"Excel 2007\" format" );
+		Option debug = new Option( "debug", "turn on debug messages" );
+		Option trace = new Option( "trace", "turn on trace and debug messages" );
 		Option param = new Option(
 			"D",
 			true,
@@ -65,6 +68,8 @@ public class Ligreto {
 		options.addOption(help);
 		options.addOption(concat);
 		options.addOption(excel97);
+		options.addOption(debug);
+		options.addOption(trace);
 		options.addOption(param);
 		
 		CommandLineParser parser = new PosixParser();
@@ -78,6 +83,14 @@ public class Ligreto {
 		}
 		String[] files = cmd.getArgs();
 		
+		if (cmd.hasOption("debug") || cmd.hasOption("trace")) {
+			Level logLevel = Level.DEBUG;
+			if (cmd.hasOption("trace")) {
+				logLevel = Level.TRACE;
+			}
+			Logger.getRootLogger().setLevel(logLevel);
+			log.setLevel(logLevel);
+		}
 		if (cmd.hasOption("help") || files.length == 0) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp(
@@ -116,13 +129,13 @@ public class Ligreto {
 			resultStatus = executor.execute();
 			resultCount = resultStatus.getDifferentRowCount();
 		} catch (SAXException e) {
-			log.error(e);
+			MiscUtils.printThrowableMessages(log, e);
 			System.exit(EXCEPTION_EXIT_STATUS);
 		} catch (IOException e) {
-			e.printStackTrace();
+			MiscUtils.printThrowableMessages(log, e);
 			System.exit(EXCEPTION_EXIT_STATUS);
 		} catch (LigretoException e) {
-			e.printStackTrace();
+			MiscUtils.printThrowableMessages(log, e);
 			System.exit(EXCEPTION_EXIT_STATUS);
 		}
 		if (resultStatus.isAccepted()) {

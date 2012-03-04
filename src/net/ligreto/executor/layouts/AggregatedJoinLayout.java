@@ -188,6 +188,7 @@ public class AggregatedJoinLayout extends JoinLayout {
 
 	@Override
 	public ResultStatus finish() throws IOException, DataException, LigretoException {
+		// We will sort the result according group-by columns by creating a tree set
 		TreeSet<Row> treeSet = new TreeSet<Row>(aggregationMap.keySet());
 		for (Row f : treeSet) {
 			AggregationResult result = aggregationMap.get(f);

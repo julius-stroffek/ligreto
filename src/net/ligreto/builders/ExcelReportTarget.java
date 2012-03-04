@@ -245,7 +245,10 @@ public class ExcelReportTarget extends ReportTarget {
 	public void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
 		String dataFormat = null;
 		Cell cell = createCell(row, actCol + i);
-		if (o instanceof Integer) {
+		if (o == null) {
+			cell.setCellValue(ligretoParameters.getNullString());
+			dataFormat = ligretoParameters.getExcelStringFormat();
+		} else if (o instanceof Integer) {
 			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
 			cell.setCellValue(((Integer)o).intValue());
 		} else if (o instanceof Long) {

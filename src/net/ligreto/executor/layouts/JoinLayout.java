@@ -162,6 +162,8 @@ public abstract class JoinLayout {
 			return new KeyJoinLayout(targetBuilder, ligretoParameters);
 		case SUMMARY:
 			return new SummaryJoinLayout(targetBuilder, ligretoParameters);
+		case ANALYTICAL:
+			return new AnalyticalJoinLayout(targetBuilder, ligretoParameters);
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinLayoutType.");
 		}

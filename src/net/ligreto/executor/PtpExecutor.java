@@ -79,7 +79,6 @@ public class PtpExecutor extends Executor {
 				sqlExecutor.execute();
 			}
 		} catch (Exception e) {
-			log.error("Error processing the PTP transfer.", e);
 			throw new LigretoException("Error processing the PTP transfer: " + ptpNode.getName(), e);
 		}
 		result.info(log, "PTP");
@@ -145,11 +144,9 @@ public class PtpExecutor extends Executor {
 			result.info(log, "TRANSFER");
 		} catch (SQLException e) {
 			String msg = "Database error on data source: " + sqlNode.getDataSource();
-			log.error(msg, e);
 			throw new LigretoException(msg, e);
 		} catch (ClassNotFoundException e) {
 			String msg = "Database driver not found for data source: " + sqlNode.getDataSource();
-			log.error(msg, e);
 			throw new LigretoException(msg, e);			
 		}
 		return result;
@@ -231,7 +228,6 @@ public class PtpExecutor extends Executor {
 			case Types.TIME: 
 			case Types.VARBINARY: 
 			default:
-				log.fatal("Unsupported data type.");
 				throw new LigretoException("Unsupported data type.");
 			}
 		}
@@ -346,7 +342,6 @@ public class PtpExecutor extends Executor {
 			case Types.TIME: 
 			case Types.VARBINARY: 
 			default:
-				log.fatal("Unsupported data type.");
 				throw new LigretoException("Unsupported data type.");
 			}
 			sb.append(",");
@@ -432,7 +427,6 @@ public class PtpExecutor extends Executor {
 			}
 			insertStmt = tgtCnn.prepareStatement(insertQry);
 		} catch (SQLException e) {
-			log.error("Database error on data source: " + targetNode.getDataSource(), e);
 			throw new LigretoException("Database error on data source: " + targetNode.getDataSource(), e);
 		}
 	}

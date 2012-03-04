@@ -667,7 +667,14 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				break;
 			}
 			if (objectStack.size() != entryStackDepth + 1) {
-				throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack.");
+				log.debug("Parser error on node: \"" + localName + "\"; parser state: "
+						+ (objectStack.empty() ? ObjectType.NONE : objectStack.peek())
+					);
+					log.debug("Parser state stack:");
+					for (int i=0; i < objectStack.size(); i++) {
+						log.debug("Depth: " + i + "; State: " + objectStack.get(objectStack.size() - 1 - i));
+					}
+				throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack:" + localName);
 			}
 		} catch (InvalidFormatException e) {
 			throw new SAXException("Invalid format specified.", e);

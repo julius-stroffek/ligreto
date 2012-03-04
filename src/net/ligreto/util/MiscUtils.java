@@ -3,6 +3,10 @@ package net.ligreto.util;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
@@ -130,6 +134,32 @@ public class MiscUtils {
 			return Double.parseDouble(trimmed)/100;
 		} else {
 			return Double.parseDouble(trimmed);
+		}
+	}
+	
+	/**
+	 * Dumps exception messages across all the exception causes.
+	 * 
+	 * @param log the log where the messages are printed out
+	 * @param t the throwable to dump the information
+	 */
+	public static void printThrowableMessages(Logger log, Throwable t) {
+		if (Level.DEBUG.isGreaterOrEqual(Logger.getRootLogger().getLevel())) {
+			log.error(null, t);
+		} else {
+			ArrayList<Throwable> causes = new ArrayList<Throwable>();
+			while (t != null) {
+				causes.add(t);
+				t = t.getCause();
+			}
+			String previousMessage = null;
+			for (int i = causes.size() - 1; i >= 0; i--) {
+				String newMessage = causes.get(i).getMessage();
+				if (previousMessage == null || !previousMessage.equals(newMessage)) {
+					log.error(newMessage);
+				}
+				previousMessage = newMessage;
+			}
 		}
 	}
 }
