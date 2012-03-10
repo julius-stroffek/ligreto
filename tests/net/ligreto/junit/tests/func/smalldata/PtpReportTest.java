@@ -1,4 +1,4 @@
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.smalldata;
 
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.owndata;
 
 
 import java.io.FileInputStream;
@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
  * @author Julius Stroffek
  *
  */
-public class KeyReportTest {
+public class KeyLayoutTest {
 
 	/**
 	 * @throws java.lang.Exception

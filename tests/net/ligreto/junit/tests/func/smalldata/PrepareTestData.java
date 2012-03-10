@@ -1,44 +1,32 @@
-/**
- * 
- */
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.smalldata;
 
-
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
-import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
-import net.ligreto.parser.Parser;
-import net.ligreto.parser.nodes.LigretoNode;
-
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
-/**
- * @author Julius Stroffek
- *
- */
-public class ResultReportTest {
+public class PrepareTestData {
+
+	/** The number of rows to be tested. */
+	public static final long rowCount = 1000;
+
+	/** The number of rows to be tested. */
+	public static final long commitInterval = 6;
 
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	@Test
+	public void prepareTestData() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-		Connection cnn1 = DriverManager.getConnection("jdbc:derby:db1");
-		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2");
-		Connection cnn3 = DriverManager.getConnection("jdbc:derby:db3");
+		Properties properties = new Properties();
+		properties.setProperty("create", "true");
+		Connection cnn1 = DriverManager.getConnection("jdbc:derby:db1", properties);
+		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2", properties);
+		Connection cnn3 = DriverManager.getConnection("jdbc:derby:db3", properties);
 		cnn1.setAutoCommit(true);
 		cnn2.setAutoCommit(true);
 		Statement stm1 = cnn1.createStatement();
@@ -50,7 +38,17 @@ public class ResultReportTest {
 			// do nothing
 		}
 		try {
+			stm1.execute("drop table multi_join1");
+		} catch (SQLException e) {
+			// do nothing
+		}
+		try {
 			stm2.execute("drop table join_table2");
+		} catch (SQLException e) {
+			// do nothing
+		}
+		try {
+			stm2.execute("drop table multi_join2");
 		} catch (SQLException e) {
 			// do nothing
 		}
@@ -74,6 +72,23 @@ public class ResultReportTest {
 		stm1.execute("insert into join_table1 values (8, 'Bruce8', 'Abone8', 15)");
 		stm2.execute("insert into join_table2 values (8, 'Bruce8', 'Abone8', 88)");
 		
+		stm1.execute("create table multi_join1 (Id int, Id2 int, Id3 varchar(32), first_name varchar(32), last_name varchar(32), age int)");
+		stm2.execute("create table multi_join2 (Id int, Id2 int, Id3 varchar(32), first_name varchar(32), last_name varchar(32), age int)");
+		stm1.execute("insert into multi_join1 values (1, 11, '12', '1Martin1', '1Velky1', 11)");
+		stm2.execute("insert into multi_join2 values (1, 11, '12', '2Bruce1', '2Abone1', 21)");
+		stm1.execute("insert into multi_join1 values (2, null, '12', 'middle1', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (2, 11, '12', 'middle1', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (3, 11, '12', 'middle2', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (3, null, '12', 'middle2', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (4, 11, null, 'last1', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (4, 11, '12', 'last1', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (5, 11, '12', 'last2', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (5, 11, null, 'last2', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (6, null, null, 'match1', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (6, null, null, 'match1', 'null', 21)");
+		stm1.execute("insert into multi_join1 values (7, 11, null, 'match2', 'null', 11)");
+		stm2.execute("insert into multi_join2 values (7, 11, null, 'match2', 'null', 21)");
+
 		stm3.execute("create table coll_table (Id varchar(32), first_name varchar(32), last_name varchar(32), age int)");
 		stm3.execute("insert into coll_table values ('abcd', '1Martin1', '1Velky1', 11)");
 		stm3.execute("insert into coll_table values ('bcde', '1Martin2', '1Velky2', 12)");
@@ -87,25 +102,5 @@ public class ResultReportTest {
 
 		cnn1.close();
 		cnn2.close();
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Test
-	public void testResultReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("resultreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		executor.execute();
-		
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("resultreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/resultreport.xlsx"))
-		).areSame());
 	}
 }

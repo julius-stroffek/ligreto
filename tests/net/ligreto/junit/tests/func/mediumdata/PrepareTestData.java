@@ -1,10 +1,5 @@
-/**
- * 
- */
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.mediumdata;
 
-
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,35 +7,30 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Properties;
 
-import net.ligreto.exceptions.LigretoException;
 import net.ligreto.junit.util.TestUtil;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
-/**
- * @author Julius Stroffek
- *
- */
-public class LargeDataJoinTest {
+public class PrepareTestData {
 
 	/** The number of rows to be tested. */
 	public static final long rowCount = 1000;
-	
+
 	/** The number of rows to be tested. */
 	public static final long commitInterval = 6;
 
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	@Test
+	public void prepareTestData() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-		Connection cnn1 = DriverManager.getConnection("jdbc:derby:db1");
-		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2");
+		Properties properties = new Properties();
+		properties.setProperty("create", "true");
+		Connection cnn1 = DriverManager.getConnection("jdbc:derby:db1", properties);
+		Connection cnn2 = DriverManager.getConnection("jdbc:derby:db2", properties);
 		cnn1.setAutoCommit(true);
 		cnn2.setAutoCommit(true);
 		Statement stm1 = cnn1.createStatement();
@@ -114,77 +104,5 @@ public class LargeDataJoinTest {
 		stm2.close();
 		cnn1.close();
 		cnn2.close();
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-	
-	@Test
-	public void testAggregatedReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("aggregatedreport", true);
-	}
-	
-	@Test
-	public void testSummaryReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("summaryreport", true);
-	}
-
-	@Test
-	public void testMultiSummaryReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("multisummaryreport", true);
-	}
-
-	@Test
-	public void testMultiSummaryStreamReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("multisummarystreamreport", true);
-	}
-
-	@Test
-	public void testMultipleLayoutsReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("multilayoutreport", true);
-	}
-	
-	@Test
-	public void testResultRowRelativeLimits() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("result-row-rdc-succ-report", true);		
-		TestUtil.testReport("result-row-rdc-fail-report", false);		
-		TestUtil.testReport("result-row-rnmc-succ-report", true);		
-		TestUtil.testReport("result-row-rnmc-fail-report", false);		
-	}
-
-	@Test
-	public void testResultRowAbsoluteLimits() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("result-row-adc-succ-report", true);		
-		TestUtil.testReport("result-row-adc-fail-report", false);		
-		TestUtil.testReport("result-row-anmc-succ-report", true);		
-		TestUtil.testReport("result-row-anmc-fail-report", false);		
-	}
-	
-	@Test
-	public void testResultColLimitsNoColSpec() throws SAXException, IOException, LigretoException {
-		final String desiredReportFile = "result-col-report";
-		TestUtil.testReport("result-col-succ-report", desiredReportFile, true);
-		TestUtil.testReport("result-col-fail-report", desiredReportFile, false);
-	}
-	
-	@Test
-	public void testResultColLimitsWithExclude() throws SAXException, IOException, LigretoException {
-		final String desiredReportFile = "result-col-exclude-report";
-		TestUtil.testReport("result-col-exclude-succ-report", desiredReportFile, true);
-		TestUtil.testReport("result-col-exclude-fail-report", desiredReportFile, false);
-	}
-	
-	@Test
-	public void testLayoutLimitsReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("layoutlimitsreport", true);
-	}
-	
-	@Test
-	public void testAnalysisReport() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("analyticalreport", true);
 	}
 }

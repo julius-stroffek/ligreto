@@ -17,6 +17,7 @@ import net.ligreto.util.Assert;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xml.sax.SAXException;
 
@@ -81,17 +82,32 @@ public class TestUtil {
 	 * @throws IOException
 	 */
 	public static void compareReport(String reportName, String desiredReportName) throws FileNotFoundException, IOException {
-		String generatedReportFile = reportName + ".xlsx";
-		String desiredReportFile = "desired/" + desiredReportName + ".xlsx";
+		String generatedReportFile;
+		String desiredReportFile;
+		
+		if ("yes".equals(System.getProperty("excel97"))) {
+			generatedReportFile = reportName + ".xls";
+			desiredReportFile = "desired/" + desiredReportName + ".xls";
+		} else {
+			generatedReportFile = reportName + ".xlsx";
+			desiredReportFile = "desired/" + desiredReportName + ".xlsx";			
+		}
 		
 		log.info("Comparing reports... ");
 		log.info("Generated report file: " + generatedReportFile);
 		log.info("Desired report file: " + desiredReportFile);
 
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream(generatedReportFile)),
-				new XSSFWorkbook(new FileInputStream(desiredReportFile))
-		).areSame(), reportName);						
+		if ("yes".equals(System.getProperty("excel97"))) {
+			Assert.assertTrue(new HSSFWorkbookComparator(
+					new HSSFWorkbook(new FileInputStream(generatedReportFile)),
+					new HSSFWorkbook(new FileInputStream(desiredReportFile))
+				).areSame(), reportName);						
+		} else {
+			Assert.assertTrue(new XSSFWorkbookComparator(
+					new XSSFWorkbook(new FileInputStream(generatedReportFile)),
+					new XSSFWorkbook(new FileInputStream(desiredReportFile))
+				).areSame(), reportName);						
+		}
 	}
 	
 	/**

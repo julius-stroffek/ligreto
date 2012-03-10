@@ -80,31 +80,31 @@
 		</copy>
 	</target>
 	<target name="test.unit" depends="test.prepare">
-		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+		<junit fork="true" dir="${testing}" printsummary="yes" haltonfailure="false" haltonerror="true">
 			<test name="net.ligreto.junit.tests.unit.AllTests"/>
 			<classpath refid="test.classpath"/>
-			<formatter type="plain" usefile="false"/>
+			<formatter type="plain" usefile="true"/>
 		</junit>
 	</target>
 	<target name="test.func" depends="test.prepare">
-		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+		<junit fork="true" dir="${testing}" printsummary="yes" haltonfailure="false" haltonerror="true">
 			<test name="net.ligreto.junit.tests.func.AllTests"/>
 			<classpath refid="test.classpath"/>
-			<formatter type="plain" usefile="false"/>
+			<formatter type="plain" usefile="true"/>
 		</junit>
 	</target>
 	<target name="test.orcl" depends="test.prepare">
-		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+		<junit fork="true" dir="${testing}" printsummary="yes" haltonfailure="false" haltonerror="true">
 			<test name="net.ligreto.junit.tests.orcl.AllTests"/>
 			<classpath refid="test.classpath"/>
-			<formatter type="plain" usefile="false"/>
+			<formatter type="plain" usefile="true"/>
 		</junit>
 	</target>
 	<target name="test.perf" depends="test.prepare">
-		<junit fork="true" dir="${testing}" haltonfailure="false" haltonerror="false">
+		<junit fork="true" dir="${testing}" printsummary="yes" haltonfailure="false" haltonerror="true">
 			<test name="net.ligreto.junit.tests.perf.AllTests"/>
 			<classpath refid="test.classpath"/>
-			<formatter type="plain" usefile="false"/>
+			<formatter type="plain" usefile="true"/>
 		</junit>
 	</target>
 	<target name="test" depends="test.unit,test.func,test.perf"/>

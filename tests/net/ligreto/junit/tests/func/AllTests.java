@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -13,20 +12,11 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	ParserTest.class,
-	InitFailureTest.class,
-	SqlReportTest.class,
-	DataFormatReportTest.class,
-	JoinReportTest.class,
-	KeyReportTest.class,
-	ResultReportTest.class,
-	NumericTypesTest.class,
-	LargeDataJoinTest.class,
-	Excel97ReportTest.class,
-	PtpReportTest.class,
-	StyleDedupTest.class,
-	ExcludeColumnsTest.class,
-	ExcelStreamReportTest.class
+	net.ligreto.junit.tests.func.nodata.AllTests.class,
+	net.ligreto.junit.tests.func.owndata.AllTests.class,
+	net.ligreto.junit.tests.func.smalldata.AllTests.class,
+	net.ligreto.junit.tests.func.mediumdata.AllTests.class,
+	net.ligreto.junit.tests.func.largedata.AllTests.class
 })
 public class AllTests {
 	/**

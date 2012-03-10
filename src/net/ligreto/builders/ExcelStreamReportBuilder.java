@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.util.MiscUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 	
 	@Override
 	public void start() throws IOException, LigretoException {
+		output = MiscUtils.fixFileExt(output, ".xlsx");
 		out = new FileOutputStream(output);
 
 		outputFormat = OutputFormat.SXSSF;

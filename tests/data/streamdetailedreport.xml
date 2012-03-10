@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1" desc="1st Source">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2" desc="2nd Source">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Detailed Stream Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
+		<output file="streamdetailedreport.xlsx"/>
+		<data>
+			<join on="1" target="full!B2" type="full" header="true" highlight="true" result="true" layout="detailed" locale="en">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

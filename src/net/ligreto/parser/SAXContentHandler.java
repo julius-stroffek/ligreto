@@ -5,7 +5,6 @@ package net.ligreto.parser;
 
 import java.util.Stack;
 
-import net.ligreto.exceptions.AssertionException;
 import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
@@ -666,15 +665,14 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				}
 				break;
 			}
-			if (objectStack.size() != entryStackDepth + 1) {
+			if (objectStack.size() != entryStackDepth + 1 && log.isDebugEnabled()) {
 				log.debug("Parser error on node: \"" + localName + "\"; parser state: "
 						+ (objectStack.empty() ? ObjectType.NONE : objectStack.peek())
 					);
-					log.debug("Parser state stack:");
-					for (int i=0; i < objectStack.size(); i++) {
-						log.debug("Depth: " + i + "; State: " + objectStack.get(objectStack.size() - 1 - i));
-					}
-				throw new AssertionException("Fatal error in parser: The parsed node was not added into the object stack:" + localName);
+				log.debug("Parser state stack:");
+				for (int i=0; i < objectStack.size(); i++) {
+					log.debug("Depth: " + i + "; State: " + objectStack.get(objectStack.size() - 1 - i));
+				}
 			}
 		} catch (InvalidFormatException e) {
 			throw new SAXException("Invalid format specified.", e);

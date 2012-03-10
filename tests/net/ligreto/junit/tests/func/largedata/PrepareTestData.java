@@ -1,41 +1,35 @@
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.largedata;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Properties;
 
 import net.ligreto.builders.ExcelStreamReportBuilder;
-import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.TestUtil;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
-import net.ligreto.parser.Parser;
-import net.ligreto.parser.nodes.LigretoNode;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
-
-public class ExcelStreamReportTest {
+public class PrepareTestData {
 	/** The number of rows to be tested. */
 	public static final long rowCount = 10000;
 	
 	/** The number of rows to be tested. */
 	public static final long commitInterval = 1000;
 
-	@BeforeClass
-	public static void setUp() throws Exception {
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Test
+	public void prepareTestData() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-		Connection cnn = DriverManager.getConnection("jdbc:derby:db1");
+		Properties properties = new Properties();
+		properties.setProperty("create", "true");
+		Connection cnn = DriverManager.getConnection("jdbc:derby:db1", properties);
 		cnn.setAutoCommit(true);
 		Statement stm = cnn.createStatement();
 		try {
@@ -71,20 +65,5 @@ public class ExcelStreamReportTest {
 		pstm.close();
 		stm.close();
 		cnn.close();
-	}
-
-	@AfterClass
-	public static void tearDown() throws Exception {
-	}
-
-	@Test
-	public void testExcelStreamReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("excelstreamreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("excelstreamreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/excelstreamreport.xlsx"))
-		).areSame());
 	}
 }

@@ -5,6 +5,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -14,6 +16,10 @@ import net.ligreto.exceptions.InvalidFormatException;
 import net.ligreto.exceptions.InvalidValueException;
 
 public class MiscUtils {
+	
+	/** The logger instance for the class. */
+	private static Log log = LogFactory.getLog(MiscUtils.class);
+
 	/**
 	 * This function searches the specified array for the given element.
 	 * 
@@ -161,5 +167,19 @@ public class MiscUtils {
 				previousMessage = newMessage;
 			}
 		}
+	}
+	
+	public static String fixFileExt(String fileName, String fileExt) {
+		if (!fileName.endsWith(fileExt)) {
+			log.info("Changing the file extension on file: " + fileName);
+			log.info("New extension will be \"" + fileExt + "\".");
+			int dotIndex = fileName.lastIndexOf('.');
+			if (dotIndex >= 0) {
+				fileName = fileName.substring(0, dotIndex) + fileExt;
+			} else {
+				fileName += "fileExt";
+			}
+		}
+		return fileName;
 	}
 }

@@ -1,4 +1,4 @@
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.owndata;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 
-public class DataFormatReportTest {
+public class DataFormatTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");

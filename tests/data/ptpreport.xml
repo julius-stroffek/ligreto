@@ -8,16 +8,17 @@
 		</data-source>
 		<data-source name="Source2">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
-			<uri value="jdbc:derby:db2"/>
+			<uri value="jdbc:derby:db4ptp"/>
+			<param name="create" value="true"/>
 		</data-source>
 	</data-sources>
 	<ptp>
 		<preprocess>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</preprocess>
 		<transfer>
 			<target data-source="Source2" table="telt_table" truncate="false" recreate="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 		<postprocess>
 			<sql data-source="Source2">select * from telt_table</sql>
@@ -26,37 +27,37 @@
 	<ptp>
 		<transfer>
 			<target data-source="Source2" table="double_table" commitInterval="2" truncate="false" create="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 		<transfer>
 			<target data-source="Source2" table="double_table" truncate="false" create="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 		<transfer>
 			<target data-source="Source2" table="single_table" truncate="true" create="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 		<transfer>
 			<target data-source="Source2" table="single_table" truncate="true" create="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 		<transfer>
 			<target data-source="Source2" table="single2_table" truncate="false" recreate="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 		<transfer>
 			<target data-source="Source2" table="single2_table" truncate="false" recreate="true"/>
-			<sql data-source="Source1">select * from ptp_table</sql>
+			<sql data-source="Source1">select * from join_table1</sql>
 		</transfer>
 	</ptp>
-	<report name="Simple Report">
-		<template file="blank.xlsx"/>
+	<report name="PTP Report" options="headerStyle,autoSize">
 		<output file="ptpreport.xlsx"/>
 		<data>
-			<sql target="A2" data-source="Source2" header="true">select * from telt_table</sql>
-			<sql target="A7" data-source="Source2" header="true">select * from single_table</sql>
-			<sql target="A12" data-source="Source2" header="true">select * from single2_table</sql>
-			<sql target="A17" data-source="Source2" header="true">select * from double_table</sql>
+			<sql target="source!A1" data-source="Source1">select * from join_table1</sql>
+			<sql target="copy!A1" data-source="Source2">select * from telt_table</sql>
+			<sql target="single!A1" data-source="Source2">select * from single_table</sql>
+			<sql target="single2!A1" data-source="Source2">select * from single2_table</sql>
+			<sql target="double!A1" data-source="Source2">select * from double_table</sql>
 		</data>
 	</report>
 </ligreto>

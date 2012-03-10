@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
-	<param name="startdt" value="2010-10-31"/>
-	<param name="enddt" value="2010-11-30"/>
-	<param name="dummy" value="sysibm.sysdummy1"/>
-	<param name="exclude" value="last_name, age"/>
+	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
+	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
@@ -15,16 +13,13 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report>
-		<template file="blank.xlsx"/>
-		<output file="excludecolumnsreport.xlsx"/>
+	<report name="Stream Comparison Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
+		<output file="streamjoinreport.xlsx"/>
 		<data>
-			<comparison key="1" exclude="${exclude}">
-				<layout target="Sheet1!A1" type="interlaced" diffs="true"/>
+			<join on="1" target="full!B2" type="full" header="true" highlight="true" layout="normal" locale="en" result="true">
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
-			</comparison>		
-			<sql data-source="Source1" target="Sheet2!A1" header="true" exclude="first_name">select * from join_table1</sql>
+			</join>
 		</data>
 	</report>
 </ligreto>

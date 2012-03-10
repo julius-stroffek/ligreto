@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import net.ligreto.exceptions.InvalidTargetException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.UnimplementedMethodException;
+import net.ligreto.util.MiscUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -628,22 +629,33 @@ public class ExcelReportBuilder extends ReportBuilder {
 
 	@Override
 	public void start() throws IOException, LigretoException {
-		out = new FileOutputStream(output);
-
 		// Alter the output format if necessary
 		if (System.getProperty("excel97") != null) {
 			outputFormat = OutputFormat.HSSF;
 		}		
-		
+
+		// Fix the file extension
+		switch (outputFormat) {
+		case HSSF:
+			output = MiscUtils.fixFileExt(output, ".xls");
+			break;
+		case XSSF:
+			output = MiscUtils.fixFileExt(output, ".xlsx");
+			break;
+		}
+		out = new FileOutputStream(output);
+
 		// Read the template file if the template was specified
 		if (template != null) {
 			log.info("Reading a template file: " + template);
 			switch (outputFormat) {
 			case HSSF:
+				template = MiscUtils.fixFileExt(template, ".xls");
 				wb = new HSSFWorkbook(new FileInputStream(template));
 				hssfColors = HSSFColor.getTripletHash();
 				break;
 			case XSSF:
+				template = MiscUtils.fixFileExt(template, ".xlsx");
 				wb = new XSSFWorkbook(new FileInputStream(template));
 				break;
 			}

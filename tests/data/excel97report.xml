@@ -12,8 +12,8 @@
 		</data-source>
 	</data-sources>
 	<report name="Simple Report">
-		<template file="excel97template.xls"/>
-		<output file="excel97report.xls"/>
+		<template file="excel97template.jpg"/> <!-- Extension should be adjusted automatically -->
+		<output file="excel97report.xlsx"/>  <!-- Extension should be adjusted automatically -->
 		<data>
 			<join on="1" target="full!B2" type="full" header="true" highlight="true" interlaced="false">
 				<sql data-source="Source1">select * from join_table1</sql>

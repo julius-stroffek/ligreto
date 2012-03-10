@@ -36,3 +36,6 @@ syntax: regexp
 ^manual/ligreto\.vr$
 syntax: regexp
 ^lib/PasswordQueries\.jar$
+
+syntax: regexp
+^TEST-.*AllTests.txt

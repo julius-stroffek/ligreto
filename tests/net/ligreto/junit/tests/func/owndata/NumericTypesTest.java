@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.ligreto.junit.tests.func;
+package net.ligreto.junit.tests.func.owndata;
 
 
 import java.io.FileInputStream;
