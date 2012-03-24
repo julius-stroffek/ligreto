@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Duplicate Report" options="autoFilter, autoSize,headerStyle">
+		<output file="duplicatelayoutreport.xlsx"/>
+		<data>
+			<comparison key="1" sort="internal" duplicates="process">
+			    <layout target="interlaced!A1" type="interlaced"/>
+			    <layout target="duplicates!A1" type="duplicates"/>
+				<sql data-source="Source1">select * from join_table1 a, join_table1 b</sql>
+				<sql data-source="Source2">select * from join_table2 a, join_table2 b</sql>
+			</comparison>
+		</data>
+	</report>
+</ligreto>

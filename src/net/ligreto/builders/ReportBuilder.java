@@ -123,7 +123,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 * @see net.ligreto.builders.BuilderInterface#setOutput(java.lang.String)
 	 */
 	@Override
-	public void setOutput(String output) {
+	public void setOutputFileName(String output) {
 		this.output = ligretoNode.substituteParams(output);
 	}
 	

@@ -92,10 +92,10 @@ public class ExcelReportBuilder extends ReportBuilder {
 	HashMap<TargetInfo, TargetInfo> targetMap = new HashMap<TargetInfo, TargetInfo>();
 	
 	/** The output file type enumeration. */
-	protected enum OutputFormat {HSSF, XSSF, SXSSF};
+	protected enum OutputFileFormat {HSSF, XSSF, SXSSF};
 	
 	/** The output file format. */
-	protected OutputFormat outputFormat = OutputFormat.XSSF;
+	protected OutputFileFormat outputFileFormat = OutputFileFormat.XSSF;
 
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(ExcelReportBuilder.class);
@@ -209,7 +209,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 		newTarget.setNoDataFormat(isNoDataFormat());
 		newTarget.setLigretoParameters(ligretoParameters);
 		newTarget.setDataFormat(dataFormat);
-		newTarget.outputFormat = outputFormat;
+		newTarget.outputFileFormat = outputFileFormat;
 		return newTarget;
 	}
 	
@@ -236,7 +236,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 			newTarget = createTarget(sheet, rowNum, colNum);
 			TargetInfo prevInfo = targetMap.get(info);
 			if (append &&  prevInfo != null) {
-				newTarget.setActRow(prevInfo.lastRow);
+				newTarget.setActualRowNumber(prevInfo.lastRow);
 				log.info(
 						"Moved from the specified target row \""
 						+ prevInfo.row
@@ -286,25 +286,25 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * 
 	 * @param cell The cell where to set the font color.
 	 */
-	protected void setHeaderStyle(Cell cell, HeaderType headerType) {
-		switch (outputFormat) {
+	protected void setHeaderStyle(Cell cell, OutputStyle outputStyle) {
+		switch (outputFileFormat) {
 		case HSSF:
-			setHSSFHeaderStyle(cell, headerType);
+			setHSSFHeaderStyle(cell, outputStyle);
 			break;
 		case XSSF:
 			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell, headerType);
+			setHSSFHeaderStyle(cell, outputStyle);
 			break;
 		case SXSSF:
 			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell, headerType);
+			setHSSFHeaderStyle(cell, outputStyle);
 			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for format processing.");
 		}
 	}
 	
-	protected void setHSSFHeaderStyle(Cell cell, HeaderType headerType) {
+	protected void setHSSFHeaderStyle(Cell cell, OutputStyle outputStyle) {
 		CellStyle style = cell.getCellStyle();
 		
 		Font font = wb.getFontAt(style.getFontIndex());
@@ -334,11 +334,11 @@ public class ExcelReportBuilder extends ReportBuilder {
 		short fillPattern = style.getFillPattern();
 		short fillColor = style.getFillForegroundColor();
 		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
-		switch (headerType) {
-		case TOP:
+		switch (outputStyle) {
+		case TOP_HEADER:
 			style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
 			break;
-		case ROW:
+		case ROW_HEADER:
 			style.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
 			break;
 		default:
@@ -400,7 +400,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * @param rgb The new color to set.
 	 */
 	protected void setCellColor(Cell cell, short[] rgb) {
-		switch (outputFormat) {
+		switch (outputFileFormat) {
 		case HSSF:
 			setHSSFCellColor(cell, rgb);
 			break;
@@ -631,11 +631,11 @@ public class ExcelReportBuilder extends ReportBuilder {
 	public void start() throws IOException, LigretoException {
 		// Alter the output format if necessary
 		if (System.getProperty("excel97") != null) {
-			outputFormat = OutputFormat.HSSF;
+			outputFileFormat = OutputFileFormat.HSSF;
 		}		
 
 		// Fix the file extension
-		switch (outputFormat) {
+		switch (outputFileFormat) {
 		case HSSF:
 			output = MiscUtils.fixFileExt(output, ".xls");
 			break;
@@ -648,7 +648,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 		// Read the template file if the template was specified
 		if (template != null) {
 			log.info("Reading a template file: " + template);
-			switch (outputFormat) {
+			switch (outputFileFormat) {
 			case HSSF:
 				template = MiscUtils.fixFileExt(template, ".xls");
 				wb = new HSSFWorkbook(new FileInputStream(template));
@@ -661,7 +661,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 			}
 		} else {
 			log.info("Creating the empty workbook.");
-			switch (outputFormat) {
+			switch (outputFileFormat) {
 			case HSSF:
 				wb = new HSSFWorkbook();
 				hssfColors = HSSFColor.getTripletHash();

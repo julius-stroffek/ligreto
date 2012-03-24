@@ -6,8 +6,8 @@ import java.util.HashMap;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
-import net.ligreto.builders.BuilderInterface.CellFormat;
-import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.Column;
 import net.ligreto.data.DataProvider;
@@ -137,10 +137,8 @@ public class AnalyticalJoinLayout extends JoinLayout {
 	}
 	
 	protected HashMap<AnalysisEntry, Integer> analysisMap = new HashMap<AnalysisEntry, Integer>();
-	protected HashMap<Integer, Void> noResultColumns1 = new HashMap<Integer, Void>();
-	protected HashMap<Integer, Void> noResultColumns2 = new HashMap<Integer, Void>();
-	int[] resultColumns1 = null;
-	int[] resultColumns2 = null;
+	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
+	int[] resultColumns = null;
 	int resultCount = 0;
 
 	public AnalyticalJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
@@ -150,21 +148,22 @@ public class AnalyticalJoinLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
-		targetBuilder.dumpHeaderColumn(0, "# of Occur.", HeaderType.TOP);
-		targetBuilder.setColumnPosition(1, 2, null);
-		targetBuilder.dumpOtherHeader(dp1, on1, null, dataSourceDesc1);
-		targetBuilder.setColumnPosition(2, 2, null);
-		targetBuilder.dumpOtherHeader(dp2, on2, null, dataSourceDesc2);				
+		targetBuilder.dumpCell(0, "# of Occur.", OutputStyle.TOP_HEADER);
+		targetBuilder.shiftPosition(1, 2);
+		for (int i = 0; i < resultColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]));
+		}
+		targetBuilder.shiftPosition(1);
+		for (int i = 0; i < resultColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]));
+		}
 	}
 
 	@Override
 	public void start() throws LigretoException {
 		super.start();
-		for (int i=0; i < on1.length; i++) {
-			noResultColumns1.put(on1[i], null);
-		}
-		for (int i=0; i < on2.length; i++) {
-			noResultColumns2.put(on2[i], null);
+		for (int i=0; i < keyColumns.length; i++) {
+			noResultColumns.put(keyColumns[i], null);
 		}
 
 		// Do some sanity checks
@@ -243,14 +242,14 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		for (int r=0; r < result.length; r++) {
 			AnalysisEntry ae = result[r];
 			targetBuilder.nextRow();
-			targetBuilder.dumpColumn(0, ae.count, CellFormat.UNCHANGED, ae.rowDiffs > 0);
+			targetBuilder.dumpColumn(0, ae.count, OutputFormat.DEFAULT, ae.rowDiffs > 0);
 			targetBuilder.setColumnPosition(1, 2, null);
 			for (int i=0; i < ae.cols1.length; i++) {
-				targetBuilder.dumpColumn(i, ae.cols1[i] != null ? ae.cols1[i].getColumnValue() : null, CellFormat.UNCHANGED, ae.rowDiffs > 0);
+				targetBuilder.dumpColumn(i, ae.cols1[i] != null ? ae.cols1[i].getColumnValue() : null, OutputFormat.DEFAULT, ae.rowDiffs > 0);
 			}
 			targetBuilder.setColumnPosition(2, 2, null);
 			for (int i=0; i < ae.cols2.length; i++) {
-				targetBuilder.dumpColumn(i, ae.cols2[i] != null ? ae.cols2[i].getColumnValue() : null, CellFormat.UNCHANGED, ae.rowDiffs > 0);
+				targetBuilder.dumpColumn(i, ae.cols2[i] != null ? ae.cols2[i].getColumnValue() : null, OutputFormat.DEFAULT, ae.rowDiffs > 0);
 			}
 		}
 		return super.finish();

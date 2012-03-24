@@ -38,15 +38,15 @@
 				<sql data-source="Source1">select * from join_table1 order by 1 asc</sql>
 				<sql data-source="Source1">select * from join_table1 order by 1 desc</sql>
 			</comparison>
-			<comparison sort="internal">
+			<comparison key="1,2,3" sort="internal">
 				<layout target="multicols!A1" type="normal" diffs="true" hl-color="#2020d0"/>
-				<sql data-source="Source1" key="1,2,3">select id, 'ABC' aco, cast('ABCD' as char(6)) bco, first_name, last_name, age from join_table1 order by 1,2,3 desc</sql>
-				<sql data-source="Source2" key="1,2,3">select id, 'ABC' aco, 'ABCD' bco, first_name, last_name, age from join_table2 order by 1,2,3 asc</sql>
+				<sql data-source="Source1">select id, 'ABC' aco, cast('ABCD' as char(6)) bco, first_name, last_name, age from join_table1 order by 1,2,3 desc</sql>
+				<sql data-source="Source2">select id, 'ABC' aco, 'ABCD' bco, first_name, last_name, age from join_table2 order by 1,2,3 asc</sql>
 			</comparison>
-			<comparison sort="internal">
+			<comparison key="1,2,3" sort="internal">
 				<layout target="multicolsWithNulls!A1" type="normal" join="full" diffs="true" hl-color="#2020d0"/>
-				<sql data-source="Source1" key="1,2,3">select * from multi_join1 order by 1,2,3 desc</sql>
-				<sql data-source="Source2" key="1,2,3">select * from multi_join2 order by 3,2,1 asc</sql>
+				<sql data-source="Source1">select * from multi_join1 order by 1,2,3 desc</sql>
+				<sql data-source="Source2">select * from multi_join2 order by 3,2,1 asc</sql>
 			</comparison>
 		</data>
 	</report>

@@ -28,8 +28,8 @@
 
 <!ELEMENT sql (#PCDATA)>
 <!ATTLIST sql query CDATA #IMPLIED>
-<!ATTLIST sql on CDATA #IMPLIED>
-<!ATTLIST sql key CDATA #IMPLIED>
+<!--<!ATTLIST sql on CDATA #IMPLIED>-->
+<!--<!ATTLIST sql key CDATA #IMPLIED>-->
 <!ATTLIST sql columns CDATA #IMPLIED>
 <!ATTLIST sql data-source CDATA #IMPLIED>
 <!ATTLIST sql target CDATA #IMPLIED>
@@ -48,6 +48,7 @@
 <!ATTLIST comparison locale CDATA #IMPLIED>
 <!ATTLIST comparison collation CDATA "fail">	<!--(ignore|dump|fail)-->
 <!ATTLIST comparison sort CDATA "external">		<!--(external|internal)-->
+<!ATTLIST comparison duplicates CDATA "fail">	<!--(fail|process)-->
 
 <!-- The element <join> is deprecated, use <comparison> instead. -->
 <!ELEMENT join (layout*,sql,layout*,sql+,layout*)>
@@ -57,6 +58,7 @@
 <!ATTLIST join locale CDATA #IMPLIED>
 <!ATTLIST join collation CDATA "fail">		<!--(ignore|dump|fail)-->
 <!ATTLIST join sort CDATA "external">		<!--(external|internal)-->
+<!ATTLIST join duplicates CDATA "fail">	<!--(fail|process)-->
 
 <!-- 
 	These are deprecated attributes only for compatibility.

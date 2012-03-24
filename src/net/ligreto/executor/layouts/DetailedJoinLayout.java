@@ -2,11 +2,10 @@ package net.ligreto.executor.layouts;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 
 import net.ligreto.LigretoParameters;
-import net.ligreto.builders.BuilderInterface.CellFormat;
-import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
@@ -34,20 +33,20 @@ public class DetailedJoinLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
-		targetBuilder.dumpHeaderColumn(0, "Column Name", HeaderType.TOP);
+		targetBuilder.dumpHeaderColumn(0, "Column Name", OutputStyle.TOP_HEADER);
 		targetBuilder.setColumnPosition(1, 1, null);
 		targetBuilder.dumpJoinOnHeader(dp1, on1, null);
 		targetBuilder.setColumnPosition(onLength + 1, 1, null);
 		
-		targetBuilder.dumpHeaderColumn(0, dataSourceDesc1, HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(1, dataSourceDesc2, HeaderType.TOP);
+		targetBuilder.dumpHeaderColumn(0, dp1.getCaption(), OutputStyle.TOP_HEADER);
+		targetBuilder.dumpHeaderColumn(1, dp2.getCaption(), OutputStyle.TOP_HEADER);
 		
-		targetBuilder.dumpHeaderColumn(2, "Difference", HeaderType.TOP);
-		targetBuilder.dumpHeaderColumn(3, "Relative", HeaderType.TOP);
+		targetBuilder.dumpHeaderColumn(2, "Difference", OutputStyle.TOP_HEADER);
+		targetBuilder.dumpHeaderColumn(3, "Relative", OutputStyle.TOP_HEADER);
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {		
+	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws LigretoException, IOException {		
 		// Loop through all the columns to be in the result
 		for (int i = 0; i < resultCount; i++) {
 			
@@ -58,7 +57,7 @@ public class DetailedJoinLayout extends JoinLayout {
 			switch (resultType) {
 			case LEFT:
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
+				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
 				if (cmpArray[i] != 0) {
 					targetBuilder.setHighlightArray(higherArray);
 				} else {
@@ -68,7 +67,7 @@ public class DetailedJoinLayout extends JoinLayout {
 				targetBuilder.dumpJoinOnColumns(dp1, on1);
 				targetBuilder.setColumnPosition(onLength + 1);
 				targetBuilder.dumpColumn(0, dp1, i1);
-				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), CellFormat.UNCHANGED);
+				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), OutputFormat.DEFAULT);
 				if (cmpArray[i] != 0) {
 					targetBuilder.setHighlightArray(higherArray);
 				} else {
@@ -76,14 +75,14 @@ public class DetailedJoinLayout extends JoinLayout {
 				}
 				if (DataProviderUtils.getNumericObject(dp1, i1) != null) {
 					targetBuilder.dumpColumn(2, dp1, i1);
-					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+					targetBuilder.dumpColumn(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				} else {
-					targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
+					targetBuilder.dumpColumn(2, "yes", OutputFormat.DEFAULT);
 				}
 				break;
 			case RIGHT:
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
+				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
 				if (cmpArray[i] != 0) {
 					targetBuilder.setHighlightArray(higherArray);
 				} else {
@@ -92,7 +91,7 @@ public class DetailedJoinLayout extends JoinLayout {
 				targetBuilder.setColumnPosition(1);
 				targetBuilder.dumpJoinOnColumns(dp2, on2);
 				targetBuilder.setColumnPosition(onLength + 1);
-				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), CellFormat.UNCHANGED);
+				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), OutputFormat.DEFAULT);
 				targetBuilder.dumpColumn(1, dp2, i2);
 				if (cmpArray[i] != 0) {
 					targetBuilder.setHighlightArray(higherArray);
@@ -101,15 +100,15 @@ public class DetailedJoinLayout extends JoinLayout {
 				}
 				if (DataProviderUtils.getNumericObject(dp2, i2) != null) {
 					targetBuilder.dumpColumn(2, dp2, i2);
-					targetBuilder.dumpColumn(3, 1.00, CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+					targetBuilder.dumpColumn(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				} else {
-					targetBuilder.dumpColumn(2, "yes", CellFormat.UNCHANGED);
+					targetBuilder.dumpColumn(2, "yes", OutputFormat.DEFAULT);
 				}
 				break;
 			case INNER:
 				if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
 					targetBuilder.nextRow();
-					targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), HeaderType.ROW);
+					targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
 					targetBuilder.setColumnPosition(1);
 					targetBuilder.dumpJoinOnColumns(dp1, on1);
 					targetBuilder.setColumnPosition(onLength + 1);
@@ -118,8 +117,8 @@ public class DetailedJoinLayout extends JoinLayout {
 					}
 					targetBuilder.dumpColumn(0, dp1, i1);
 					targetBuilder.dumpColumn(1, dp2, i2);
-					targetBuilder.dumpColumn(2, calculateDifference(i1, i2), CellFormat.UNCHANGED);
-					targetBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), CellFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+					targetBuilder.dumpColumn(2, calculateDifference(i1, i2), OutputFormat.DEFAULT);
+					targetBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
 				}
 				break;
 			default:
@@ -167,7 +166,7 @@ public class DetailedJoinLayout extends JoinLayout {
 		}
 	}
 
-	private Object calculateDifference(int i1, int i2) throws SQLException, LigretoException {
+	private Object calculateDifference(int i1, int i2) throws LigretoException {
 		Object columnValue1 = DataProviderUtils.getNumericObject(dp1, i1);
 		Object columnValue2 = DataProviderUtils.getNumericObject(dp2, i2);
 		

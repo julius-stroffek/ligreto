@@ -37,7 +37,7 @@ public class ExcelStreamReportTarget extends ExcelReportTarget {
 	@Override
 	public void nextRow() throws IOException {
 		// Flush the rows if the number of produced rows matched the specified number
-		if ((actRow - baseRow) % FLUSH_ROW_INTERVAL == 0)
+		if ((actualRowNumber - baseRowNumber) % FLUSH_ROW_INTERVAL == 0)
 			flushRows();
 		// Do the rest of the job
 		super.nextRow();
@@ -48,7 +48,7 @@ public class ExcelStreamReportTarget extends ExcelReportTarget {
 		SXSSFSheet ss = (SXSSFSheet) sheet;
 		flush(true, true);
 		ss.flushRows();
-		targetInfo.lastRow = actRow;
+		targetInfo.lastRow = actualRowNumber;
 		targetInfo.inUse = false;
 	}
 

@@ -8,11 +8,9 @@ import java.sql.Timestamp;
 import java.sql.Date;
 import java.util.Hashtable;
 
-import net.ligreto.builders.BuilderInterface.CellFormat;
-import net.ligreto.builders.BuilderInterface.HeaderType;
-import net.ligreto.builders.ExcelReportBuilder.OutputFormat;
-import net.ligreto.data.DataProvider;
-import net.ligreto.exceptions.DataException;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
+import net.ligreto.builders.ExcelReportBuilder.OutputFileFormat;
 import net.ligreto.exceptions.UnimplementedMethodException;
 
 import org.apache.commons.logging.Log;
@@ -66,7 +64,7 @@ public class ExcelReportTarget extends ReportTarget {
 	protected ExcelReportBuilder.TargetInfo targetInfo;
 	
 	/** The output file format. */
-	protected OutputFormat outputFormat = OutputFormat.XSSF;
+	protected OutputFileFormat outputFileFormat = OutputFileFormat.XSSF;
 
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(ExcelReportTarget.class);
@@ -85,6 +83,12 @@ public class ExcelReportTarget extends ReportTarget {
 	
 	/** The actual row where the processed result row is stored. */
 	protected Row row;
+	
+	/** Specifies the highlight text color for highlighted cells. */
+	protected short[] rgbHighlightColor = {200, 0, 0};
+	
+	/** Specifies the highlight text color for highlighted cells. */
+	protected short[] rgbDisabledColor = {100, 100, 100};
 	
 	/** This is the hash table with all the colors from HSSF color palette. */
 	protected Hashtable<String,HSSFColor> hssfColors = null;
@@ -109,116 +113,119 @@ public class ExcelReportTarget extends ReportTarget {
 	
 	/** Holds the highest column index used for actual target. */
 	int lastColumnIndex = -1;
+
+	/** Indicates whether the cells should be highlighted when applicable. */
+	protected boolean highlight;
 	
 	/** Creates the target instance bound to ExcelReportBuilder. */
-	public  ExcelReportTarget(ExcelReportBuilder reportBuilder, Sheet sheet, int baseRow, int baseCol) {
+	public  ExcelReportTarget(ExcelReportBuilder reportBuilder, Sheet sheet, int baseRowNumber, int baseColumnPosition) {
 		super(reportBuilder);
 		this.reportBuilder = reportBuilder;
 		this.sheet = sheet;
 		this.wb = sheet.getWorkbook();
-		this.baseRow = baseRow;
-		this.baseCol = baseCol;
-		actRow = baseRow-1;
-		actCol = baseCol;
+		this.baseRowNumber = baseRowNumber;
+		this.baseColumnPosition = baseColumnPosition;
+		actualRowNumber = baseRowNumber - 1;
+		actualColumnPosition = baseColumnPosition;
+	}
+
+	private boolean compareStyles(CellStyle s1, CellStyle s2) {
+		if (s1.getAlignment() != s2.getAlignment())
+			return false;
+		if (s1.getBorderBottom() != s2.getBorderBottom())
+			return false;
+		if (s1.getBorderLeft() != s2.getBorderLeft())
+			return false;
+		if (s1.getBorderRight() != s2.getBorderRight())
+			return false;
+		if (s1.getBorderTop() != s2.getBorderTop())
+			return false;
+		if (s1.getBottomBorderColor() != s2.getBottomBorderColor())
+			return false;
+		if (s1.getDataFormat() != s2.getDataFormat())
+			return false;
+		if (s1.getDataFormatString() != s2.getDataFormatString())
+			return false;
+		if (s1.getFillBackgroundColor() != s2.getFillBackgroundColor())
+			return false;
+		if (s1.getFillForegroundColor() != s2.getFillForegroundColor())
+			return false;
+		if (s1.getFillPattern() != s2.getFillPattern())
+			return false;
+		if (s1.getFontIndex() != s2.getFontIndex())
+			return false;
+		if (s1.getHidden() != s2.getHidden())
+			return false;
+		if (s1.getIndention() != s2.getIndention())
+			return false;
+		if (s1.getLeftBorderColor() != s2.getLeftBorderColor())
+			return false;
+		if (s1.getRightBorderColor() != s2.getRightBorderColor())
+			return false;
+		if (s1.getRotation() != s2.getRotation())
+			return false;
+		if (s1.getTopBorderColor() != s2.getTopBorderColor())
+			return false;
+		if (s1.getVerticalAlignment() != s2.getVerticalAlignment())
+			return false;
+		if (s1.getWrapText() != s2.getWrapText())
+			return false;
+		return true;
 	}
 
 	/**
-	 * @return the autoFilter
+	 * Assigns the specified format to the specified cell and makes sure that the style
+	 * is not duplicated if the same style already exists.
+	 * 
+	 * @param cell Cell where the format should be assigned
+	 * @param formatString Format string to be used
 	 */
-	public boolean isAutoFilter() {
-		return autoFilter;
+	private void setDataFormat(Cell cell, String formatString) {
+		CellStyle cellStyle = cell.getCellStyle();
+		short oldFormat = cellStyle.getDataFormat();
+		cellStyle.setDataFormat(dataFormat.getFormat(formatString));
+		CellStyle newStyle = cloneStyle(cellStyle);
+		cellStyle.setDataFormat(oldFormat);
+		cell.setCellStyle(newStyle);
 	}
 
 	/**
-	 * @param autoFilter the autoFilter to set
+	 *  Clones the specified style. First all existing styles are scanned and if the
+	 *  same style already exists it is re-used. Otherwise new style is created. This
+	 *  method should be used for style de-duplication. First, you should alter the
+	 *  already existing style as you need, then call cloneStyle method and then
+	 *  reverse back your changes on the original style object. Further, use the style
+	 *  object returned by cloneStyle as an altered style.
+	 *  
+	 *  See the example below:
+	 *  <pre>
+	 *  style.setFont(newFont);
+	 *	CellStyle newStyle = cloneStyle(style);
+	 *	cell.setCellStyle(newStyle);
+	 *	
+	 *	// Revert back the font on the old cell style
+	 *	style.setFont(font);
+	 *  </pre>
 	 */
-	public void setAutoFilter(boolean autoFilter) {
-		this.autoFilter = autoFilter;
-	}
-
-	/**
-	 * @return the autoSize
-	 */
-	public boolean isAutoSize() {
-		return autoSize;
-	}
-
-	/**
-	 * @param autoSize the autoSize to set
-	 */
-	public void setAutoSize(boolean autoSize) {
-		this.autoSize = autoSize;
-	}
-
-	/**
-	 * @return the headerStyle
-	 */
-	public boolean isHeaderStyle() {
-		return headerStyle;
-	}
-
-	/**
-	 * @param headerStyle the headerStyle to set
-	 */
-	public void setHeaderStyle(boolean headerStyle) {
-		this.headerStyle = headerStyle;
-	}
-
-	/**
-	 * @return the noDataFormat
-	 */
-	public boolean isNoDataFormat() {
-		return noDataFormat;
-	}
-
-	/**
-	 * @param noDataFormat the noDataFormat to set
-	 */
-	public void setNoDataFormat(boolean noDataFormat) {
-		this.noDataFormat = noDataFormat;
-	}
-
-	/**
-	 * @return the targetInfo
-	 */
-	public ExcelReportBuilder.TargetInfo getTargetInfo() {
-		return targetInfo;
-	}
-
-	/**
-	 * @param targetInfo the targetInfo to set
-	 * @throws TargetException 
-	 */
-	public void setTargetInfo(ExcelReportBuilder.TargetInfo targetInfo) throws TargetException {
-		if (targetInfo.inUse) {
-			throw new TargetException("Target \"" + targetInfo.name + "\" already in use.");
+	protected CellStyle cloneStyle(CellStyle style) {
+		// Go through all the existing styles and re-use it if there is a match
+		for (short i=0; i < wb.getNumCellStyles(); i++) {
+			// Do not compare the style to itself
+			if (style.getIndex() == i)
+				continue;
+			// Compare the styles and use the already existing one instead of creating a new one
+			if (compareStyles(style, wb.getCellStyleAt(i))) {
+				return wb.getCellStyleAt(i);
+			}
 		}
-		this.targetInfo = targetInfo;
-		this.targetInfo.inUse = true;
+		
+		// Create a new style since the same one does not exist
+		CellStyle newStyle = wb.createCellStyle();
+		newStyle.cloneStyleFrom(style);
+		
+		return newStyle;
 	}
 
-	/**
-	 * @return the dataFormat
-	 */
-	public DataFormat getDataFormat() {
-		return dataFormat;
-	}
-
-	/**
-	 * @param dataFormat the dataFormat to set
-	 */
-	public void setDataFormat(DataFormat dataFormat) {
-		this.dataFormat = dataFormat;
-	}
-
-	@Override
-	public void nextRow() throws IOException {
-		super.nextRow();
-		row = sheet.getRow(actRow);
-		if (row == null)
-			row = sheet.createRow(actRow);
-	}
-	
 	/**
 	 * This function will get the existing <code>Cell</code>
 	 * object if it already exists in the file or it will
@@ -241,193 +248,48 @@ public class ExcelReportTarget extends ReportTarget {
 		return cell;
 	}
 
-	@Override
-	public void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat) {
-		String dataFormat = null;
-		Cell cell = createCell(row, actCol + i);
-		if (o == null) {
-			cell.setCellValue(ligretoParameters.getNullString());
-			dataFormat = ligretoParameters.getExcelStringFormat();
-		} else if (o instanceof Integer) {
-			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
-			cell.setCellValue(((Integer)o).intValue());
-		} else if (o instanceof Long) {
-			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
-			cell.setCellValue(((Long)o).longValue());
-		} else if (o instanceof Double) {
-			double dVal = (Double) o;
-			dataFormat = ligretoParameters.getExcelFloatFormat();
-			if (Double.isNaN(dVal)) {
-				cell.setCellValue(ligretoParameters.getNanString());
+	/**
+	 * The method called to flush the target - i.e. create auto-filter, etc.
+	 */
+	protected void flush(boolean lastFlush, boolean increaseSizeOnly) {
+		if (lastFlush && autoFilter && lastColumnIndex > baseColumnPosition) {
+			if (baseRowNumber < cellReferenceMaxRow) {
+				if (actualRowNumber < cellReferenceMaxRow) {
+					sheet.setAutoFilter(new CellRangeAddress(baseRowNumber, actualRowNumber, baseColumnPosition, lastColumnIndex));
+				} else {
+					sheet.setAutoFilter(new CellRangeAddress(baseRowNumber, cellReferenceMaxRow, baseColumnPosition, lastColumnIndex));
+					log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
+					log.warn("Auto-filter was made on a smaller row range.");
+				}
 			} else {
-				cell.setCellValue(dVal);
+				// There is a bug in POI library that references to too high rows
+				// throw exceptions. We will therefore do nothing in such a case.
+				log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
+				log.warn("Auto-filter was therefore disabled.");
 			}
-		} else if (o instanceof Float) {
-			float fVal = (Float) o;
-			dataFormat = ligretoParameters.getExcelFloatFormat();
-			if (Float.isNaN(fVal)) {
-				cell.setCellValue(ligretoParameters.getNanString());
-			} else {
-				cell.setCellValue(fVal);
-			}
-		} else if (o instanceof BigDecimal) {
-			BigDecimal bdVal = (BigDecimal) o;
-			dataFormat = ligretoParameters.getExcelBigDecimalFormat();
-			if (Double.isNaN(bdVal.doubleValue())) {
-				cell.setCellValue(ligretoParameters.getNanString());
-			} else if (!noDataFormat && dataFormat != null && !"@".equals(dataFormat)) {
-				cell.setCellValue(((BigDecimal)o).doubleValue());
-			} else {
-				cell.setCellValue(((BigDecimal)o).toString());
-			}
-		} else if (o instanceof Date) {
-			dataFormat = ligretoParameters.getExcelDateFormat(); 
-			cell.setCellValue(((Date)o));
-		} else if (o instanceof Timestamp) {
-			dataFormat = ligretoParameters.getExcelTimestampFormat(); 
-			cell.setCellValue(((Timestamp)o));
-		} else if (o instanceof Time) {
-			dataFormat = ligretoParameters.getExcelTimeFormat(); 
-			cell.setCellValue(((Time)o));
-		} else {
-			cell.setCellValue(o.toString());
-			dataFormat = ligretoParameters.getExcelStringFormat(); 
-		}
-		if (rgb != null) {
-			setCellColor(cell, rgb);
 		}
 		
-		if (!noDataFormat && dataFormat != null && !"".equals(dataFormat)) {
-			setDataFormat(cell, dataFormat);
+		if (autoSize && lastColumnIndex > baseColumnPosition) {
+			for (int i=baseColumnPosition; i <= lastColumnIndex; i++) {
+				int columnWidth = sheet.getColumnWidth(i);
+				sheet.autoSizeColumn(i);
+				int newColumnWidth = sheet.getColumnWidth(i) + 1024;
+				if (increaseSizeOnly && columnWidth > newColumnWidth) {
+					newColumnWidth = columnWidth;
+				}
+				if (newColumnWidth > maxColumnWidth) {
+					newColumnWidth = maxColumnWidth;
+				}
+				sheet.setColumnWidth(i, newColumnWidth);
+			}
 		}
-		switch (cellFormat) {
-		case UNCHANGED:
-			break;
-		case PERCENTAGE_NO_DECIMAL_DIGITS:
-			setDataFormat(cell, "0%");
-			break;
-		case PERCENTAGE_2_DECIMAL_DIGITS:
-			setDataFormat(cell, "0.00%");
-			break;
-		case PERCENTAGE_3_DECIMAL_DIGITS:
-			setDataFormat(cell, "0.000%");
-			break;
-		default:
-			throw new RuntimeException("Unexpected value of CellFormat enumeration.");
-		}
-	}
-	
-	@Override
-	public void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException {
-		super.dumpHeader(dp, excl);
-		flush(false, false);
-	}
-	
-	/**
-	 * Assigns the specified format to the specified cell and makes sure that the style
-	 * is not duplicated if the same style already exists.
-	 * 
-	 * @param cell Cell where the format should be assigned
-	 * @param formatString Format string to be used
-	 */
-	private void setDataFormat(Cell cell, String formatString) {
-		CellStyle cellStyle = cell.getCellStyle();
-		short oldFormat = cellStyle.getDataFormat();
-		cellStyle.setDataFormat(dataFormat.getFormat(formatString));
-		CellStyle newStyle = cloneStyle(cellStyle);
-		cellStyle.setDataFormat(oldFormat);
-		cell.setCellStyle(newStyle);
 	}
 
-	@Override
-	public void dumpHeaderColumn(int i, Object o, HeaderType headerType) {
-		dumpColumn(i, o, CellFormat.UNCHANGED);
-		
-		// Format the header column
-		if (headerStyle) {
-			// We can call createCell as the cell already exists and it will be returned
-			Cell cell = createCell(row, actCol + columnStep*i);
-			setHeaderStyle(cell, headerType);
-		}
+	protected void reportExcelStatisctics() {
+		log.debug("The number of workbook styles: " + wb.getNumCellStyles());
+		log.debug("The number of workbook fonts:" + wb.getNumberOfFonts());
 	}
-	
-	/**
-	 * This function will set the cell style for the header row.
-	 * 
-	 * The function will make sure that there will be only one
-	 * <code>Font</code> object created for the whole file
-	 * even if the function is called multiple times for different
-	 * cells.
-	 * 
-	 * @param cell The cell where to set the font color.
-	 */
-	protected void setHeaderStyle(Cell cell, HeaderType headerType) {
-		switch (outputFormat) {
-		case HSSF:
-			setHSSFHeaderStyle(cell, headerType);
-			break;
-		case XSSF:
-			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell, headerType);
-			break;
-		case SXSSF:
-			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell, headerType);
-			break;
-		default:
-			throw new UnimplementedMethodException("Unknown output format for format processing.");
-		}
-	}
-	
-	protected void setHSSFHeaderStyle(Cell cell, HeaderType headerType) {
-		CellStyle style = cell.getCellStyle();
-		
-		Font font = wb.getFontAt(style.getFontIndex());
-		
-		Font newFont = wb.findFont(
-				Font.BOLDWEIGHT_BOLD,
-				font.getColor(),
-				font.getFontHeight(),
-				font.getFontName(),
-				font.getItalic(),
-				font.getStrikeout(),
-				font.getTypeOffset(),
-				font.getUnderline()
-		);
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-			newFont.setColor(font.getColor());
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		short fillPattern = style.getFillPattern();
-		short fillColor = style.getFillForegroundColor();
-		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
-		switch (headerType) {
-		case TOP:
-			style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
-			break;
-		case ROW:
-			style.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
-			break;
-		default:
-			throw new RuntimeException("Unexpected value for HeaderType enumeration.");
-		}
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-		
-		// Revert back the font on the old cell style
-		style.setFont(font);
-		style.setFillPattern(fillPattern);
-		style.setFillForegroundColor(fillColor);
-	}
-	
+
 	protected void setBoldFont(Cell cell) {
 		CellStyle style = cell.getCellStyle();
 		
@@ -475,7 +337,7 @@ public class ExcelReportTarget extends ReportTarget {
 	 * @param rgb The new color to set.
 	 */
 	protected void setCellColor(Cell cell, short[] rgb) {
-		switch (outputFormat) {
+		switch (outputFileFormat) {
 		case HSSF:
 			setHSSFCellColor(cell, rgb);
 			break;
@@ -487,6 +349,34 @@ public class ExcelReportTarget extends ReportTarget {
 			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for color processing.");
+		}
+	}
+
+	/**
+	 * This function will set the cell style for the header row.
+	 * 
+	 * The function will make sure that there will be only one
+	 * <code>Font</code> object created for the whole file
+	 * even if the function is called multiple times for different
+	 * cells.
+	 * 
+	 * @param cell The cell where to set the font color.
+	 */
+	protected void setCellStyle(Cell cell, OutputStyle outputStyle) {
+		switch (outputFileFormat) {
+		case HSSF:
+			setHSSFCellStyle(cell, outputStyle);
+			break;
+		case XSSF:
+			// HSSF approach should work anyway
+			setHSSFCellStyle(cell, outputStyle);
+			break;
+		case SXSSF:
+			// HSSF approach should work anyway
+			setHSSFCellStyle(cell, outputStyle);
+			break;
+		default:
+			throw new UnimplementedMethodException("Unknown output format for format processing.");
 		}
 	}
 
@@ -526,33 +416,38 @@ public class ExcelReportTarget extends ReportTarget {
 		// Revert back the font on the old cell style
 		style.setFont(font);
 	}
-	
-	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
-		XSSFWorkbook twb = (XSSFWorkbook) wb;
-		XSSFCellStyle style = cell.getCellStyle();
-		XSSFFont font = style.getFont();
-		XSSFFont newFont = null;
-		XSSFColor newColor = new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2]));
+
+	protected void setHSSFCellStyle(Cell cell, OutputStyle outputStyle) {
+		CellStyle style = cell.getCellStyle();
 		
-		log.debug("Setting color of cell c: " + cell.getColumnIndex() + " r: " + cell.getRowIndex() + " color: " + newColor.getIndexed());
-				
-		// Look if the font already exists
-		newFont = twb.findFont(
-			font.getBoldweight(),
-			newColor.getIndexed(),
-			font.getFontHeight(),
-			font.getFontName(),
-			font.getItalic(),
-			font.getStrikeout(),
-			font.getTypeOffset(),
-			font.getUnderline()
+		Font font = wb.getFontAt(style.getFontIndex());
+		
+		// Get the font based on the style
+		short boldFont;
+		switch (outputStyle) {
+		case TOP_HEADER:
+		case ROW_HEADER:
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		default:
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		}
+		
+		Font newFont = wb.findFont(
+				boldFont,
+				font.getColor(),
+				font.getFontHeight(),
+				font.getFontName(),
+				font.getItalic(),
+				font.getStrikeout(),
+				font.getTypeOffset(),
+				font.getUnderline()
 		);
-		
-		// Clone the font if it does not exist yet
-		if (newFont == null || !newFont.getXSSFColor().equals(newColor)) {
-		    newFont = twb.createFont();
-			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
+		if (newFont == null) {
+			newFont = wb.createFont();
+			newFont.setBoldweight(boldFont);
+			newFont.setColor(font.getColor());
 			newFont.setFontHeight(font.getFontHeight());
 			newFont.setFontName(font.getFontName());
 			newFont.setItalic(font.getItalic());
@@ -561,13 +456,28 @@ public class ExcelReportTarget extends ReportTarget {
 			newFont.setUnderline(font.getUnderline());
 		}
 		style.setFont(newFont);
+		short fillPattern = style.getFillPattern();
+		short fillColor = style.getFillForegroundColor();
+		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+		switch (outputStyle) {
+		case TOP_HEADER:
+			style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
+			break;
+		case ROW_HEADER:
+			style.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
+			break;
+		default:
+			throw new RuntimeException("Unexpected value for OutputStyle enumeration.");
+		}
 		CellStyle newStyle = cloneStyle(style);
 		cell.setCellStyle(newStyle);
 		
 		// Revert back the font on the old cell style
 		style.setFont(font);
+		style.setFillPattern(fillPattern);
+		style.setFillForegroundColor(fillColor);
 	}
-	
+
 	protected void setSXSSFCellColor(Cell cell, short[] rgb) {
 		CellStyle style = cell.getCellStyle();
 			
@@ -609,133 +519,256 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFont(font);
 	}
 
-	/**
-	 *  Clones the specified style. First all existing styles are scanned and if the
-	 *  same style already exists it is re-used. Otherwise new style is created. This
-	 *  method should be used for style de-duplication. First, you should alter the
-	 *  already existing style as you need, then call cloneStyle method and then
-	 *  reverse back your changes on the original style object. Further, use the style
-	 *  object returned by cloneStyle as an altered style.
-	 *  
-	 *  See the example below:
-	 *  <pre>
-	 *  style.setFont(newFont);
-	 *	CellStyle newStyle = cloneStyle(style);
-	 *	cell.setCellStyle(newStyle);
-	 *	
-	 *	// Revert back the font on the old cell style
-	 *	style.setFont(font);
-	 *  </pre>
-	 */
-	protected CellStyle cloneStyle(CellStyle style) {
-		// Go through all the existing styles and re-use it if there is a match
-		for (short i=0; i < wb.getNumCellStyles(); i++) {
-			// Do not compare the style to itself
-			if (style.getIndex() == i)
-				continue;
-			// Compare the styles and use the already existing one instead of creating a new one
-			if (compareStyles(style, wb.getCellStyleAt(i))) {
-				return wb.getCellStyleAt(i);
-			}
+	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
+		XSSFWorkbook twb = (XSSFWorkbook) wb;
+		XSSFCellStyle style = cell.getCellStyle();
+		XSSFFont font = style.getFont();
+		XSSFFont newFont = null;
+		XSSFColor newColor = new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2]));
+		
+		log.debug("Setting color of cell c: " + cell.getColumnIndex() + " r: " + cell.getRowIndex() + " color: " + newColor.getIndexed());
+				
+		// Look if the font already exists
+		newFont = twb.findFont(
+			font.getBoldweight(),
+			newColor.getIndexed(),
+			font.getFontHeight(),
+			font.getFontName(),
+			font.getItalic(),
+			font.getStrikeout(),
+			font.getTypeOffset(),
+			font.getUnderline()
+		);
+		
+		// Clone the font if it does not exist yet
+		if (newFont == null || !newFont.getXSSFColor().equals(newColor)) {
+		    newFont = twb.createFont();
+			newFont.setBoldweight(font.getBoldweight());
+			newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
+			newFont.setFontHeight(font.getFontHeight());
+			newFont.setFontName(font.getFontName());
+			newFont.setItalic(font.getItalic());
+			newFont.setStrikeout(font.getStrikeout());
+			newFont.setTypeOffset(font.getTypeOffset());
+			newFont.setUnderline(font.getUnderline());
 		}
+		style.setFont(newFont);
+		CellStyle newStyle = cloneStyle(style);
+		cell.setCellStyle(newStyle);
 		
-		// Create a new style since the same one does not exist
-		CellStyle newStyle = wb.createCellStyle();
-		newStyle.cloneStyleFrom(style);
-		
-		return newStyle;
+		// Revert back the font on the old cell style
+		style.setFont(font);
 	}
 	
-	private boolean compareStyles(CellStyle s1, CellStyle s2) {
-		if (s1.getAlignment() != s2.getAlignment())
-			return false;
-		if (s1.getBorderBottom() != s2.getBorderBottom())
-			return false;
-		if (s1.getBorderLeft() != s2.getBorderLeft())
-			return false;
-		if (s1.getBorderRight() != s2.getBorderRight())
-			return false;
-		if (s1.getBorderTop() != s2.getBorderTop())
-			return false;
-		if (s1.getBottomBorderColor() != s2.getBottomBorderColor())
-			return false;
-		if (s1.getDataFormat() != s2.getDataFormat())
-			return false;
-		if (s1.getDataFormatString() != s2.getDataFormatString())
-			return false;
-		if (s1.getFillBackgroundColor() != s2.getFillBackgroundColor())
-			return false;
-		if (s1.getFillForegroundColor() != s2.getFillForegroundColor())
-			return false;
-		if (s1.getFillPattern() != s2.getFillPattern())
-			return false;
-		if (s1.getFontIndex() != s2.getFontIndex())
-			return false;
-		if (s1.getHidden() != s2.getHidden())
-			return false;
-		if (s1.getIndention() != s2.getIndention())
-			return false;
-		if (s1.getLeftBorderColor() != s2.getLeftBorderColor())
-			return false;
-		if (s1.getRightBorderColor() != s2.getRightBorderColor())
-			return false;
-		if (s1.getRotation() != s2.getRotation())
-			return false;
-		if (s1.getTopBorderColor() != s2.getTopBorderColor())
-			return false;
-		if (s1.getVerticalAlignment() != s2.getVerticalAlignment())
-			return false;
-		if (s1.getWrapText() != s2.getWrapText())
-			return false;
-		return true;
-	}
-
-	protected void reportExcelStatisctics() {
-		log.debug("The number of workbook styles: " + wb.getNumCellStyles());
-		log.debug("The number of workbook fonts:" + wb.getNumberOfFonts());
-	}
-	
-	/**
-	 * The method called to flush the target - i.e. create auto-filter, etc.
-	 */
-	protected void flush(boolean lastFlush, boolean increaseSizeOnly) {
-		if (lastFlush && autoFilter && lastColumnIndex > baseCol) {
-			if (baseRow < cellReferenceMaxRow) {
-				if (actRow < cellReferenceMaxRow) {
-					sheet.setAutoFilter(new CellRangeAddress(baseRow, actRow, baseCol, lastColumnIndex));
-				} else {
-					sheet.setAutoFilter(new CellRangeAddress(baseRow, cellReferenceMaxRow, baseCol, lastColumnIndex));
-					log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
-					log.warn("Auto-filter was made on a smaller row range.");
-				}
+	@Override
+	public void dumpCell(int i, Object value, OutputFormat outputFormat, OutputStyle outputStyle) {
+		String dataFormat = null;
+		Cell cell = createCell(row, actualColumnPosition + i);
+		if (value == null) {
+			cell.setCellValue(ligretoParameters.getNullString());
+			dataFormat = ligretoParameters.getExcelStringFormat();
+		} else if (value instanceof Integer) {
+			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
+			cell.setCellValue(((Integer)value).intValue());
+		} else if (value instanceof Long) {
+			dataFormat = ligretoParameters.getExcelIntegerFormat(); 
+			cell.setCellValue(((Long)value).longValue());
+		} else if (value instanceof Double) {
+			double dVal = (Double) value;
+			dataFormat = ligretoParameters.getExcelFloatFormat();
+			if (Double.isNaN(dVal)) {
+				cell.setCellValue(ligretoParameters.getNanString());
 			} else {
-				// There is a bug in POI library that references to too high rows
-				// throw exceptions. We will therefore do nothing in such a case.
-				log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
-				log.warn("Auto-filter was therefore disabled.");
+				cell.setCellValue(dVal);
 			}
+		} else if (value instanceof Float) {
+			float fVal = (Float) value;
+			dataFormat = ligretoParameters.getExcelFloatFormat();
+			if (Float.isNaN(fVal)) {
+				cell.setCellValue(ligretoParameters.getNanString());
+			} else {
+				cell.setCellValue(fVal);
+			}
+		} else if (value instanceof BigDecimal) {
+			BigDecimal bdVal = (BigDecimal) value;
+			dataFormat = ligretoParameters.getExcelBigDecimalFormat();
+			if (Double.isNaN(bdVal.doubleValue())) {
+				cell.setCellValue(ligretoParameters.getNanString());
+			} else if (!noDataFormat && dataFormat != null && !"@".equals(dataFormat)) {
+				cell.setCellValue(((BigDecimal)value).doubleValue());
+			} else {
+				cell.setCellValue(((BigDecimal)value).toString());
+			}
+		} else if (value instanceof Date) {
+			dataFormat = ligretoParameters.getExcelDateFormat(); 
+			cell.setCellValue(((Date)value));
+		} else if (value instanceof Timestamp) {
+			dataFormat = ligretoParameters.getExcelTimestampFormat(); 
+			cell.setCellValue(((Timestamp)value));
+		} else if (value instanceof Time) {
+			dataFormat = ligretoParameters.getExcelTimeFormat(); 
+			cell.setCellValue(((Time)value));
+		} else {
+			cell.setCellValue(value.toString());
+			dataFormat = ligretoParameters.getExcelStringFormat(); 
 		}
 		
-		if (autoSize && lastColumnIndex > baseCol) {
-			for (int i=baseCol; i <= lastColumnIndex; i++) {
-				int columnWidth = sheet.getColumnWidth(i);
-				sheet.autoSizeColumn(i);
-				int newColumnWidth = sheet.getColumnWidth(i) + 1024;
-				if (increaseSizeOnly && columnWidth > newColumnWidth) {
-					newColumnWidth = columnWidth;
-				}
-				if (newColumnWidth > maxColumnWidth) {
-					newColumnWidth = maxColumnWidth;
-				}
-				sheet.setColumnWidth(i, newColumnWidth);
+		// Set up the cell format based on the type determined above
+		if (!noDataFormat && dataFormat != null && !"".equals(dataFormat)) {
+			setDataFormat(cell, dataFormat);
+		}
+		
+		// Set up the desired output format given internally (overrides the above formats)
+		switch (outputFormat) {
+		case DEFAULT:
+			break;
+		case PERCENTAGE_NO_DECIMAL_DIGITS:
+			setDataFormat(cell, "0%");
+			break;
+		case PERCENTAGE_2_DECIMAL_DIGITS:
+			setDataFormat(cell, "0.00%");
+			break;
+		case PERCENTAGE_3_DECIMAL_DIGITS:
+			setDataFormat(cell, "0.000%");
+			break;
+		default:
+			throw new RuntimeException("Unexpected value of CellFormat enumeration.");
+		}
+		
+		// Set up the desired output style
+		switch(outputStyle) {
+		case DEFAULT:
+			break;
+		case HIGHLIGHTED:
+			if (highlight) {
+				setCellColor(cell, rgbHighlightColor);
 			}
+			break;
+		case DISABLED:
+			setCellColor(cell, rgbDisabledColor);
+			break;
+		case TOP_HEADER:
+			setHSSFCellStyle(cell, outputStyle);
+			break;
+		case ROW_HEADER:
+			setHSSFCellStyle(cell, outputStyle);
+			break;
+		default:
+			throw new RuntimeException("Unexpected value of CellStyle enumeration.");
 		}
 	}
 	
 	@Override
 	public void finish() throws IOException {
 		flush(true, false);
-		targetInfo.lastRow = actRow;
+		targetInfo.lastRow = actualRowNumber;
 		targetInfo.inUse = false;
+	}
+	
+	/**
+	 * @return the dataFormat
+	 */
+	public DataFormat getDataFormat() {
+		return dataFormat;
+	}
+
+	/**
+	 * @return the targetInfo
+	 */
+	public ExcelReportBuilder.TargetInfo getTargetInfo() {
+		return targetInfo;
+	}
+
+	/**
+	 * @return the autoFilter
+	 */
+	public boolean isAutoFilter() {
+		return autoFilter;
+	}
+	
+	/**
+	 * @return the autoSize
+	 */
+	public boolean isAutoSize() {
+		return autoSize;
+	}
+	
+	/**
+	 * @return the headerStyle
+	 */
+	public boolean isHeaderStyle() {
+		return headerStyle;
+	}
+
+	/**
+	 * @return the noDataFormat
+	 */
+	public boolean isNoDataFormat() {
+		return noDataFormat;
+	}
+	
+	@Override
+	public void nextRow() throws IOException {
+		super.nextRow();
+		row = sheet.getRow(actualRowNumber);
+		if (row == null)
+			row = sheet.createRow(actualRowNumber);
+	}
+
+	@Override
+	public void setHighlightColor(short[] rgbHighlightColor) {
+		this.rgbHighlightColor = rgbHighlightColor;
+	}
+
+	/**
+	 * @param autoFilter the autoFilter to set
+	 */
+	public void setAutoFilter(boolean autoFilter) {
+		this.autoFilter = autoFilter;
+	}
+	
+	/**
+	 * @param autoSize the autoSize to set
+	 */
+	public void setAutoSize(boolean autoSize) {
+		this.autoSize = autoSize;
+	}
+	
+	/**
+	 * @param dataFormat the dataFormat to set
+	 */
+	public void setDataFormat(DataFormat dataFormat) {
+		this.dataFormat = dataFormat;
+	}
+
+	/**
+	 * @param headerStyle the headerStyle to set
+	 */
+	public void setHeaderStyle(boolean headerStyle) {
+		this.headerStyle = headerStyle;
+	}
+
+	/**
+	 * @param noDataFormat the noDataFormat to set
+	 */
+	public void setNoDataFormat(boolean noDataFormat) {
+		this.noDataFormat = noDataFormat;
+	}
+
+	/**
+	 * @param targetInfo the targetInfo to set
+	 * @throws TargetException 
+	 */
+	public void setTargetInfo(ExcelReportBuilder.TargetInfo targetInfo) throws TargetException {
+		if (targetInfo.inUse) {
+			throw new TargetException("Target \"" + targetInfo.name + "\" already in use.");
+		}
+		this.targetInfo = targetInfo;
+		this.targetInfo.inUse = true;
+	}
+
+	@Override
+	public void setHighlight(boolean highlight) {
+		this.highlight = highlight;
 	}
 }

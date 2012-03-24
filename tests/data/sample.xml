@@ -32,15 +32,15 @@
 		<data>
 			<sql target="Sheet1!C1">select * from test</sql>
 			<sql query="Query1" target="Sheet1!C1"/>
-			<join target="Sheet2!C3" type="full" diffs="true" interlaced="true" highlight="true" hl-color="#040506" >
-				<sql data-source="Test" on="1,2,3"></sql>
-				<sql data-source="Test2" on="1,2,3"></sql>
+			<join target="Sheet2!C3" on="1,2,3" type="full" diffs="true" interlaced="true" highlight="true" hl-color="#040506" >
+				<sql data-source="Test"></sql>
+				<sql data-source="Test2"></sql>
 			</join>
-			<join target="Sheet2!C3" type="full" interlaced="true" highlight="true" hl-color="#040506" exclude="last_cnhg_user,modified_date">
-				<sql data-source="Test" on="1,2,3"></sql>
-				<sql data-source="Test2" on="1,2,3"></sql>
+			<join target="Sheet2!C3" on="1,2,3" type="full" interlaced="true" highlight="true" hl-color="#040506" exclude="last_cnhg_user,modified_date">
+				<sql data-source="Test"></sql>
+				<sql data-source="Test2"></sql>
 			</join>
-			<join type="full" exclude="last_cnhg_user,modified_date">
+			<join type="full" on="1,2,3" exclude="last_cnhg_user,modified_date">
 				<layout target="Sheet2!C3" type="interlaced" highlight="true" hl-color="#040506">
 					<result enabled="${production}">
 						<row-limit abs-diff-count="10" rel-diff-count="0.3" rel-non-matched-count="0.2" abs-non-matched-count="120"/>
@@ -48,8 +48,8 @@
 						<limit columns="2,3" rel-diff-count="10%" abs-diff-count="1000"/>
 					</result>
 				</layout>
-				<sql data-source="Test" on="1,2,3"></sql>
-				<sql data-source="Test2" on="1,2,3"></sql>
+				<sql data-source="Test"></sql>
+				<sql data-source="Test2"></sql>
 			</join>
 			<sql query="Query1" target="Sheet1!C10"/>
 		</data>

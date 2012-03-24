@@ -56,7 +56,7 @@ public class ResultExecutor extends Executor {
 		
 		if (absoluteDifferenceLimit != null) {
 			String statusMsg = compareLimit(absoluteDifference, absoluteDifferenceLimit);
-			String msg = String.format("%s: Absolute Count of Different Rows : %d; Limit: %d", statusMsg, absoluteDifference, absoluteDifferenceLimit.intValue());
+			String msg = String.format("%s: Absolute Count of Different Rows: %d; Limit: %d", statusMsg, absoluteDifference, absoluteDifferenceLimit.intValue());
 			log.info(msg);
 		} else {
 			String msg = String.format("%s: Absolute Count of Different Rows: %d", "SKIPPED", absoluteDifference);

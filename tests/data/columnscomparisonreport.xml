@@ -34,6 +34,11 @@
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</comparison>
+			<comparison key="1" columns="">
+				<layout target="nocolumns!B2" type="interlaced"/>
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</comparison>
 		</data>
 	</report>
 </ligreto>

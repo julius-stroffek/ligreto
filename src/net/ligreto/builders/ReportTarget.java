@@ -3,12 +3,9 @@ package net.ligreto.builders;
 import java.io.IOException;
 
 import net.ligreto.LigretoParameters;
-import net.ligreto.builders.BuilderInterface.CellFormat;
-import net.ligreto.builders.BuilderInterface.HeaderType;
-import net.ligreto.data.DataProvider;
-import net.ligreto.exceptions.DataException;
-import net.ligreto.parser.nodes.*;
-import net.ligreto.util.MiscUtils;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
+import net.ligreto.parser.nodes.LigretoNode;
 
 /**
  * This class defines the interface between the various report executors
@@ -26,21 +23,17 @@ import net.ligreto.util.MiscUtils;
  *   for (tgt : targets) {
  *   	setTarget("A target ID string"); // For spreadsheet - e.g. "B:2"
  *   	for (row : rows) {
- *   		nextRow();
+ *   		tgt.nextRow();
  *   		// Dump the i-th column from the ResultSet
- *   		setColumn(i, rs); 
- *   		// Could dump more columns here using setColumn method call
- *   		setColumnPosition(10);
- *   		// Could dump more columns here to shifted location using setColumn method call
+ *   		tgt.dumpColumn(i, objectValue); 
+ *   		// Could dump more cells here
+ *   		tgt.shiftPosition(10);
+ *   		// Could dump more cells here
  *   	}
+ *   	tgt.finish();
  *   }
  *   
  * </pre>
- *
- * The report builder could automatically highlight the differences
- * or otherwise highlight certain column values as specified
- * by invoking <code>setHighlightArray</code> before the call
- * to any <code>setCell</code> methods.
  *  
  * @author Julius Stroffek
  *
@@ -63,14 +56,14 @@ public abstract class ReportTarget implements TargetInterface {
 	 *
 	 * The numbering starts from 0.
 	 */
-	protected int baseRow = 0;
+	protected int baseRowNumber = 0;
 	
 	/**
 	 * The base column which is defined by the call to <code>setTarget</code>.
 	 * 
 	 * The numbering starts from 0.
 	 */
-	protected int baseCol = 0;
+	protected int baseColumnPosition = 0;
 	
 	/**
 	 * The actual row number where the output is being produced.
@@ -79,7 +72,7 @@ public abstract class ReportTarget implements TargetInterface {
 	 * will get shifted by the call to <code>nextRow</code>
 	 * </p>
 	 */
-	protected int actRow = baseRow-1;
+	protected int actualRowNumber = baseRowNumber-1;
 	
 	/**
 	 * The actual column number where the output is produced. The exact column number
@@ -87,19 +80,8 @@ public abstract class ReportTarget implements TargetInterface {
 	 * this <code>actCol</code> value and adding the value of the column number argument
 	 * specified in the <code>setColumn</code> method call.
 	 */
-	protected int actCol = baseCol;
-	
-	/**
-	 * The array defining which columns should be highlighted by <code>setColumn</code>.
-	 */
-	protected int[] highlightArray = null;
-	
-	/** Indicates whether the columns should be highlighted. */
-	protected boolean highlight;
-	
-	/** Specifies the highlight text color for highlighted cells. */
-	protected short[] rgbHlColor;
-	
+	protected int actualColumnPosition = baseColumnPosition;
+		
 	/** The global ligreto parameters. */
 	protected LigretoParameters ligretoParameters;
 	
@@ -107,226 +89,59 @@ public abstract class ReportTarget implements TargetInterface {
 	protected ReportTarget(ReportBuilder reportBuilder) {
 		this.reportBuilder = reportBuilder;
 	}
+	
+	@Override
+	public void dumpCell(int i, Object value) {
+		dumpCell(i, value, OutputFormat.DEFAULT, OutputStyle.DEFAULT);
+	}
+	
+	@Override
+	public void dumpCell(int i, Object value, OutputFormat outputFormat) {
+		dumpCell(i, value, outputFormat, OutputStyle.DEFAULT);
+	}
+	
+	@Override
+	public void dumpCell(int i, Object value, OutputStyle outputStyle) {
+		dumpCell(i, value, OutputFormat.DEFAULT, outputStyle);
+	}
 		
 	/**
-	 * This method will return the highlight color for the specified column number
-	 * based on the array content defined by <code>setHighlightArray</code> method
-	 * call.
-	 * 
-	 * @param i The column number.
-	 * @return The corresponding highlight color or null.
+	 * @param actualRowNumber the actualRowNumber to set
 	 */
-	protected short[] getHlColor(int i) {
-		int cmp = highlightArray != null ? highlightArray[i] : 0;
-		if (cmp != 0 && highlight) {
-			return rgbHlColor;
-		}
-		return null;
-	}
-	
-	/** 
-	 * This is the function used to set the actual row for the dump.
-	 */
-	void setActRow(int actRow) {
-		this.actRow = actRow;
+	public void setActualRowNumber(int actualRowNumber) {
+		this.actualRowNumber = actualRowNumber;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.sql.ResultSet, int)
-	 */
-	@Override
-	public void dumpColumn(int i, DataProvider dp, int dpi) throws DataException {
-		Object o = dp.getObject(dpi);
-		if (dp.wasNull() || o == null) {
-			o = ligretoParameters.getNullString();
-		}
-		dumpColumn(columnStep*i, o, getHlColor(i), CellFormat.UNCHANGED);
-	}
-
-	@Override
-	public void dumpColumn(int i, DataProvider dp) throws DataException {
-		dumpColumn(i-1, dp, i);
-	}
-	
 	@Override
 	public void nextRow() throws IOException {
-		actRow++;
-		actCol = baseCol;
-		columnStep = 1;
-		highlightArray = null;
+		actualRowNumber++;
+		setPosition(0,1);
 	}
-	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setColumnPosition(int)
-	 */
-	@Override
-	public void setColumnPosition(int column) {
-		actCol = baseCol + column;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setHighlightArray(int[])
-	 */
-	@Override
-	public void setHighlightArray(int[] highlightArray) {
-		this.highlightArray = highlightArray;
-	}
-	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setColumnPosition(int, int, int[])
-	 */
-	@Override
-	public void setColumnPosition(int column, int step, int[] highlightArray) {
-		actCol = baseCol + column;
-		columnStep = step;
-		this.highlightArray = highlightArray;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.lang.Object)
-	 */
-	@Override
-	public void dumpColumn(int i, Object o, CellFormat cellFormat) {
-		dumpColumn(columnStep*i, o, getHlColor(i), cellFormat);
-	}
-	
-	@Override
-	public void dumpColumn(int i, Object o, CellFormat cellFormat, boolean highlight) {
-		dumpColumn(columnStep*i, o, highlight && this.highlight ? rgbHlColor : null, cellFormat);
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setColumn(int, java.lang.Object, short[])
-	 */
-	@Override
-	public abstract void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
-	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setHeaderColumn(int, java.lang.Object, net.ligreto.builders.ReportBuilder.HeaderType)
-	 */
-	@Override
-	public void dumpHeaderColumn(int i, Object o, HeaderType headerType) {
-		switch (headerType) {
-		case TOP:
-			dumpColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
-			break;
-		case ROW:
-			dumpColumn(i, o, getHlColor(i), CellFormat.UNCHANGED);
-			break;
-		default:
-			throw new RuntimeException("Unexpected value of HeaderType enumeration.");
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#dumpHeader(java.sql.ResultSet, int[])
-	 */
-	@Override
-	public void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException {
-		nextRow();
-		for (int i=1, c=0; i <= dp.getColumnCount(); i++) {
-			if (!MiscUtils.arrayContains(excl, i)) {
-				dumpHeaderColumn(columnStep*c++, dp.getColumnLabel(i), HeaderType.TOP);
-			}
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#dumpJoinOnHeader(java.sql.ResultSet, int[])
-	 */
-	@Override
-	public void dumpJoinOnHeader(DataProvider dp, int[] on, String dataSourceDesc) throws DataException {
-		for (int i=0; i < on.length; i++) {
-			dumpHeaderColumn(
-				columnStep*i,
-				dataSourceDesc != null
-					? dp.getColumnLabel(on[i]) + " (" + dataSourceDesc + ")"
-					: dp.getColumnLabel(on[i]),
-				HeaderType.TOP
-			);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#dumpOtherHeader(java.sql.ResultSet, int[], int[])
-	 */
-	@Override
-	public void dumpOtherHeader(DataProvider dp, int[] on, int[] excl, String dataSourceDesc) throws DataException {
-		int rsLength = dp.getColumnCount();
-		int idx = 0;
-		for (int i=0; i < rsLength; i++) {
-			boolean skip = false;
-			if (MiscUtils.arrayContains(on, i+1)) {
-				skip = true;
-			}
-			if (MiscUtils.arrayContains(excl, i+1)) {
-				skip = true;
-			}
 			
-			if (!skip) {
-				dumpHeaderColumn(
-					idx,
-					dataSourceDesc != null
-						? dp.getColumnLabel(i+1) + " (" + dataSourceDesc + ")"
-						: dp.getColumnLabel(i+1),
-					HeaderType.TOP
-				);
-				idx++;
-			}
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setJoinOnColumns(java.sql.ResultSet, int[])
-	 */
-	@Override
-	public void dumpJoinOnColumns(DataProvider dp, int[] on) throws DataException {
-		for (int i=0; i < on.length; i++) {
-			dumpColumn(i, dp, on[i]);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setOtherColumns(java.sql.ResultSet, int[], int[])
-	 */
-	@Override
-	public void dumpOtherColumns(DataProvider dp, int[] on, int[] excl) throws DataException {
-		int rsLength = dp.getColumnCount();
-		int idx = 0;
-		for (int i=0; i < rsLength; i++) {
-			boolean skip = false;
-			if (MiscUtils.arrayContains(on, i+1)) {
-				skip = true;
-			}
-			if (MiscUtils.arrayContains(excl, i+1)) {
-				skip = true;
-			}
-			
-			if (!skip) {
-				dumpColumn(idx, dp, i+1);
-				idx++;
-			}
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setHighlight(boolean)
-	 */
-	@Override
-	public void setHighlight(boolean highlight) {
-		this.highlight = highlight;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setHlColor(short[])
-	 */
-	@Override
-	public void setHlColor(short[] rgbHlColor) {
-		this.rgbHlColor = rgbHlColor;
-	}
-
 	@Override
 	public void setLigretoParameters(LigretoParameters ligretoParameters) {
 		this.ligretoParameters = ligretoParameters;
+	}
+
+	@Override
+	public void setPosition(int columnPosition) {
+		setPosition(columnPosition, columnStep);
+	}
+
+	@Override
+	public void setPosition(int columnPosition, int columnStep) {
+		actualColumnPosition = baseColumnPosition + columnPosition;
+		this.columnStep = columnStep;
+	}
+
+	@Override
+	public void shiftPosition(int columnsToShift) {
+		shiftPosition(columnsToShift, columnStep);
+	}
+	
+	@Override
+	public void shiftPosition(int columnsToShift, int columnStep) {
+		actualColumnPosition += columnsToShift;
+		this.columnStep = columnStep;
 	}
 }

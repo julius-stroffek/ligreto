@@ -3,8 +3,8 @@ package net.ligreto.executor.layouts;
 import java.io.IOException;
 
 import net.ligreto.LigretoParameters;
-import net.ligreto.builders.BuilderInterface.CellFormat;
-import net.ligreto.builders.BuilderInterface.HeaderType;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataException;
 
@@ -17,56 +17,80 @@ public class NormalJoinLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws DataException, IOException {
 		targetBuilder.nextRow();
-		targetBuilder.dumpHeaderColumn(0, "# of Diffs", HeaderType.TOP);
-		targetBuilder.setColumnPosition(1, 1, null);
-		targetBuilder.dumpJoinOnHeader(dp1, on1, null);
-		targetBuilder.setColumnPosition(onLength + 1, 1, null);
-		targetBuilder.dumpOtherHeader(dp1, on1, null, dataSourceDesc1);
-		targetBuilder.setColumnPosition(rsColCount + 1, 1, null);
-		targetBuilder.dumpOtherHeader(dp2, on2, null, dataSourceDesc2);		
+		targetBuilder.dumpCell(0, "# of Diffs", OutputStyle.TOP_HEADER);
+		targetBuilder.shiftPosition(1, 1);
+		
+		for (int i = 0; i < keyColumns.length; i++) {
+			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+		}
+		targetBuilder.shiftPosition(keyColumns.length);
+		
+		for (int i = 0; i < resultColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp1.getColumnName(resultColumns[i]), OutputStyle.TOP_HEADER);
+		}
+		targetBuilder.shiftPosition(resultColumns.length);
+
+		for (int i = 0; i < resultColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp2.getColumnName(resultColumns[i]), OutputStyle.TOP_HEADER);
+		}
 	}
 
 	@Override
 	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, IOException {
 		targetBuilder.nextRow();
+		targetBuilder.dumpCell(0, rowDiffs, OutputFormat.DEFAULT, rowDiffs > 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT);
+		targetBuilder.shiftPosition(1);
 		switch (resultType) {
 		case LEFT:
-			targetBuilder.dumpColumn(0, rowDiffs, CellFormat.UNCHANGED, rowDiffs > 0);
-			targetBuilder.setColumnPosition(1, 1, higherArray);
-			targetBuilder.dumpJoinOnColumns(dp1, on1);
-			targetBuilder.setColumnPosition(onLength + 1, 1, cmpArray);							
-			targetBuilder.dumpOtherColumns(dp1, on1, null);
-			targetBuilder.setColumnPosition(rsColCount + 1, 1, cmpArray);
-			for (int i=0; i < rsColCount - onLength; i++) {
-				targetBuilder.dumpColumn(
-					i, ligretoParameters.getMissingString(),
-					CellFormat.UNCHANGED
-				);
+			for (int i = 0; i < keyColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+			}
+			targetBuilder.shiftPosition(keyColumns.length);
+			
+			for (int i = 0; i < resultColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]), OutputStyle.HIGHLIGHTED);
+			}
+			targetBuilder.shiftPosition(resultColumns.length);
+
+			for (int i = 0; i < resultColumns.length; i++) {
+				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
 			}
 			break;
+			
 		case RIGHT:
-			targetBuilder.dumpColumn(0, rowDiffs, CellFormat.UNCHANGED, rowDiffs > 0);
-			targetBuilder.setColumnPosition(1, 1, higherArray);
-			targetBuilder.dumpJoinOnColumns(dp2, on2);
-			targetBuilder.setColumnPosition(onLength + 1, 1, cmpArray);							
-			for (int i=0; i < rsColCount - onLength; i++) {
-				targetBuilder.dumpColumn(
-					i, ligretoParameters.getMissingString(),
-					CellFormat.UNCHANGED
-				);
+			for (int i = 0; i < keyColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.setColumnPosition(rsColCount + 1, 1, cmpArray);							
-			targetBuilder.dumpOtherColumns(dp2, on2, null);
+			targetBuilder.shiftPosition(keyColumns.length);
+			
+			for (int i = 0; i < resultColumns.length; i++) {
+				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
+			}
+			targetBuilder.shiftPosition(resultColumns.length);
+
+			for (int i = 0; i < resultColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]), OutputStyle.HIGHLIGHTED);
+			}
 			break;
+			
 		case INNER:
-			targetBuilder.dumpColumn(0, rowDiffs, CellFormat.UNCHANGED, rowDiffs > 0);
-			targetBuilder.setColumnPosition(1, 1, null);
-			targetBuilder.dumpJoinOnColumns(dp1, on1);
-			targetBuilder.setColumnPosition(onLength + 1, 1, cmpArray);							
-			targetBuilder.dumpOtherColumns(dp1, on1, null);			
-			targetBuilder.setColumnPosition(rsColCount + 1, 1, cmpArray);
-			targetBuilder.dumpOtherColumns(dp2, on2, null);
+			for (int i = 0; i < keyColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.DEFAULT);
+			}
+			targetBuilder.shiftPosition(keyColumns.length);
+			
+			for (int i = 0; i < resultColumns.length; i++) {
+				OutputStyle style = cmpArray[resultColumns[i]] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+				targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]), style);
+			}
+			targetBuilder.shiftPosition(resultColumns.length);
+
+			for (int i = 0; i < resultColumns.length; i++) {
+				OutputStyle style = cmpArray[resultColumns[i]] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+				targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]), style);
+			}
 			break;
+			
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 		}

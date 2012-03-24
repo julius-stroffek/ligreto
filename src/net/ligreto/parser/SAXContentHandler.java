@@ -364,6 +364,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "collation") != null) {
 						join.setCollation(getAttributeValue(atts, "collation"));
 					}
+					if (getAttributeValue(atts, "duplicates") != null) {
+						join.setDuplicates(getAttributeValue(atts, "duplicates"));
+					}
 				} else if ("join".equals(localName)) {
 					log.warn("Use of <join> node is deprecated and might not work in the future releases.");
 					log.warn("Please use <comparison> node instead.");
@@ -381,6 +384,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					join.setLocale(getAttributeValue(atts, "locale"));
 					if (getAttributeValue(atts, "collation") != null) {
 						join.setCollation(getAttributeValue(atts, "collation"));
+					}
+					if (getAttributeValue(atts, "duplicates") != null) {
+						join.setDuplicates(getAttributeValue(atts, "duplicates"));
 					}
 					if (getAttributeValue(atts, "target") != null) {
 						log.warn("Use of 'target' attribute in <join> node is deprecated and might not work in the future releases.");

@@ -8,6 +8,9 @@ import java.sql.Timestamp;
 import net.ligreto.exceptions.DataException;
 
 public abstract class DataProvider {
+
+	/** The data source caption used in user output. */
+	protected String caption;
 	
 	public abstract boolean next() throws DataException;
 
@@ -50,6 +53,12 @@ public abstract class DataProvider {
 	 */
 	public abstract int getIndex(int originalIndex) throws DataException;
 
+	public abstract boolean isActive() throws DataException;
+	
+	public abstract boolean hasDuplicateKey() throws DataException;
+	
+	public abstract int getIndexInDuplicates() throws DataException;
+	
 	public abstract boolean wasNull() throws DataException;
 
 	public abstract boolean isNumeric(int index) throws DataException;
@@ -57,4 +66,12 @@ public abstract class DataProvider {
 	public abstract Time getTime(int index) throws DataException;
 
 	public abstract Date getDate(int index) throws DataException;
+
+	public String getCaption() {
+		return caption;
+	}
+	
+	public void setCaption(String caption) {
+		this.caption = caption;
+	}
 }

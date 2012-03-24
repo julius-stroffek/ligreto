@@ -19,33 +19,33 @@
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="left!B2" type="left" header="true" highlight="false" interlaced="false">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="left!B2" on="1" type="left" header="true" highlight="false" interlaced="false">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="right!B2" type="right" header="true" highlight="false" interlaced="false">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="right!B2" on="1" type="right" header="true" highlight="false" interlaced="false">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="inner!B2" type="inner" header="true" highlight="false" interlaced="false">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="inner!B2" on="1" type="inner" header="true" highlight="false" interlaced="false">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="interlaced!B2" type="full" header="true" highlight="false" interlaced="true">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="interlaced!B2" on="1" type="full" header="true" highlight="false" interlaced="true">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="diffs!B2" type="full" header="true" diffs="true" highlight="true" interlaced="false">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="diffs!B2" on="1" type="full" header="true" diffs="true" highlight="true" interlaced="false">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="append!B2" type="inner" header="true" diffs="true" highlight="true" interlaced="false" hl-color="#20d020">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="append!B2" on="1" type="inner" header="true" diffs="true" highlight="true" interlaced="false" hl-color="#20d020">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
-			<join target="append!B2" type="inner" header="false" append="true" diffs="true" highlight="true" interlaced="false" hl-color="#2020d0">
-				<sql data-source="Source1" on="1">select * from join_table1</sql>
-				<sql data-source="Source2" on="1">select * from join_table2</sql>
+			<join target="append!B2" on="1" type="inner" header="false" append="true" diffs="true" highlight="true" interlaced="false" hl-color="#2020d0">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
 			</join>		
 		</data>
 	</report>

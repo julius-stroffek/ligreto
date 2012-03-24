@@ -56,10 +56,14 @@ public class SortingDataProvider extends DataProvider {
 	protected int currentRow;
 	protected boolean prepared = false;
 	protected boolean wasNull = false;
+	protected int indexInDuplicates = 0;
+	protected boolean duplicateKey = false;
+	protected int cmpKey = -1;
 	
 	public SortingDataProvider(DataProvider dataProvider, int[] keyColumns) throws DataException {
 		this.dataProvider = dataProvider;
 		this.keyColumns = keyColumns;
+		setCaption(dataProvider.getCaption());
 	}
 
 	public void prepareData() throws DataException {
@@ -84,6 +88,7 @@ public class SortingDataProvider extends DataProvider {
 		rows = rowList.toArray(arrayType);
 		Arrays.sort(rows);
 		currentRow = -1;
+		cmpKey = -1;
 		prepared = true;
 	}
 	
@@ -91,7 +96,30 @@ public class SortingDataProvider extends DataProvider {
 	public boolean next() throws DataException {
 		Assert.assertTrue(prepared);
 		currentRow++;
-		return (currentRow < rows.length);
+		
+		// We are already over the data
+		if (currentRow >= rows.length) {
+			return false;
+		}
+		
+		if (cmpKey == 0) {
+			indexInDuplicates++;
+			duplicateKey = true;
+		} else {
+			indexInDuplicates = 0;
+			duplicateKey = false;
+		}
+
+		if (currentRow + 1 < rows.length) {
+			cmpKey = rows[currentRow].compareTo(rows[currentRow + 1]);
+			if (cmpKey == 0) {
+				duplicateKey = true;
+			} else {
+				Assert.assertTrue(cmpKey == -1);
+			}
+		}
+		
+		return true;
 	}
 
 	@Override
@@ -257,5 +285,26 @@ public class SortingDataProvider extends DataProvider {
 		Date result = (Date) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
+	}
+
+	@Override
+	public boolean isActive() throws DataException {
+		if (!prepared) {
+			return false;
+		}
+		if (currentRow >= 0 && currentRow < rows.length) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean hasDuplicateKey() throws DataException {
+		return duplicateKey;
+	}
+
+	@Override
+	public int getIndexInDuplicates() throws DataException {
+		return indexInDuplicates;
 	}
 }

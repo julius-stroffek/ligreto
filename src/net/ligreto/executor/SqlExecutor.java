@@ -12,7 +12,9 @@ import org.apache.commons.logging.LogFactory;
 import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.data.DataProvider;
 import net.ligreto.data.ResultSetDataProvider;
 import net.ligreto.exceptions.LigretoException;
@@ -49,18 +51,11 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		if (sqlNode.getTarget() == null)
 			return false;
 		
-		String[] exclStr = sqlNode.getExcludeColumns();
-		if (exclStr != null && exclStr.length > 0) {
-			excl = new int[exclStr.length];
-			for (int i=0; i < exclStr.length; i++) {
-				excl[i] = MiscUtils.findColumnIndex(dp, exclStr[i]);
-				log.info("Excluding column \"" + exclStr[i] + "\" from sql query which has the index: " + excl[i]);
-			}
-		}
-		
 		targetBuilder = reportBuilder.getTargetBuilder(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
-			targetBuilder.dumpHeader(dp, excl);
+			for (int i=0; i < dp.getColumnCount(); i++) {
+				targetBuilder.dumpCell(i, dp.getColumnName(i+1), OutputFormat.DEFAULT, OutputStyle.ROW_HEADER);
+			}
 		}
 		return true;
 	}
@@ -68,11 +63,8 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 	@Override
 	public void processResultSetRow(DataProvider dp) throws Exception {
 		targetBuilder.nextRow();
-		targetBuilder.setColumnPosition(0);
-		for (int i=1, c=0; i <= dp.getColumnCount(); i++) {
-			if (!MiscUtils.arrayContains(excl, i)) {
-				targetBuilder.dumpColumn(c++, dp, i);
-			}
+		for (int i=0; i < dp.getColumnCount(); i++) {
+			targetBuilder.dumpCell(i, dp.getObject(i + 1));
 		}
 	}
 
@@ -111,6 +103,18 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 							throw new LigretoException("Unknown query type.");
 						}
 						if (callBack != null && rs != null) {
+
+							// Prepare the list of excluded columns
+							String[] exclStr = sqlNode.getExcludeColumns();
+							if (exclStr != null && exclStr.length > 0) {
+								excl = new int[exclStr.length];
+								for (int i=0; i < exclStr.length; i++) {
+									excl[i] = MiscUtils.findColumnIndex(rs, exclStr[i]);
+									log.info("Excluding column \"" + exclStr[i] + "\" from sql query which has the index: " + excl[i]);
+								}
+							}
+							
+							// Create the data provider and process the result
 							DataProvider dp = new ResultSetDataProvider(rs, excl);
 							if (callBack.prepareProcessing(sqlNode, dp)) {
 								while (rs.next()) {

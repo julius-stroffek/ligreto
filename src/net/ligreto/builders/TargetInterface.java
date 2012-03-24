@@ -3,12 +3,29 @@ package net.ligreto.builders;
 import java.io.IOException;
 
 import net.ligreto.LigretoParameters;
-import net.ligreto.builders.BuilderInterface.CellFormat;
-import net.ligreto.builders.BuilderInterface.HeaderType;
-import net.ligreto.data.DataProvider;
-import net.ligreto.exceptions.DataException;
+import net.ligreto.builders.BuilderInterface.OutputFormat;
+import net.ligreto.builders.BuilderInterface.OutputStyle;
 
 public interface TargetInterface {
+	
+	public abstract void nextRow() throws IOException;
+	public abstract void setPosition(int baseColumnPosition);
+	public abstract void setPosition(int baseColumnPosition, int columnStep);
+	public abstract void shiftPosition(int columnsToShift);
+	public abstract void shiftPosition(int columnsToShift, int columnStep);
+	public abstract void dumpCell(int i, Object value);
+	public abstract void dumpCell(int i, Object value, OutputFormat outputFormat);
+	public abstract void dumpCell(int i, Object value, OutputStyle outputStyle);
+	public abstract void dumpCell(int i, Object value, OutputFormat outputFormat, OutputStyle outputStyle);
+	public abstract void finish() throws IOException;
+	public abstract void setHighlight(boolean highlight);
+	public abstract void setHighlightColor(short[] rgbHlColor);
+
+	/**
+	 * Sets up the global ligreto parameters to be used.
+	 * @param ligretoParameters
+	 */
+	public abstract void setLigretoParameters(LigretoParameters ligretoParameters);
 	
 	/**
 	 * This method will set the value in the output report at the i-th position
@@ -25,7 +42,7 @@ public interface TargetInterface {
 	 * The first result set column index is 1.
 	 * </p>
 	 */
-	public abstract void dumpColumn(int i, DataProvider dp, int dpi) throws DataException;
+	//public abstract void dumpColumn(int i, DataProvider dp, int dpi) throws DataException;
 
 	/**
 	 * This method will set the value in the output report at the i-th position
@@ -39,7 +56,7 @@ public interface TargetInterface {
 	 * The first output column index is 1.
 	 * </p>
 	 */
-	public abstract void dumpColumn(int i, DataProvider dp) throws DataException;
+	//public abstract void dumpColumn(int i, DataProvider dp) throws DataException;
 
 	/** 
 	 * Move the output processing to the next row. The <code>highlightArray</code>
@@ -47,14 +64,14 @@ public interface TargetInterface {
 	 * set to the base column value.
 	 * @throws IOException 
 	 */
-	public abstract void nextRow() throws IOException;
+	//public abstract void nextRow() throws IOException;
 	
 	/** This method have to be called after all the target related data are dumped. 
 	 * @throws IOException */
-	public abstract void finish() throws IOException;
+	//public abstract void finish() throws IOException;
 
 	/** Shift the actual column position by the specified number of columns. */
-	public abstract void setColumnPosition(int column);
+	//public abstract void setColumnPosition(int column);
 
 	/**
 	 * This method sets up the array that determines the highlighting of the actually processed row.
@@ -65,7 +82,7 @@ public interface TargetInterface {
 	 * The highlight array will be erased by the call to <code>nextRow</code> method.
 	 * </p>
 	 */
-	public abstract void setHighlightArray(int[] highlightArray);
+	//public abstract void setHighlightArray(int[] highlightArray);
 
 	/**
 	 * This method sets the column position for <code>setColumn</code> function. The position
@@ -76,40 +93,40 @@ public interface TargetInterface {
 	 * @param highlightArray The array which determines the highlighting of the columns in the row
 	 *                       actually processed.
 	 */
-	public abstract void setColumnPosition(int column, int step, int[] highlightArray);
+	//public abstract void setColumnPosition(int column, int step, int[] highlightArray);
 
 	/**
 	 * Store the specified object into the result column of the current row.
 	 * 
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
-	 * @param cellFormat The change in the cell formatting.
+	 * @param outputFormat The change in the cell formatting.
 	 * 
 	 * <p>
 	 * The method will automatically determine the highlight color to be used.
 	 * </p>
 	 */
-	public abstract void dumpColumn(int i, Object o, CellFormat cellFormat);
+	//public abstract void dumpColumn(int i, Object o, OutputFormat outputFormat);
 	
 	/**
 	 * Store the specified object into the result column of the current row.
 	 * 
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
-	 * @param cellFormat The change in the cell formatting.
+	 * @param outputFormat The change in the cell formatting.
 	 * @param highlight Indicates whether to highlight the cell content.
 	 */
-	public abstract void dumpColumn(int i, Object o, CellFormat cellFormat, boolean highlight);
+	//public abstract void dumpColumn(int i, Object o, OutputFormat outputFormat, boolean highlight);
 
-	public abstract void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException;
+	//public abstract void dumpHeader(DataProvider dp, int[] excl) throws DataException, IOException;
 
-	public abstract void dumpJoinOnHeader(DataProvider dp, int[] on, String dataSourceDesc) throws DataException;
+	//public abstract void dumpJoinOnHeader(DataProvider dp, int[] on, String dataSourceDesc) throws DataException;
 
-	public abstract void dumpOtherHeader(DataProvider dp, int[] on, int[] excl, String dataSourceDesc) throws DataException;
+	//public abstract void dumpOtherHeader(DataProvider dp, int[] on, int[] excl, String dataSourceDesc) throws DataException;
 
-	public abstract void dumpJoinOnColumns(DataProvider dp, int[] on) throws DataException;
+	//public abstract void dumpJoinOnColumns(DataProvider dp, int[] on) throws DataException;
 
-	public abstract void dumpOtherColumns(DataProvider dp, int[] on, int[] excl) throws DataException;
+	//public abstract void dumpOtherColumns(DataProvider dp, int[] on, int[] excl) throws DataException;
 
 	/**
 	 * Store the specified object into the result column of the current row.
@@ -118,7 +135,7 @@ public interface TargetInterface {
 	 * @param o The object which value should be stored.
 	 * @param rgb The text color to use.
 	 */
-	public abstract void dumpColumn(int i, Object o, short[] rgb, CellFormat cellFormat);
+	//public abstract void dumpColumn(int i, Object o, short[] rgb, OutputFormat outputFormat);
 
 	/**
 	 * Store the specified object into the result column of the header row.
@@ -126,25 +143,20 @@ public interface TargetInterface {
 	 * @param i The column index relative to <code>actColumn</code> position.
 	 * @param o The object which value should be stored.
 	 */
-	public abstract void dumpHeaderColumn(int i, Object o, HeaderType headerType);
+	//public abstract void dumpHeaderColumn(int i, Object o, OutputStyle outputStyle);
 
 	/**
 	 * Sets the difference highlighting option
 	 * 
 	 * @param highlight
 	 */
-	public abstract void setHighlight(boolean highlight);
+	//public abstract void setHighlight(boolean highlight);
 
 	/**
 	 * Sets the difference highlighting color
 	 * 
 	 * @param rgbHlColor The RGB color to set
 	 */
-	public abstract void setHlColor(short[] rgbHlColor);
+	//public abstract void setHlColor(short[] rgbHlColor);
 
-	/**
-	 * Sets up the ligreto parameters to be used.
-	 * @param ligretoParameters
-	 */
-	public abstract void setLigretoParameters(LigretoParameters ligretoParameters);
 }

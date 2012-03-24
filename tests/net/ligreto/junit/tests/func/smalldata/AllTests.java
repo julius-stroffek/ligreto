@@ -11,6 +11,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	PrepareTestData.class,
 	ComparisonReportTest.class,
 	DetailedLayoutTest.class,
+	DuplicateLayoutTest.class,
 	Excel97ReportTest.class,
 	ExcludeColumnsTest.class,	
 	InternalSortTest.class,

@@ -1,10 +1,8 @@
 package net.ligreto.executor.layouts;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 
-import net.ligreto.Database;
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.TargetInterface;
@@ -51,44 +49,20 @@ public abstract class JoinLayout {
 	/** The results calculated for the current row. */
 	protected AggregationResult currentResult;
 		
-	/** The column indices of the columns to be equal from the first result set. */
-	protected int[] on1 = null;
-	
-	/** The column indices of the columns to be equal from the second result set. */
-	protected int[] on2 = null;
-		
+	/** The column indices of the columns to be equal from both data providers. */
+	protected int[] keyColumns = null;
+			
 	/** The columns which should be used for aggregated result. */
-	protected int[] groupBy = null;
+	protected int[] groupByColumns = null;
 	
 	/** The first data provider. */
 	protected DataProvider dp1 = null;
 	
 	/** The second data provider. */
 	protected DataProvider dp2 = null;
-	
-	/** The length of the on1 and on2 arrays which have to be the same. */
-	protected int onLength = -1;
-	
-	/** The length of {@code groupBy} array. */
-	protected int groupByLength = 0;
-	
-	/** The number of columns that will get processed from the both first and second result sets. */
-	protected int rsColCount = -1;
-	
-	/** The arrays showing all the elements from the first result set to be lower. */
-	protected int[] lowerArray = null;
-	
-	/** The arrays showing all the elements from the second result set to be higher. */
-	protected int[] higherArray = null;
-	
+			
 	/** The global ligreto parameters. */
 	protected LigretoParameters ligretoParameters;
-	
-	/** The description of 1st data source. */
-	protected String dataSourceDesc1 = null;
-	
-	/** The description of 2nd data source. */
-	protected String dataSourceDesc2 = null;
 	
 	/** The number of rows that are equal. */
 	protected int equalRowCount = 0;
@@ -126,11 +100,12 @@ public abstract class JoinLayout {
 	/** The maximal number of rows to be processed by this layout. */ 
 	protected Integer dumpedRawCountLimit = null;
 
+	/** The array of columns that are compared. */
+	protected int[] comparedColumns;
+	
 	/** Column metrics related fields. */
-	protected HashMap<Integer, Void> noResultColumns1 = new HashMap<Integer, Void>();
-	protected HashMap<Integer, Void> noResultColumns2 = new HashMap<Integer, Void>();
-	int[] resultColumns1 = null;
-	int[] resultColumns2 = null;
+	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
+	int[] resultColumns = null;
 	int resultCount = 0;
 	int[] xmlToResult1 = null;
 	int[] xmlToResult2 = null;
@@ -164,6 +139,8 @@ public abstract class JoinLayout {
 			return new SummaryJoinLayout(targetBuilder, ligretoParameters);
 		case ANALYTICAL:
 			return new AnalyticalJoinLayout(targetBuilder, ligretoParameters);
+		case DUPLICATES:
+			return new DuplicatesJoinLayout(targetBuilder, ligretoParameters);
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinLayoutType.");
 		}
@@ -220,17 +197,31 @@ public abstract class JoinLayout {
 		if (i < 0 || i >= resultCount)
 			throw new IllegalArgumentException("Result column index out of range");
 
-		int i1 = resultColumns1[i];
-		int i2 = resultColumns2[i];
+		return getColumnName(resultColumns[i]);
+	}
+	
+	/**
+	 * Function will provide the name of the specified result column.
+	 * 
+	 * @param i the index of the column
+	 * @return the name of the i-th column
+	 * @throws SQLException
+	 */
+	public String getColumnName(int i) throws DataException {
+		Assert.assertTrue(startCalled);
 
-		String colName = dp1.getColumnName(i1);
-		String col2Name = dp1.getColumnName(i2);
+		if (i < 0 || i >= getColumnCount())
+			throw new IllegalArgumentException("Column index out of range");
+
+		String colName = dp1.getColumnName(i);
+		String col2Name = dp1.getColumnName(i);
 		if (! colName.equalsIgnoreCase(col2Name)) {
 			colName = colName + " / " + col2Name;
 		}
 
 		return colName;
 	}
+	
 	/**
 	 * @param index index of the result column
 	 * @return the aggregated result of the column data
@@ -254,22 +245,21 @@ public abstract class JoinLayout {
 		for (int i = 0; i < resultCount; i++) {
 			
 			// Get the indices of result columns into the result sets
-			int i1 = resultColumns1[i];
-			int i2 = resultColumns2[i];
+			int r = resultColumns[i];
 			
 			Column columnValue1, columnValue2;
 			switch (resultType) {
 			case LEFT:
-				columnValue1 = new Column(dp1, i1);
+				columnValue1 = new Column(dp1, r);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
 				break;
 			case RIGHT:
-				columnValue2 = new Column(dp2, i2);
+				columnValue2 = new Column(dp2, r);
 				result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
 				break;
 			case INNER:
-				columnValue1 = new Column(dp1, i1);
-				columnValue2 = new Column(dp2, i2);
+				columnValue1 = new Column(dp1, r);
+				columnValue2 = new Column(dp2, r);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
 				break;
 			default:
@@ -294,7 +284,7 @@ public abstract class JoinLayout {
 	 * 
 	 * @return Whether the presented row was part of the join type (full, inner, etc.) in this layout
 	 */
-	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws LigretoException, IOException {
 		
 		// Check for proper initialization
 		Assert.assertTrue(startCalled);
@@ -445,7 +435,7 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
-	public boolean processRow(int rowDiffs, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+	public boolean processRow(int rowDiffs, JoinResultType resultType) throws LigretoException, IOException {
 		return processRow(rowDiffs, null, resultType);
 	}
 
@@ -462,7 +452,17 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
-	public abstract void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws SQLException, LigretoException, IOException;
+	public abstract void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws LigretoException, IOException;
+	
+	/**
+	 * Will dump the row which was identified as having duplicate key.
+	 * 
+	 * @param dataSourceIndex The index of data source that the duplicate belongs to.
+	 * @throws IOException 
+	 * @throws SQLException
+	 */
+	public void dumpDuplicate(int dataSourceIndex) throws DataException, IOException {
+	}
 	
 	/**
 	 * Will dump the result row from the corresponding result sets. The method will also
@@ -475,7 +475,7 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
-	public void dumpRow(int rowDiffs, JoinResultType resultType) throws SQLException, LigretoException, IOException {
+	public void dumpRow(int rowDiffs, JoinResultType resultType) throws LigretoException, IOException {
 		dumpRow(rowDiffs, null, resultType);
 	}
 
@@ -502,15 +502,6 @@ public abstract class JoinLayout {
 	 */
 	public void setJoinNode(JoinNode joinNode) throws DataSourceNotDefinedException {
 		this.joinNode = joinNode;
-		if (joinNode != null) {
-			String dSrc1 =  joinNode.getSqlQueries().get(0).getDataSource();
-			String dSrc2 =  joinNode.getSqlQueries().get(1).getDataSource();		
-			dataSourceDesc1 = Database.getInstance().getDataSourceNode(dSrc1).getDescription();
-			dataSourceDesc2 = Database.getInstance().getDataSourceNode(dSrc2).getDescription();
-		} else {
-			dataSourceDesc1 = null;
-			dataSourceDesc2 = null;
-		}
 	}
 
 	/**
@@ -529,27 +520,32 @@ public abstract class JoinLayout {
 	}
 	
 	/**
-	 * @param on1 The join columns for first result set to set.
-	 * @param on2 The join columns for second result set to set.
+	 * @param key The join columns for both data providers.
 	 */
-	public void setOnColumns(int[] on1, int[] on2) {
-		this.on1 = on1;
-		this.on2 = on2;
-		if (on1.length != on2.length)
-			throw new IllegalArgumentException("The length of on1 and on2 arrays differs.");
-		onLength = on1.length;
+	public void setKeyColumns(int[] keyColumns) {
+		this.keyColumns = keyColumns;
 	}
 	
+	/**
+	 * @return the comparedColumns
+	 */
+	public int[] getComparedColumns() {
+		return comparedColumns;
+	}
+
+	/**
+	 * @param comparedColumns the comparedColumns to set
+	 */
+	public void setComparedColumns(int[] comparedColumns) {
+		this.comparedColumns = comparedColumns;
+	}
+
 	/**
 	 * @param groupBy
 	 * 			The group by columns to set.
 	 */
-	public void setGroupByColumns(int[] groupBy) {
-		this.groupBy = groupBy;
-		if (groupBy != null)
-			groupByLength = groupBy.length;
-		else
-			groupByLength = 0;
+	public void setGroupByColumns(int[] groupByClumns) {
+		this.groupByColumns = groupByClumns;
 	}
 	
 	/**
@@ -569,28 +565,14 @@ public abstract class JoinLayout {
 	}
 	
 	/**
-	 * @return The number of columns being processed (excluding the exclude columns).
+	 * @return The number of columns being processed.
+	 * @throws DataException 
 	 */
-	public int getColumnCount() {
-		return rsColCount;
+	public int getColumnCount() throws DataException {
+		Assert.assertTrue(dp1.getColumnCount() == dp2.getColumnCount());
+		return dp1.getColumnCount();
 	}
 	
-	/**
-	 * @param columnCount
-	 * 				The column count to set.
-	 */
-	public void setColumnCount(int columnCount) {
-		rsColCount = columnCount;	
-		// Create the arrays to be used to highlight
-		// differences for left, right and outer joins
-		lowerArray = new int[rsColCount];
-		higherArray = new int[lowerArray.length];
-		for (int i=0; i < lowerArray.length; i++) {
-			lowerArray[i] = -1;
-			higherArray[i] = 1;
-		}
-	}
-
 	/**
 	 * @return the matchingRowCount
 	 */
@@ -641,48 +623,30 @@ public abstract class JoinLayout {
 	public void start() throws LigretoException {
 		startCalled = true;
 
-		for (int i=0; i < on1.length; i++) {
-			noResultColumns1.put(on1[i], null);
-		}
-		for (int i=0; i < on2.length; i++) {
-			noResultColumns2.put(on2[i], null);
+		for (int i=0; i < keyColumns.length; i++) {
+			noResultColumns.put(keyColumns[i], null);
 		}
 
-		int resultCount1 = dp1.getColumnCount() - noResultColumns1.size();
-		int resultCount2 = dp2.getColumnCount() - noResultColumns2.size();
-		
-		if (resultCount1 != resultCount2) {
-			throw new LigretoException(
-				"The column count from data sources differs; 1st count: "
-				+ resultCount1 + "; 2nd count: " + resultCount2
-			);
-		}
-		resultCount = resultCount1;
-		
-		resultColumns1 = new int[resultCount];
-		resultColumns2 = new int[resultCount];
+		int resultCount = getColumnCount() - noResultColumns.size();
+				
+		resultColumns = new int[resultCount];
 		
 		// Store the information about the result column's indices
-		for (int i=0, i1=1, i2=1; i < resultCount; i++, i1++, i2++) {
-			while (noResultColumns1.containsKey(i1))
+		for (int i=0, i1=1; i < resultCount; i++, i1++) {
+			while (noResultColumns.containsKey(i1))
 				i1++;
-			while (noResultColumns2.containsKey(i2))
-				i2++;
-			resultColumns1[i] = i1;
-			resultColumns2[i] = i2;
+			resultColumns[i] = i1;
 		}
 		
-		xmlToResult1 = new int[rsColCount];
-		xmlToResult2 = new int[rsColCount];
+		xmlToResult1 = new int[getColumnCount()];
+		xmlToResult2 = new int[getColumnCount()];
 		// Do the XML index to result translation array
-		for (int i=0; i < rsColCount; i++) {
+		for (int i=0; i < getColumnCount(); i++) {
 			xmlToResult1[i] = -1;
 			xmlToResult2[i] = -1;
 			for (int j=0; j < resultCount; j++) {
-				if (resultColumns1[j] == i+1) {
+				if (resultColumns[j] == i+1) {
 					xmlToResult1[i] = j;
-				}
-				if (resultColumns2[j] == i+1) {
 					xmlToResult2[i] = j;
 				}
 			}

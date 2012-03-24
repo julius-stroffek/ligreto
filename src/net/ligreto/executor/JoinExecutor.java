@@ -32,6 +32,7 @@ import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.executor.layouts.JoinLayout.JoinResultType;
 import net.ligreto.parser.nodes.JoinNode;
+import net.ligreto.parser.nodes.JoinNode.DuplicatesStrategy;
 import net.ligreto.parser.nodes.JoinNode.SortingStrategy;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
@@ -138,18 +139,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		return result;
 	}
 
-	protected void returnRowNormal() {
-		
-	}
-	
-	protected void returnRowInterlaced() {
-		
-	}
-	
-	protected void returnRowDetailed() {
-		
-	}
-	
 	protected ResultStatus executeJoin(JoinNode joinNode) throws SQLException, LigretoException, ClassNotFoundException, IOException {
 		ResultStatus result = new ResultStatus();
 		List<SqlNode> sqlQueries = joinNode.getSqlQueries();
@@ -173,28 +162,21 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			stm1 = cnn1.createStatement();
 			stm2 = cnn2.createStatement();
 			
-			int on1[] = sqlQueries.get(0).getKey();
-			int on2[] = sqlQueries.get(1).getKey();
-			if (on1 == null)
-				on1 = joinNode.getKey();
-			if (on2 == null)
-				on2 = joinNode.getKey();
-			
-			if (on1 == null || on2 == null)
-				throw new LigretoException("The \"on\" attribute have to be present in <join> node or all <sql> children.");
+			int key[] = joinNode.getKey();
+			if (key == null)
+				throw new LigretoException("The \"key\" attribute have to be present in <comparison> node.");
 			
 			// Do certain sanity checks here
-			if (on1.length != on2.length)
-				throw new LigretoException("All queries in the join have to have the same number of \"on\" columns.");
+
 			
-			if (on1.length > 0 && joinNode.getSortingStrategy() == SortingStrategy.EXTERNAL) {
+			if (key.length > 0 && joinNode.getSortingStrategy() == SortingStrategy.EXTERNAL) {
 				// Things are all right, so we will continue...
 				qry1.append(" order by ");
 				qry2.append(" order by ");
-				for (int i = 0; i < on1.length; i++) {
-					qry1.append(on1[i]);
+				for (int i = 0; i < key.length; i++) {
+					qry1.append(key[i]);
 					qry1.append(",");
-					qry2.append(on2[i]);
+					qry2.append(key[i]);
 					qry2.append(",");
 				}
 				qry1.deleteCharAt(qry1.length() - 1);
@@ -238,18 +220,15 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			ResultSetMetaData rsmd1 = rs1.getMetaData();
 			ResultSetMetaData rsmd2 = rs2.getMetaData();
 			
-			for (int i=0; i < on1.length; i++) {
-				if (on1[i] > rsmd1.getColumnCount())
-					throw new LigretoException("Index in \"on\" clause of 1st query is out of the range. It is \""
-							+ on1[i] + "\" and should be \"" + rsmd1.getColumnCount() + "\" the largest.");
+			for (int i=0; i < key.length; i++) {
+				if (key[i] > rsmd1.getColumnCount())
+					throw new LigretoException("Index in \"key\" is out of the range for 1st query. It is \""
+							+ key[i] + "\" and should be \"" + rsmd1.getColumnCount() + "\" the largest.");
+				if (key[i] > rsmd2.getColumnCount())
+					throw new LigretoException("Index in \"key\" is out of the range for 2nd query. It is \""
+							+ key[i] + "\" and should be \"" + rsmd1.getColumnCount() + "\" the largest.");
 			}
 		
-			for (int i=0; i < on2.length; i++) {
-				if (on2[i] > rsmd2.getColumnCount())
-					throw new LigretoException("Index in \"on\" clause of 2nd query is out of the range. It is \""
-							+ on2[i] + "\" and should be \"" + rsmd2.getColumnCount() + "\" the largest.");
-			}
-
 			// Process the exclude columns
 			String[] exclStr1 = sqlQueries.get(0).getExcludeColumns();
 			String[] exclStr2 = sqlQueries.get(1).getExcludeColumns();
@@ -271,7 +250,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				for (int i=0; i < exclStr1.length; i++) {
 					excl1Tmp[i] = MiscUtils.findColumnIndex(rs1, exclStr1[i]);
 					if (excl1Tmp[i] >= 0) {
-						if (MiscUtils.arrayContains(on1, excl1Tmp[i])) {
+						if (MiscUtils.arrayContains(key, excl1Tmp[i])) {
 							throw new LigretoException("Column listed in 'exclude' attribute cannot be used in 'on' clause:" + exclStr1[i]);
 						}
 						excl1Count++;
@@ -288,7 +267,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				for (int i=0; i < exclStr2.length; i++) {
 					excl2Tmp[i] = MiscUtils.findColumnIndex(rs2, exclStr2[i]);
 					if (excl2Tmp[i] >= 0) {
-						if (MiscUtils.arrayContains(on2, excl2Tmp[i])) {
+						if (MiscUtils.arrayContains(key, excl2Tmp[i])) {
 							throw new LigretoException("Column listed in 'exclude' attribute cannot be used in 'on' clause:" + exclStr2[i]);
 						}
 						excl2Count++;
@@ -315,16 +294,24 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 			}
 			
+			// The comparator instance
+			LigretoComparator rsComparator = LigretoComparator.getInstance(joinNode.getLigretoNode().getLigretoParameters());
+			rsComparator.setComparator(comparator);
+			
 			DataProvider dp1 = new ResultSetDataProvider(rs1, excl1);
 			DataProvider dp2 = new ResultSetDataProvider(rs2, excl2);
-						
+			String dSrc1 =  joinNode.getSqlQueries().get(0).getDataSource();
+			String dSrc2 =  joinNode.getSqlQueries().get(1).getDataSource();		
+			dp1.setCaption(Database.getInstance().getDataSourceNode(dSrc1).getDescription());		
+			dp2.setCaption(Database.getInstance().getDataSourceNode(dSrc2).getDescription());		
+			
 			if (dp1.getColumnCount() != dp2.getColumnCount()) {
 				throw new LigretoException("Result set column counts differs: " + dp1.getColumnCount() + " and " + dp2.getColumnCount());
 			}
 			
 			if (joinNode.getSortingStrategy() == SortingStrategy.INTERNAL) {
-				SortingDataProvider sdp1 = new SortingDataProvider(dp1, on1);
-				SortingDataProvider sdp2 = new SortingDataProvider(dp2, on2);
+				SortingDataProvider sdp1 = new SortingDataProvider(dp1, key);
+				SortingDataProvider sdp2 = new SortingDataProvider(dp2, key);
 				sdp1.prepareData();
 				sdp2.prepareData();
 				dp1 = sdp1;
@@ -332,71 +319,46 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 			
 			// Get the list of columns to compare
-			int[] columns1 = joinNode.getSqlQueries().get(0).getColumns();
-			int[] columns2 = joinNode.getSqlQueries().get(1).getColumns();
+			int[] columns = joinNode.getColumns();
 			
-			if (columns1 == null)
-				columns1 = joinNode.getColumns();
-			if (columns2 == null)
-				columns2 = joinNode.getColumns();
-			
-			if (columns1 == null && columns2 == null) {
-				columns1 = new int[dp1.getColumnCount() - on1.length];
-				columns2 = new int[dp2.getColumnCount() - on2.length];
-				for (int i=0, i1=1, i2=1; i < columns1.length; i++, i1++, i2++) {
-					while (MiscUtils.arrayContains(on1, i1))
+			if (columns == null) {
+				columns = new int[dp1.getColumnCount() - key.length];
+				for (int i=0, i1=1; i < columns.length; i++, i1++) {
+					while (MiscUtils.arrayContains(key, i1))
 						i1++;
-					while (MiscUtils.arrayContains(on2, i2))
-						i2++;
 					
 					Assert.assertTrue(i1 <= dp1.getColumnCount());
-					Assert.assertTrue(i2 <= dp1.getColumnCount());
 
-					columns1[i] = i1;
-					columns2[i] = i2;
+					columns[i] = i1;
 				}
-			} else if (columns1 == null || columns2 == null) {
-				throw new LigretoException("Columns to compare have to be specified for both SQL queries.");
 			}
 			
 			// Create the arrays to be used to highlight
 			// differences for left, right, outer joins
-			int[] lowerArray = new int[dp1.getColumnCount() - on1.length];
+			int[] lowerArray = new int[dp1.getColumnCount() - key.length];
 			int[] higherArray = new int[lowerArray.length];
 			for (int i=0; i < lowerArray.length; i++) {
 				lowerArray[i] = 0;
 				higherArray[i] = 0;
 			}
-			for (int i=0; i < columns1.length; i++) {
-				int index1 = columns1[i];
-				int index2 = columns2[i];
-				for (int j=0; j < on1.length; j++) {
-					if (on1[j] < columns1[i]) {
+			for (int i=0; i < columns.length; i++) {
+				int index1 = columns[i];
+				for (int j=0; j < key.length; j++) {
+					if (key[j] < columns[i]) {
 						index1--;
 					}
 				}
-				for (int j=0; j < on2.length; j++) {
-					if (on2[j] < columns2[i]) {
-						index2--;
-					}
-				}
-				Assert.assertTrue(index1 == index2);
 				lowerArray[index1-1] = -1;
 				higherArray[index1-1] = 1;
 			}
-			for (int i=0; i < columns1.length; i++) {
-				if (MiscUtils.arrayContains(on1, columns1[i])) {
-					throw new LigretoException("The key columns could not be listed in columns for comparison; columns: " + columns1[i]);
-				}
-			}
-			for (int i=0; i < columns2.length; i++) {
-				if (MiscUtils.arrayContains(on2, columns2[i])) {
-					throw new LigretoException("The key columns could not be listed in columns for comparison; columns: " + columns2[i]);
+			for (int i=0; i < columns.length; i++) {
+				if (MiscUtils.arrayContains(key, columns[i])) {
+					throw new LigretoException("The key columns could not be listed in columns for comparison; columns: " + columns[i]);
 				}
 			}
 			
 			// Calculate the number of columns to compare
-			int otherColumnCount = dp1.getColumnCount() - on1.length;
+			int otherColumnCount = dp1.getColumnCount() - key.length;
 			
 			String firstTarget = null;
 			
@@ -419,7 +381,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				TargetInterface targetBuilder = reportBuilder.getTargetBuilder(layoutNode.getTarget(), layoutNode.isAppend());
 				targetBuilder.setLigretoParameters(joinNode.getLigretoNode().getLigretoParameters());
 				targetBuilder.setHighlight(layoutNode.getHighlight());
-				targetBuilder.setHlColor(layoutNode.getHlColor());
+				targetBuilder.setHighlightColor(layoutNode.getHlColor());
 
 				/* Create the proper implementation of the join layout. */
 				JoinLayout joinLayout = JoinLayout.createInstance(layoutNode.getType(), targetBuilder, joinNode.getLigretoNode().getLigretoParameters());
@@ -427,11 +389,11 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Setup other parameters required for the join layout
 				joinLayout.setJoinNode(joinNode);
 				joinLayout.setLayoutNode(layoutNode);
-				joinLayout.setOnColumns(on1, on2);
+				joinLayout.setKeyColumns(key);
 				joinLayout.setGroupByColumns(layoutNode.getGroupBy());
 				joinLayout.setResultStatus(result);
 				joinLayout.setDataProviders(dp1, dp2);
-				joinLayout.setColumnCount(dp1.getColumnCount());
+				joinLayout.setComparedColumns(columns);
 				joinLayout.start();
 				
 				// Dump the header row if requested
@@ -441,10 +403,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				layouts.add(joinLayout);
 			}
 			
-			// The comparator instance
-			LigretoComparator rsComparator = LigretoComparator.getInstance(joinNode.getLigretoNode().getLigretoParameters());
-			rsComparator.setComparator(comparator);
-			
 			boolean hasNext1 = dp1.next();
 			boolean hasNext2 = dp2.next();
 			Column[] pCol1 = null;
@@ -452,22 +410,53 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			Column[] col1 = null;
 			Column[] col2 = null;
 			while (hasNext1 && hasNext2) {
+				
+				// First process the duplicates
+				while (hasNext1 && dp1.hasDuplicateKey()) {
+					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, dp1.getCaption(), firstTarget));
+					}
+					for (JoinLayout joinLayout : layouts) {
+						joinLayout.dumpDuplicate(0);
+					}
+					hasNext1 = dp1.next();
+				}
+				while (hasNext2 && dp2.hasDuplicateKey()) {
+					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, dp1.getCaption(), firstTarget));
+					}
+					for (JoinLayout joinLayout : layouts) {
+						joinLayout.dumpDuplicate(1);
+					}
+					hasNext2 = dp2.next();
+				}
+
+				// Exit the processing if the processed duplicates
+				// were at the end of the data set
+				if (!hasNext1 || !hasNext2) {
+					break;
+				}
+				
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = LigretoComparator.duplicate(dp1, on1);
-				col2 = LigretoComparator.duplicate(dp2, on2);
+				col1 = LigretoComparator.duplicate(dp1, key);
+				col2 = LigretoComparator.duplicate(dp2, key);
 				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col1);
-					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
+					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
+					}
 				}
 				if (dResult2 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col2);
-					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+					}
 				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
@@ -496,7 +485,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = rsComparator.compareAsDataSource(dp1, on1, dp2, on2);
+				int cResult = rsComparator.compareAsDataSource(dp1, key, dp2, key);
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
@@ -508,7 +497,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, on1, columns1, dp2, on2, columns2);
+					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, key, columns, dp2, key, columns);
 					
 					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
 					for (JoinLayout joinLayout : layouts) {
@@ -544,13 +533,15 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext1) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = LigretoComparator.duplicate(dp1, on1);
+				col1 = LigretoComparator.duplicate(dp1, key);
 				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 
 				if (dResult1 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col1);
-					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
+					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
+					}
 				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
@@ -588,13 +579,15 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col2 = LigretoComparator.duplicate(dp2, on2);
+				col2 = LigretoComparator.duplicate(dp2, key);
 				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 
 				if (dResult2 == 0) {
 					log.error("Duplicate entries found.");
 					rsComparator.error(log, col2);
-					throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
+					}
 				}
 				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");

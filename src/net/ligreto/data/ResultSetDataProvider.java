@@ -337,4 +337,26 @@ public class ResultSetDataProvider extends DataProvider {
 			return false;			
 		}
 	}
+
+	@Override
+	public boolean isActive() throws DataException {
+		// TODO Auto-generated method stub
+		try {
+			return !resultSet.isBeforeFirst() && !resultSet.isAfterLast();
+		} catch (SQLException e) {
+			throw new DataException("Error on data source.", e);
+		}
+	}
+
+	@Override
+	public boolean hasDuplicateKey() throws DataException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int getIndexInDuplicates() throws DataException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

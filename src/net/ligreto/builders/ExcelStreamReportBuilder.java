@@ -38,7 +38,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 		newTarget.setNoDataFormat(isNoDataFormat());
 		newTarget.setLigretoParameters(ligretoParameters);
 		newTarget.setDataFormat(dataFormat);
-		newTarget.outputFormat = outputFormat;
+		newTarget.outputFileFormat = outputFileFormat;
 		return newTarget;
 	}
 
@@ -50,7 +50,7 @@ public class ExcelStreamReportBuilder extends ExcelReportBuilder {
 		output = MiscUtils.fixFileExt(output, ".xlsx");
 		out = new FileOutputStream(output);
 
-		outputFormat = OutputFormat.SXSSF;
+		outputFileFormat = OutputFileFormat.SXSSF;
 		
 		// Read the template file if the template was specified
 		if (template != null) {

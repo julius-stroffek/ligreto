@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class JoinNode extends Node {
 	public enum SortingStrategy {INTERNAL, EXTERNAL};
+	public enum DuplicatesStrategy {FAIL, PROCESS};
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<LayoutNode> layouts = new ArrayList<LayoutNode>();
 	protected String key;
@@ -21,6 +22,7 @@ public class JoinNode extends Node {
 	protected SortingStrategy sortingStrategy = SortingStrategy.EXTERNAL;
 	protected ReportNode reportNode;
 	protected Attitude collation = Attitude.FAIL;
+	protected DuplicatesStrategy duplicates = DuplicatesStrategy.FAIL;
 	
 	public JoinNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
@@ -73,6 +75,9 @@ public class JoinNode extends Node {
 	public int[] getColumns() {
 		if (columns == null) {
 			return null;
+		}
+		if ("".equals(columns.trim())) {
+			return new int[0];
 		}
 		String[] sValues = ligretoNode.substituteParams(columns).split(",");
 		int values[] = new int[sValues.length];
@@ -185,6 +190,23 @@ public class JoinNode extends Node {
 		}
 	}
 
+	public DuplicatesStrategy getDuplicates() {
+		return duplicates;
+	}
+
+	public void setDuplicates(DuplicatesStrategy duplicates) {
+		this.duplicates = duplicates;
+	}
+
+	public void setDuplicates(String duplicates) {
+		if ("fail".equals(duplicates)) {
+			this.duplicates = DuplicatesStrategy.FAIL;
+		} else if ("process".equals(duplicates)) {
+			this.duplicates = DuplicatesStrategy.PROCESS;
+		} else {
+			throw new IllegalArgumentException("Wrong value specified as attitude in case of collation errors: " + collation);
+		}
+	}
 	public void addLayout(LayoutNode layout) {
 		layouts.add(layout);
 	}

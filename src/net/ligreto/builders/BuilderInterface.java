@@ -8,12 +8,18 @@ import net.ligreto.exceptions.LigretoException;
 
 public interface BuilderInterface {
 	
-	/** The types of the headers. */
-	public enum HeaderType {TOP, ROW}
+	/** The style types for the output cell. */
+	public enum OutputStyle {
+		DEFAULT,
+		HIGHLIGHTED,
+		DISABLED,
+		TOP_HEADER,
+		ROW_HEADER
+	};
 	
 	/** Keep the enumeration of the possible cell formatting changes. */
-	public enum CellFormat {
-		UNCHANGED,
+	public enum OutputFormat {
+		DEFAULT,
 		PERCENTAGE_NO_DECIMAL_DIGITS,
 		PERCENTAGE_2_DECIMAL_DIGITS,
 		PERCENTAGE_3_DECIMAL_DIGITS
@@ -25,9 +31,12 @@ public interface BuilderInterface {
 	/** Set up the template file. */
 	public abstract void setTemplate(String template);
 
-	/** Set up the output file name. */
-	public abstract void setOutput(String output);
-
+	/**
+	 * Set up the output file name.
+	 * 
+	 * @param outputFileName The name of the output file.
+	 */
+	public abstract void setOutputFileName(String outputFileName);
 
 	/**
 	 * Sets up the report type specific options. 
@@ -59,7 +68,7 @@ public interface BuilderInterface {
 	 * @throws IOException
 	 */
 	public abstract void writeOutput() throws IOException;
-	
+
 	/**
 	 * Sets up the global ligreto parameters object.
 	 * @param ligretoParameters the parameter object to set.
