@@ -151,11 +151,11 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(0, "# of Occur.", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1, 2);
 		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]));
+			targetBuilder.dumpCell(i, dp1.getColumnName(resultColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 		targetBuilder.shiftPosition(1);
 		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]));
+			targetBuilder.dumpCell(i, dp2.getColumnName(resultColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 	}
 
@@ -166,32 +166,15 @@ public class AnalyticalJoinLayout extends JoinLayout {
 			noResultColumns.put(keyColumns[i], null);
 		}
 
-		// Do some sanity checks
-		int rs1Length = dp1.getColumnCount();
-		int rs2Length = dp2.getColumnCount();
-
-		int resultCount1 = rs1Length - noResultColumns1.size();
-		int resultCount2 = rs2Length - noResultColumns2.size();
+		int resultCount = getColumnCount() - noResultColumns.size();
 		
-		if (resultCount1 != resultCount2) {
-			throw new LigretoException(
-				"The column count in analysis differs; 1st count: "
-				+ resultCount1 + "; 2nd count: " + resultCount2
-			);
-		}
-		resultCount = resultCount1;
-		
-		resultColumns1 = new int[resultCount];
-		resultColumns2 = new int[resultCount];
+		resultColumns = new int[resultCount];
 		
 		// Store the information about the result column's indices
-		for (int i=0, i1=1, i2=1; i < resultCount; i++, i1++, i2++) {
-			while (noResultColumns1.containsKey(i1))
+		for (int i=0, i1=1; i < resultCount; i++, i1++) {
+			while (noResultColumns.containsKey(i1))
 				i1++;
-			while (noResultColumns2.containsKey(i2))
-				i2++;
-			resultColumns1[i] = i1;
-			resultColumns2[i] = i2;
+			resultColumns[i] = i1;
 		}
 	}
 
@@ -202,13 +185,13 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		
 		switch (resultType) {
 		case INNER:
-			entry = new AnalysisEntry(dp1, resultColumns1, dp2, resultColumns2);
+			entry = new AnalysisEntry(dp1, resultColumns, dp2, resultColumns);
 			break;
 		case LEFT:
-			entry = new AnalysisEntry(dp1, resultColumns1, null, resultColumns2);
+			entry = new AnalysisEntry(dp1, resultColumns, null, resultColumns);
 			break;
 		case RIGHT:
-			entry = new AnalysisEntry(null, resultColumns1, dp2, resultColumns2);
+			entry = new AnalysisEntry(null, resultColumns, dp2, resultColumns);
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
@@ -238,18 +221,20 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		}
 		Arrays.sort(result);
 		
+
 		// Now we will dump the sorted data
 		for (int r=0; r < result.length; r++) {
 			AnalysisEntry ae = result[r];
 			targetBuilder.nextRow();
-			targetBuilder.dumpColumn(0, ae.count, OutputFormat.DEFAULT, ae.rowDiffs > 0);
-			targetBuilder.setColumnPosition(1, 2, null);
+			OutputStyle style = ae.rowDiffs > 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+			targetBuilder.dumpCell(0, ae.count, OutputFormat.DEFAULT, style);
+			targetBuilder.shiftPosition(1, 2);
 			for (int i=0; i < ae.cols1.length; i++) {
-				targetBuilder.dumpColumn(i, ae.cols1[i] != null ? ae.cols1[i].getColumnValue() : null, OutputFormat.DEFAULT, ae.rowDiffs > 0);
+				targetBuilder.dumpCell(i, ae.cols1[i] != null ? ae.cols1[i].getColumnValue() : null, OutputFormat.DEFAULT, style);
 			}
-			targetBuilder.setColumnPosition(2, 2, null);
+			targetBuilder.shiftPosition(1, 2);
 			for (int i=0; i < ae.cols2.length; i++) {
-				targetBuilder.dumpColumn(i, ae.cols2[i] != null ? ae.cols2[i].getColumnValue() : null, OutputFormat.DEFAULT, ae.rowDiffs > 0);
+				targetBuilder.dumpCell(i, ae.cols2[i] != null ? ae.cols2[i].getColumnValue() : null, OutputFormat.DEFAULT, style);
 			}
 		}
 		return super.finish();

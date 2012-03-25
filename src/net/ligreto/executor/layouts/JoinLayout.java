@@ -106,7 +106,6 @@ public abstract class JoinLayout {
 	/** Column metrics related fields. */
 	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
 	int[] resultColumns = null;
-	int resultCount = 0;
 	int[] xmlToResult1 = null;
 	int[] xmlToResult2 = null;
 
@@ -194,8 +193,8 @@ public abstract class JoinLayout {
 	public String getResultColumnName(int i) throws DataException {
 		Assert.assertTrue(startCalled);
 
-		if (i < 0 || i >= resultCount)
-			throw new IllegalArgumentException("Result column index out of range");
+		if (i < 0 || i >= resultColumns.length)
+			throw new IllegalArgumentException("Result column index out of range: " + i);
 
 		return getColumnName(resultColumns[i]);
 	}
@@ -210,8 +209,8 @@ public abstract class JoinLayout {
 	public String getColumnName(int i) throws DataException {
 		Assert.assertTrue(startCalled);
 
-		if (i < 0 || i >= getColumnCount())
-			throw new IllegalArgumentException("Column index out of range");
+		if (i <= 0 || i > getColumnCount())
+			throw new IllegalArgumentException("Column index out of range: " + i);
 
 		String colName = dp1.getColumnName(i);
 		String col2Name = dp1.getColumnName(i);
@@ -239,10 +238,10 @@ public abstract class JoinLayout {
 	 */
 	protected AggregationResult calculateColumnMetrics(JoinResultType resultType) throws DataException {		
 		// Create the object holding the result metrics
-		AggregationResult result = new AggregationResult(resultCount);
+		AggregationResult result = new AggregationResult(resultColumns.length);
 		
 		// Loop through all the columns to be in the result
-		for (int i = 0; i < resultCount; i++) {
+		for (int i = 0; i < resultColumns.length; i++) {
 			
 			// Get the indices of result columns into the result sets
 			int r = resultColumns[i];
@@ -645,7 +644,7 @@ public abstract class JoinLayout {
 			xmlToResult1[i] = -1;
 			xmlToResult2[i] = -1;
 			for (int j=0; j < resultCount; j++) {
-				if (resultColumns[j] == i+1) {
+				if (resultColumns[j] == i + 1) {
 					xmlToResult1[i] = j;
 					xmlToResult2[i] = j;
 				}

@@ -26,12 +26,12 @@ public class NormalJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(keyColumns.length);
 		
 		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp1.getColumnName(resultColumns[i]), OutputStyle.TOP_HEADER);
+			targetBuilder.dumpCell(i, dp1.getColumnName(resultColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 		targetBuilder.shiftPosition(resultColumns.length);
 
 		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp2.getColumnName(resultColumns[i]), OutputStyle.TOP_HEADER);
+			targetBuilder.dumpCell(i, dp2.getColumnName(resultColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 	}
 
@@ -80,13 +80,13 @@ public class NormalJoinLayout extends JoinLayout {
 			targetBuilder.shiftPosition(keyColumns.length);
 			
 			for (int i = 0; i < resultColumns.length; i++) {
-				OutputStyle style = cmpArray[resultColumns[i]] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
 				targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]), style);
 			}
 			targetBuilder.shiftPosition(resultColumns.length);
 
 			for (int i = 0; i < resultColumns.length; i++) {
-				OutputStyle style = cmpArray[resultColumns[i]] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
 				targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]), style);
 			}
 			break;

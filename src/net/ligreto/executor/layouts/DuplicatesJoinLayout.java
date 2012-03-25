@@ -10,7 +10,6 @@ import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
-import net.ligreto.util.MiscUtils;
 
 public class DuplicatesJoinLayout extends JoinLayout {
 
@@ -21,27 +20,13 @@ public class DuplicatesJoinLayout extends JoinLayout {
 	@Override
 	public void dumpHeader() throws DataException, IOException {
 		targetBuilder.nextRow();
-		targetBuilder.dumpHeaderColumn(0, "Data Source", OutputStyle.TOP_HEADER);
-		targetBuilder.setColumnPosition(1, 1, null);
-		for (int i=0; i < onLength; i++) {
-			String desc1 = dp1.getColumnLabel(on1[i]);
-			String desc2 = dp2.getColumnLabel(on2[i]);
-			if (desc1.toUpperCase().equals(desc2.toUpperCase())) {
-				targetBuilder.dumpHeaderColumn(i, desc1, OutputStyle.TOP_HEADER);
-			} else {
-				targetBuilder.dumpHeaderColumn(i, desc1 + " / " + desc2, OutputStyle.TOP_HEADER);				
-			}
+		targetBuilder.dumpCell(0, "Data Source", OutputStyle.TOP_HEADER);
+		targetBuilder.shiftPosition(1);
+		for (int i=0; i < keyColumns.length; i++) {
+			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
 		}
-		for (int i=0; i < rsColCount; i++) {
-			if (!MiscUtils.arrayContains(on1, i+1)) {
-				String desc1 = dp1.getColumnLabel(i+1);
-				String desc2 = dp2.getColumnLabel(i+1);
-				if (desc1.toUpperCase().equals(desc2.toUpperCase())) {
-					targetBuilder.dumpHeaderColumn(i, desc1, OutputStyle.TOP_HEADER);
-				} else {
-					targetBuilder.dumpHeaderColumn(i, desc1 + " / " + desc2, OutputStyle.TOP_HEADER);
-				}
-			}
+		for (int i=0; i < resultColumns.length; i++) {
+			targetBuilder.dumpCell(i, getColumnName(resultColumns[i]), OutputStyle.TOP_HEADER);
 		}
 	}
 
@@ -64,10 +49,15 @@ public class DuplicatesJoinLayout extends JoinLayout {
 			break;
 		}
 		targetBuilder.nextRow();
-		targetBuilder.dumpColumn(0, dp.getCaption(), OutputFormat.DEFAULT);
-		targetBuilder.setColumnPosition(1, 1, null);
-		targetBuilder.dumpJoinOnColumns(dp, on1);
-		targetBuilder.setColumnPosition(onLength + 1, 1, null);							
-		targetBuilder.dumpOtherColumns(dp, on1, null);		
+		targetBuilder.dumpCell(0, dp.getCaption(), OutputFormat.DEFAULT);
+		targetBuilder.shiftPosition(1);
+		for (int i = 0; i < keyColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp.getObject(keyColumns[i]), OutputStyle.DEFAULT);
+		}
+		targetBuilder.shiftPosition(keyColumns.length);							
+		
+		for (int i = 0; i < resultColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp.getObject(resultColumns[i]), OutputStyle.DEFAULT);
+		}	
 	}
 }

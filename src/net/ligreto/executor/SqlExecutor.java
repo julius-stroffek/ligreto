@@ -53,8 +53,9 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		
 		targetBuilder = reportBuilder.getTargetBuilder(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
+			targetBuilder.nextRow();
 			for (int i=0; i < dp.getColumnCount(); i++) {
-				targetBuilder.dumpCell(i, dp.getColumnName(i+1), OutputFormat.DEFAULT, OutputStyle.ROW_HEADER);
+				targetBuilder.dumpCell(i, dp.getColumnName(i+1), OutputFormat.DEFAULT, OutputStyle.TOP_HEADER);
 			}
 		}
 		return true;

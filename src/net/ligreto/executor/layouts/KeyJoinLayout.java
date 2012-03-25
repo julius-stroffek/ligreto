@@ -18,12 +18,12 @@ public class KeyJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		
 		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp1.getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+			targetBuilder.dumpCell(i, dp1.getColumnName(keyColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 		targetBuilder.shiftPosition(keyColumns.length);
 
 		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp2.getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+			targetBuilder.dumpCell(i, dp2.getColumnName(keyColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 	}
 
@@ -37,7 +37,7 @@ public class KeyJoinLayout extends JoinLayout {
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 
-			for (int i = 0; i < resultColumns.length; i++) {
+			for (int i = 0; i < keyColumns.length; i++) {
 				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
 			}
 			break;
@@ -48,19 +48,19 @@ public class KeyJoinLayout extends JoinLayout {
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 
-			for (int i = 0; i < resultColumns.length; i++) {
+			for (int i = 0; i < keyColumns.length; i++) {
 				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
 			}
 			break;
 			
 		case INNER:
 			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.DEFAULT);
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 
-			for (int i = 0; i < resultColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+			for (int i = 0; i < keyColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.DEFAULT);
 			}
 			break;
 

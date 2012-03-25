@@ -20,107 +20,99 @@ public class DetailedJoinLayout extends JoinLayout {
 		super(targetBuilder, ligretoParameters);
 	}
 
-	public void setColumnCount(int columnCount) {
-		super.setColumnCount(columnCount);
-		lowerArray = new int[OUTPUT_COLUMN_COUNT];
-		higherArray = new int[OUTPUT_COLUMN_COUNT];
-		for (int i=0; i < lowerArray.length; i++) {
-			lowerArray[i] = -1;
-			higherArray[i] = 1;
-		}
-	}
-
 	@Override
 	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
 		targetBuilder.nextRow();
-		targetBuilder.dumpHeaderColumn(0, "Column Name", OutputStyle.TOP_HEADER);
-		targetBuilder.setColumnPosition(1, 1, null);
-		targetBuilder.dumpJoinOnHeader(dp1, on1, null);
-		targetBuilder.setColumnPosition(onLength + 1, 1, null);
+		targetBuilder.dumpCell(0, "Column Name", OutputStyle.TOP_HEADER);
+		targetBuilder.shiftPosition(1);
 		
-		targetBuilder.dumpHeaderColumn(0, dp1.getCaption(), OutputStyle.TOP_HEADER);
-		targetBuilder.dumpHeaderColumn(1, dp2.getCaption(), OutputStyle.TOP_HEADER);
+		for (int i = 0; i < keyColumns.length; i++) {
+			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+		}
+		targetBuilder.shiftPosition(keyColumns.length);
 		
-		targetBuilder.dumpHeaderColumn(2, "Difference", OutputStyle.TOP_HEADER);
-		targetBuilder.dumpHeaderColumn(3, "Relative", OutputStyle.TOP_HEADER);
+		targetBuilder.dumpCell(0, dp1.getCaption(), OutputStyle.TOP_HEADER);
+		targetBuilder.dumpCell(1, dp2.getCaption(), OutputStyle.TOP_HEADER);
+		
+		targetBuilder.dumpCell(2, "Difference", OutputStyle.TOP_HEADER);
+		targetBuilder.dumpCell(3, "Relative", OutputStyle.TOP_HEADER);
 	}
 
 	@Override
 	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws LigretoException, IOException {		
 		// Loop through all the columns to be in the result
-		for (int i = 0; i < resultCount; i++) {
+		for (int i = 0; i < resultColumns.length; i++) {
 			
 			// Get the indices of result columns into the result sets
-			int i1 = resultColumns1[i];
-			int i2 = resultColumns2[i];
+			int i1 = resultColumns[i];
 			
+			OutputStyle style = OutputStyle.DEFAULT;
 			switch (resultType) {
 			case LEFT:
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
-				if (cmpArray[i] != 0) {
-					targetBuilder.setHighlightArray(higherArray);
-				} else {
-					targetBuilder.setHighlightArray(null);
+				targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
+				targetBuilder.shiftPosition(1);
+
+				style = OutputStyle.HIGHLIGHTED;
+				for (int j = 0; j < keyColumns.length; j++) {
+					targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), style);
 				}
-				targetBuilder.setColumnPosition(1);
-				targetBuilder.dumpJoinOnColumns(dp1, on1);
-				targetBuilder.setColumnPosition(onLength + 1);
-				targetBuilder.dumpColumn(0, dp1, i1);
-				targetBuilder.dumpColumn(1, ligretoParameters.getMissingString(), OutputFormat.DEFAULT);
-				if (cmpArray[i] != 0) {
-					targetBuilder.setHighlightArray(higherArray);
-				} else {
-					targetBuilder.setHighlightArray(null);
-				}
+				targetBuilder.shiftPosition(keyColumns.length);
+				
+				targetBuilder.dumpCell(0, dp1.getObject(i1), style);
+				targetBuilder.dumpCell(1, ligretoParameters.getMissingString(), style);
+				
 				if (DataProviderUtils.getNumericObject(dp1, i1) != null) {
-					targetBuilder.dumpColumn(2, dp1, i1);
-					targetBuilder.dumpColumn(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+					targetBuilder.dumpCell(2, dp1.getObject(i1), style);
+					targetBuilder.dumpCell(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
 				} else {
-					targetBuilder.dumpColumn(2, "yes", OutputFormat.DEFAULT);
+					targetBuilder.dumpCell(2, "yes", OutputFormat.DEFAULT, style);
 				}
 				break;
+				
 			case RIGHT:
 				targetBuilder.nextRow();
-				targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
-				if (cmpArray[i] != 0) {
-					targetBuilder.setHighlightArray(higherArray);
-				} else {
-					targetBuilder.setHighlightArray(null);
+				targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
+				targetBuilder.shiftPosition(1);
+
+				style = OutputStyle.HIGHLIGHTED;
+				for (int j = 0; j < keyColumns.length; j++) {
+					targetBuilder.dumpCell(j, dp2.getObject(keyColumns[j]), style);
 				}
-				targetBuilder.setColumnPosition(1);
-				targetBuilder.dumpJoinOnColumns(dp2, on2);
-				targetBuilder.setColumnPosition(onLength + 1);
-				targetBuilder.dumpColumn(0, ligretoParameters.getMissingString(), OutputFormat.DEFAULT);
-				targetBuilder.dumpColumn(1, dp2, i2);
-				if (cmpArray[i] != 0) {
-					targetBuilder.setHighlightArray(higherArray);
+				targetBuilder.shiftPosition(keyColumns.length);
+				
+				targetBuilder.dumpCell(0, ligretoParameters.getMissingString(), style);
+				targetBuilder.dumpCell(1, dp2.getObject(i1), style);
+				
+				if (DataProviderUtils.getNumericObject(dp2, i1) != null) {
+					targetBuilder.dumpCell(2, dp2.getObject(i1), style);
+					targetBuilder.dumpCell(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
 				} else {
-					targetBuilder.setHighlightArray(null);
-				}
-				if (DataProviderUtils.getNumericObject(dp2, i2) != null) {
-					targetBuilder.dumpColumn(2, dp2, i2);
-					targetBuilder.dumpColumn(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
-				} else {
-					targetBuilder.dumpColumn(2, "yes", OutputFormat.DEFAULT);
+					targetBuilder.dumpCell(2, "yes", OutputFormat.DEFAULT, style);
 				}
 				break;
+
 			case INNER:
 				if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
 					targetBuilder.nextRow();
-					targetBuilder.dumpHeaderColumn(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
-					targetBuilder.setColumnPosition(1);
-					targetBuilder.dumpJoinOnColumns(dp1, on1);
-					targetBuilder.setColumnPosition(onLength + 1);
-					if (cmpArray[i] != 0) {
-						targetBuilder.setHighlightArray(higherArray);
+					targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
+					targetBuilder.shiftPosition(1);
+
+					style = OutputStyle.DEFAULT;
+					for (int j = 0; j < keyColumns.length; j++) {
+						targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), style);
 					}
-					targetBuilder.dumpColumn(0, dp1, i1);
-					targetBuilder.dumpColumn(1, dp2, i2);
-					targetBuilder.dumpColumn(2, calculateDifference(i1, i2), OutputFormat.DEFAULT);
-					targetBuilder.dumpColumn(3, calculateRelativeDifference(i1, i2), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+					targetBuilder.shiftPosition(keyColumns.length);
+					
+					style = cmpArray[i] == 0 ? OutputStyle.DEFAULT : OutputStyle.HIGHLIGHTED;
+					targetBuilder.dumpCell(0, dp1.getObject(i1), style);
+					targetBuilder.dumpCell(1, dp2.getObject(i1), style);
+					
+					targetBuilder.dumpCell(2, calculateDifference(i1, i1), style);
+					targetBuilder.dumpCell(3, calculateRelativeDifference(i1, i1), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
 				}
 				break;
+				
 			default:
 				throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
 			}

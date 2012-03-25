@@ -404,9 +404,9 @@ public class LigretoComparator {
 		// the number of columns in result set should be done.
 		for (int i=0; i < key1.length; i++) {
 			if (key1[i] > colCount1)
-				throw new LigretoException("The index in \"on\" attribute (" + key1[i] + ") is larger than the number of columns (" + colCount1 + ").");
+				throw new LigretoException("The index in \"key\" attribute (" + key1[i] + ") is larger than the number of columns (" + colCount1 + ").");
 			if (key2[i] > colCount2)
-				throw new LigretoException("The index in \"on\" attribute (" + key2[i] + ") is larger than the number of columns (" + colCount2 + ").");
+				throw new LigretoException("The index in \"key\" attribute (" + key2[i] + ") is larger than the number of columns (" + colCount2 + ").");
 		}
 		int cmpCount1 = dp1.getColumnCount() - key1.length;
 		int cmpCount2 = dp2.getColumnCount() - key2.length;

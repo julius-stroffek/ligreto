@@ -1,7 +1,5 @@
 package net.ligreto.junit.util;
 
-import net.ligreto.builders.ExcelReportBuilder;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.Cell;
@@ -20,7 +18,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 public class WorkbookComparator {
 	
 	/** The logger instance for the class. */
-	private Log log = LogFactory.getLog(ExcelReportBuilder.class);
+	private Log log = LogFactory.getLog(WorkbookComparator.class);
 	
 	/** The first work book to be compared. */
 	protected Workbook w1;
@@ -80,7 +78,10 @@ public class WorkbookComparator {
 		boolean result = true;
 		if (!s1.getSheetName().equals(s2.getSheetName())) {
 			log.error("The sheet names differ for matching sheets: " + s1.getSheetName() + ", " + s2.getSheetName());
+			log.info("Comparing sheets: " + s1.getSheetName() + ", " + s2.getSheetName());			
 			result = false;
+		} else {
+			log.info("Comparing sheets: " + s1.getSheetName());			
 		}
 		if (s1.getFirstRowNum() != s2.getFirstRowNum()) {
 			log.error("The first row number differs for matching sheets: " + s1.getFirstRowNum() + ", " + s2.getFirstRowNum());

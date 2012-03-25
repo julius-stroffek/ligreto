@@ -17,7 +17,6 @@ import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.LigretoComparator;
-import net.ligreto.util.MiscUtils;
 
 /**
  * The layout doing group by aggregation on the calculated comparison results. The output
@@ -40,7 +39,6 @@ public class AggregatedJoinLayout extends JoinLayout {
 	protected HashMap<Row, AggregationResult> aggregationMap = new HashMap<Row, AggregationResult>();
 	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
 	int[] resultColumns = null;
-	int resultCount = 0;
 
 	public AggregatedJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		super(targetBuilder, ligretoParameters);
@@ -55,7 +53,7 @@ public class AggregatedJoinLayout extends JoinLayout {
 			for (int i = 0; i < groupByColumns.length; i++) {
 				targetBuilder.dumpCell(i, getColumnName(groupByColumns[i]), OutputStyle.TOP_HEADER);
 			}
-			targetBuilder.shiftPosition(groupByColumns.length + 1);
+			targetBuilder.shiftPosition(groupByColumns.length);
 		}
 
 		targetBuilder.dumpCell(0, "# of Diffs", OutputStyle.TOP_HEADER);
@@ -74,12 +72,13 @@ public class AggregatedJoinLayout extends JoinLayout {
 		}
 		if (groupByColumns != null) {
 			for (int i=0; i < groupByColumns.length; i++) {
-				noResultColumns.put(groupByColumns[i], null);
-				if (!MiscUtils.arrayContains(keyColumns, groupByColumns[i])) {
+				if (!noResultColumns.containsKey(groupByColumns[i])) {
 					throw new LigretoException(
-						"Columns listed in group-by have to be also listed in 'on' columns in join; column: "
-						+ groupByColumns[i] + "; data source: "
+						"Columns listed in group-by have to be also listed in 'key' columns; column: "
+						+ groupByColumns[i] + "; data sources: "
 						+ dp1.getCaption()
+						+ ", "
+						+ dp2.getCaption()
 					);
 				}
 			}
@@ -102,7 +101,7 @@ public class AggregatedJoinLayout extends JoinLayout {
 
 		// Get the value of group by columns first
 		Row row = new Row();
-		AggregationResult result = new AggregationResult(resultCount);
+		AggregationResult result = new AggregationResult(resultColumns.length);
 		switch (resultType) {
 		case INNER:
 		case LEFT:
@@ -116,7 +115,7 @@ public class AggregatedJoinLayout extends JoinLayout {
 		}
 
 		// Loop through all the columns to be in the result
-		for (int i = 0; i < resultCount; i++) {
+		for (int i = 0; i < resultColumns.length; i++) {
 			
 			// Get the indices of result columns into the result sets
 			int i1 = resultColumns[i];
