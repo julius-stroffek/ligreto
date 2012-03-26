@@ -10,6 +10,7 @@ import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.parser.nodes.JoinNode.DuplicatesStrategy;
 import net.ligreto.parser.nodes.ResultNode;
 import net.ligreto.parser.nodes.RowLimitNode;
 
@@ -109,6 +110,14 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(0, rowCountSrc1, OutputFormat.DEFAULT);
 		targetBuilder.dumpCell(1, rowCountSrc1/(double)totalRowCount, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
 		
+		if (joinNode.getDuplicates() == DuplicatesStrategy.PROCESS) {
+			targetBuilder.nextRow();
+			targetBuilder.dumpCell(0, "(" + dp1.getCaption() +") - Rows with Duplicate Key", OutputStyle.ROW_HEADER);
+			targetBuilder.shiftPosition(1);
+			targetBuilder.dumpCell(0, keyDuplicatesSrc1, OutputFormat.DEFAULT);
+			targetBuilder.dumpCell(1, keyDuplicatesSrc1/(double)rowCountSrc1, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);			
+		}
+		
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "(" + dp1.getCaption() +") - Matching Rows", OutputStyle.ROW_HEADER);
 		targetBuilder.shiftPosition(1);
@@ -126,6 +135,14 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(1);
 		targetBuilder.dumpCell(0, rowCountSrc2, OutputFormat.DEFAULT);
 		targetBuilder.dumpCell(1, rowCountSrc2/(double)totalRowCount, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
+		
+		if (joinNode.getDuplicates() == DuplicatesStrategy.PROCESS) {
+			targetBuilder.nextRow();
+			targetBuilder.dumpCell(0, "(" + dp2.getCaption() +") - Rows with Duplicate Key", OutputStyle.ROW_HEADER);
+			targetBuilder.shiftPosition(1);
+			targetBuilder.dumpCell(0, keyDuplicatesSrc2, OutputFormat.DEFAULT);
+			targetBuilder.dumpCell(1, keyDuplicatesSrc2/(double)rowCountSrc2, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);			
+		}
 		
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "(" + dp2.getCaption() +") - Matching Rows", OutputStyle.ROW_HEADER);

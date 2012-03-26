@@ -17,6 +17,9 @@ public class ResultStatus {
 	/** The total number of row count that was transferred/reported. */
 	protected long totalRowCount = 0;
 	
+	/** The number of rows having duplicity in the specified key. */
+	protected long duplicateKeyCount = 0;
+	
 	/** Indicates whether the result was accepted according the <result> node definition. */
 	protected boolean accepted = true;
 	
@@ -32,6 +35,7 @@ public class ResultStatus {
 	public void merge(ResultStatus other) {
 		differentRowCount += other.differentRowCount;
 		totalRowCount += other.totalRowCount;
+		duplicateKeyCount += other.duplicateKeyCount;
 		accepted &= other.accepted;
 	}
 	
@@ -65,6 +69,20 @@ public class ResultStatus {
 	}
 
 	/**
+	 * @return the duplicateKeyCount
+	 */
+	public long getDuplicateKeyCount() {
+		return duplicateKeyCount;
+	}
+
+	/**
+	 * @param duplicateKeyCount the duplicateKeyCount to set
+	 */
+	public void setDuplicateKeyCount(long duplicateKeyCount) {
+		this.duplicateKeyCount = duplicateKeyCount;
+	}
+
+	/**
 	 * @return the accepted
 	 */
 	public boolean isAccepted() {
@@ -87,6 +105,7 @@ public class ResultStatus {
 	public void info(Log log, String typeString) {
 		log.info("[" + typeString + "] Different Row Count: " + differentRowCount);
 		log.info("[" + typeString + "] Total Row Count: " + totalRowCount);
+		log.info("[" + typeString + "] Rows with Duplicate Key Columns: " + duplicateKeyCount);
 		if (accepted) {
 			log.info("[" + typeString + "] ACCEPTED.");
 		} else {

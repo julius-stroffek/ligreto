@@ -280,9 +280,8 @@ public class ExcelReportTarget extends ReportTarget {
 				}
 			} else {
 				// There is a bug in POI library that references to too high
-				// rows
-				// throw exceptions. We will therefore do nothing in such a
-				// case.
+				// rows throw exceptions. We will therefore do nothing
+				// in such a case.
 				log.warn("The cell reference exceeded the allowed range for excel library (Apache POI).");
 				log.warn("Auto-filter was therefore disabled.");
 			}
@@ -428,22 +427,42 @@ public class ExcelReportTarget extends ReportTarget {
 
 		// Get the font based on the style
 		short boldFont;
+		short fillColor;
+		short fontColor;
 		switch (outputStyle) {
+		case TOP_HEADER_DISABLED:
+			fillColor = HSSFColor.GREY_40_PERCENT.index;
+			fontColor = HSSFColor.GREY_80_PERCENT.index;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case ROW_HEADER_DISABLED:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
 		case TOP_HEADER:
+			fillColor = HSSFColor.GREY_40_PERCENT.index;
+			fontColor = HSSFColor.BLACK.index;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
 		case ROW_HEADER:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.BLACK.index;
 			boldFont = Font.BOLDWEIGHT_BOLD;
 			break;
 		default:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.AUTOMATIC.index;
 			boldFont = Font.BOLDWEIGHT_NORMAL;
 			break;
 		}
 
-		Font newFont = wb.findFont(boldFont, font.getColor(), font.getFontHeight(), font.getFontName(), font.getItalic(),
+		Font newFont = wb.findFont(boldFont, fontColor, font.getFontHeight(), font.getFontName(), font.getItalic(),
 				font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
 		if (newFont == null) {
 			newFont = wb.createFont();
 			newFont.setBoldweight(boldFont);
-			newFont.setColor(font.getColor());
+			newFont.setColor(fontColor);
 			newFont.setFontHeight(font.getFontHeight());
 			newFont.setFontName(font.getFontName());
 			newFont.setItalic(font.getItalic());
@@ -452,26 +471,17 @@ public class ExcelReportTarget extends ReportTarget {
 			newFont.setUnderline(font.getUnderline());
 		}
 		style.setFont(newFont);
-		short fillPattern = style.getFillPattern();
-		short fillColor = style.getFillForegroundColor();
+		short oldFillPattern = style.getFillPattern();
+		short oldFillColor = style.getFillForegroundColor();
 		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
-		switch (outputStyle) {
-		case TOP_HEADER:
-			style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
-			break;
-		case ROW_HEADER:
-			style.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
-			break;
-		default:
-			throw new RuntimeException("Unexpected value for OutputStyle enumeration.");
-		}
+		style.setFillForegroundColor(fillColor);
 		CellStyle newStyle = cloneStyle(style);
 		cell.setCellStyle(newStyle);
 
 		// Revert back the font on the old cell style
 		style.setFont(font);
-		style.setFillPattern(fillPattern);
-		style.setFillForegroundColor(fillColor);
+		style.setFillPattern(oldFillPattern);
+		style.setFillForegroundColor(oldFillColor);
 	}
 
 	protected void setSXSSFCellColor(Cell cell, short[] rgb) {
@@ -629,18 +639,10 @@ public class ExcelReportTarget extends ReportTarget {
 		case DISABLED:
 			setCellColor(cell, rgbDisabledColor);
 			break;
-		case TOP_HEADER:
-			if (isHeaderStyle()) {
-				setHSSFCellStyle(cell, outputStyle);
-			}
-			break;
-		case ROW_HEADER:
-			if (isHeaderStyle()) {
-				setHSSFCellStyle(cell, outputStyle);
-			}
-			break;
 		default:
-			throw new RuntimeException("Unexpected value of CellStyle enumeration.");
+			if (isHeaderStyle()) {
+				setHSSFCellStyle(cell, outputStyle);
+			}
 		}
 	}
 

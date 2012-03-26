@@ -38,79 +38,109 @@ public class DetailedJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(3, "Relative", OutputStyle.TOP_HEADER);
 	}
 
+	protected void dumpLeft(int index, OutputStyle style) throws DataException, IOException {
+		if (style != OutputStyle.DISABLED) {
+			style = OutputStyle.HIGHLIGHTED;
+		}
+		targetBuilder.nextRow();
+		targetBuilder.dumpCell(0, getColumnName(index), style == OutputStyle.DISABLED ? OutputStyle.ROW_HEADER_DISABLED : OutputStyle.ROW_HEADER);
+		targetBuilder.shiftPosition(1);
+
+		for (int j = 0; j < keyColumns.length; j++) {
+			targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), style);
+		}
+		targetBuilder.shiftPosition(keyColumns.length);
+		
+		targetBuilder.dumpCell(0, dp1.getObject(index), style);
+		targetBuilder.dumpCell(1, ligretoParameters.getMissingString(), style);
+		
+		if (DataProviderUtils.getNumericObject(dp1, index) != null) {
+			targetBuilder.dumpCell(2, dp1.getObject(index), style);
+			targetBuilder.dumpCell(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
+		} else {
+			targetBuilder.dumpCell(2, "yes", OutputFormat.DEFAULT, style);
+		}	
+	}
+	
+	protected void dumpRight(int index, OutputStyle style) throws DataException, IOException {
+		if (style != OutputStyle.DISABLED) {
+			style = OutputStyle.HIGHLIGHTED;
+		}
+		targetBuilder.nextRow();
+		targetBuilder.dumpCell(0, getColumnName(index), style == OutputStyle.DISABLED ? OutputStyle.ROW_HEADER_DISABLED : OutputStyle.ROW_HEADER);
+		targetBuilder.shiftPosition(1);
+
+		for (int j = 0; j < keyColumns.length; j++) {
+			targetBuilder.dumpCell(j, dp2.getObject(keyColumns[j]), style);
+		}
+		targetBuilder.shiftPosition(keyColumns.length);
+		
+		targetBuilder.dumpCell(0, ligretoParameters.getMissingString(), style);
+		targetBuilder.dumpCell(1, dp2.getObject(index), style);
+		
+		if (DataProviderUtils.getNumericObject(dp2, index) != null) {
+			targetBuilder.dumpCell(2, dp2.getObject(index), style);
+			targetBuilder.dumpCell(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
+		} else {
+			targetBuilder.dumpCell(2, "yes", OutputFormat.DEFAULT, style);
+		}		
+	}
+	
+	protected void dumpInner(int index, OutputStyle style) throws IOException, LigretoException {
+		targetBuilder.nextRow();
+		targetBuilder.dumpCell(0, getColumnName(index), style == OutputStyle.DISABLED ? OutputStyle.ROW_HEADER_DISABLED
+				: OutputStyle.ROW_HEADER);
+		targetBuilder.shiftPosition(1);
+
+		OutputStyle keyStyle = style == OutputStyle.DISABLED ? OutputStyle.DISABLED : OutputStyle.DEFAULT;
+		for (int j = 0; j < keyColumns.length; j++) {
+			targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), keyStyle);
+		}
+		targetBuilder.shiftPosition(keyColumns.length);
+
+		targetBuilder.dumpCell(0, dp1.getObject(index), style);
+		targetBuilder.dumpCell(1, dp2.getObject(index), style);
+
+		targetBuilder.dumpCell(2, calculateDifference(index, index), style);
+		targetBuilder.dumpCell(3, calculateRelativeDifference(index, index), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
+	}
+	
 	@Override
 	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws LigretoException, IOException {		
-		// Loop through all the columns to be in the result
-		for (int i = 0; i < resultColumns.length; i++) {
-			
-			// Get the indices of result columns into the result sets
-			int i1 = resultColumns[i];
-			
-			OutputStyle style = OutputStyle.DEFAULT;
+		// Loop through all the compared columns
+		for (int i = 0; i < comparedColumns.length; i++) {
 			switch (resultType) {
 			case LEFT:
-				targetBuilder.nextRow();
-				targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
-				targetBuilder.shiftPosition(1);
-
-				style = OutputStyle.HIGHLIGHTED;
-				for (int j = 0; j < keyColumns.length; j++) {
-					targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), style);
-				}
-				targetBuilder.shiftPosition(keyColumns.length);
-				
-				targetBuilder.dumpCell(0, dp1.getObject(i1), style);
-				targetBuilder.dumpCell(1, ligretoParameters.getMissingString(), style);
-				
-				if (DataProviderUtils.getNumericObject(dp1, i1) != null) {
-					targetBuilder.dumpCell(2, dp1.getObject(i1), style);
-					targetBuilder.dumpCell(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
-				} else {
-					targetBuilder.dumpCell(2, "yes", OutputFormat.DEFAULT, style);
-				}
+				dumpLeft(comparedColumns[i], OutputStyle.HIGHLIGHTED);
 				break;
 				
 			case RIGHT:
-				targetBuilder.nextRow();
-				targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
-				targetBuilder.shiftPosition(1);
-
-				style = OutputStyle.HIGHLIGHTED;
-				for (int j = 0; j < keyColumns.length; j++) {
-					targetBuilder.dumpCell(j, dp2.getObject(keyColumns[j]), style);
-				}
-				targetBuilder.shiftPosition(keyColumns.length);
-				
-				targetBuilder.dumpCell(0, ligretoParameters.getMissingString(), style);
-				targetBuilder.dumpCell(1, dp2.getObject(i1), style);
-				
-				if (DataProviderUtils.getNumericObject(dp2, i1) != null) {
-					targetBuilder.dumpCell(2, dp2.getObject(i1), style);
-					targetBuilder.dumpCell(3, 1.00, OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
-				} else {
-					targetBuilder.dumpCell(2, "yes", OutputFormat.DEFAULT, style);
-				}
+				dumpRight(comparedColumns[i], OutputStyle.HIGHLIGHTED);
 				break;
 
 			case INNER:
 				if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
-					targetBuilder.nextRow();
-					targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
-					targetBuilder.shiftPosition(1);
-
-					style = OutputStyle.DEFAULT;
-					for (int j = 0; j < keyColumns.length; j++) {
-						targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), style);
-					}
-					targetBuilder.shiftPosition(keyColumns.length);
-					
-					style = cmpArray[i] == 0 ? OutputStyle.DEFAULT : OutputStyle.HIGHLIGHTED;
-					targetBuilder.dumpCell(0, dp1.getObject(i1), style);
-					targetBuilder.dumpCell(1, dp2.getObject(i1), style);
-					
-					targetBuilder.dumpCell(2, calculateDifference(i1, i1), style);
-					targetBuilder.dumpCell(3, calculateRelativeDifference(i1, i1), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
+					dumpInner(comparedColumns[i], cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT);
 				}
+				break;
+				
+			default:
+				throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
+			}
+		}
+		// Loop through all the ignored columns
+		for (int i = 0; i < ignoredColumns.length; i++) {
+			switch (resultType) {
+			case LEFT:
+				dumpLeft(ignoredColumns[i], OutputStyle.DISABLED);
+				break;
+				
+			case RIGHT:
+				dumpRight(ignoredColumns[i], OutputStyle.DISABLED);
+				break;
+
+			case INNER:
+				dumpInner(ignoredColumns[i], OutputStyle.DISABLED);
 				break;
 				
 			default:

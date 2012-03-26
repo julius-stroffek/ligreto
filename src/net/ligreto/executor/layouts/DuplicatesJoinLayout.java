@@ -25,8 +25,15 @@ public class DuplicatesJoinLayout extends JoinLayout {
 		for (int i=0; i < keyColumns.length; i++) {
 			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
 		}
-		for (int i=0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, getColumnName(resultColumns[i]), OutputStyle.TOP_HEADER);
+		targetBuilder.shiftPosition(keyColumns.length);
+		
+		for (int i=0; i < comparedColumns.length; i++) {
+			targetBuilder.dumpCell(i, getColumnName(comparedColumns[i]), OutputStyle.TOP_HEADER);
+		}
+		targetBuilder.shiftPosition(comparedColumns.length);
+		
+		for (int i=0; i < ignoredColumns.length; i++) {
+			targetBuilder.dumpCell(i, getColumnName(ignoredColumns[i]), OutputStyle.TOP_HEADER_DISABLED);
 		}
 	}
 
@@ -36,6 +43,9 @@ public class DuplicatesJoinLayout extends JoinLayout {
 	
 	@Override
 	public void dumpDuplicate(int dataSourceIndex) throws DataException, IOException {
+		// Call the parent function first
+		super.dumpDuplicate(dataSourceIndex);
+		
 		DataProvider dp = null;
 		switch (dataSourceIndex) {
 		case 0:
@@ -56,8 +66,13 @@ public class DuplicatesJoinLayout extends JoinLayout {
 		}
 		targetBuilder.shiftPosition(keyColumns.length);							
 		
-		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp.getObject(resultColumns[i]), OutputStyle.DEFAULT);
+		for (int i = 0; i < comparedColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp.getObject(comparedColumns[i]), OutputStyle.DEFAULT);
+		}	
+		targetBuilder.shiftPosition(comparedColumns.length);							
+		
+		for (int i = 0; i < ignoredColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp.getObject(ignoredColumns[i]), OutputStyle.DISABLED);
 		}	
 	}
 }

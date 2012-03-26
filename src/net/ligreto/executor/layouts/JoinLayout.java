@@ -18,6 +18,7 @@ import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
 import net.ligreto.util.Assert;
+import net.ligreto.util.MiscUtils;
 
 /**
  * Provides the interface for implementing various join layouts that could be used
@@ -55,6 +56,12 @@ public abstract class JoinLayout {
 	/** The columns which should be used for aggregated result. */
 	protected int[] groupByColumns = null;
 	
+	/** The array of columns that are compared. */
+	protected int[] comparedColumns;
+	
+	/** The array of columns that are excluded from comparisons but must be part of the output. */
+	protected int[] ignoredColumns;
+	
 	/** The first data provider. */
 	protected DataProvider dp1 = null;
 	
@@ -79,11 +86,17 @@ public abstract class JoinLayout {
 	/** The number of rows on 1st data source. */
 	protected int rowCountSrc1 = 0;
 	
+	/** The number of duplicates in the specified key. */
+	protected int keyDuplicatesSrc1 = 0;
+	
 	/** The number of rows that have not matched from the 1st data source. */
 	protected int nonMatchingRowsSrc1 = 0;
 	
 	/** The number of rows on 2nd data source. */
 	protected int rowCountSrc2 = 0;
+	
+	/** The number of duplicates in the specified key. */
+	protected int keyDuplicatesSrc2 = 0;
 	
 	/** The number of rows that have not matched from the 2nd data source. */
 	protected int nonMatchingRowsSrc2 = 0;
@@ -100,9 +113,6 @@ public abstract class JoinLayout {
 	/** The maximal number of rows to be processed by this layout. */ 
 	protected Integer dumpedRawCountLimit = null;
 
-	/** The array of columns that are compared. */
-	protected int[] comparedColumns;
-	
 	/** Column metrics related fields. */
 	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
 	int[] resultColumns = null;
@@ -461,6 +471,16 @@ public abstract class JoinLayout {
 	 * @throws SQLException
 	 */
 	public void dumpDuplicate(int dataSourceIndex) throws DataException, IOException {
+		switch (dataSourceIndex) {
+		case 0:
+			rowCountSrc1++;
+			keyDuplicatesSrc1++;
+			break;
+		case 1:
+			rowCountSrc2++;
+			keyDuplicatesSrc2++;
+			break;
+		}
 	}
 	
 	/**
@@ -540,6 +560,20 @@ public abstract class JoinLayout {
 	}
 
 	/**
+	 * @return the ignoredColumns
+	 */
+	public int[] getIgnoredColumns() {
+		return ignoredColumns;
+	}
+
+	/**
+	 * @param ignoredColumns the ignoredColumns to set
+	 */
+	public void setIgnoredColumns(int[] ignoredColumns) {
+		this.ignoredColumns = ignoredColumns;
+	}
+
+	/**
 	 * @param groupBy
 	 * 			The group by columns to set.
 	 */
@@ -615,6 +649,20 @@ public abstract class JoinLayout {
 	}
 
 	/**
+	 * @return the keyDuplicatesSrc1
+	 */
+	public int getKeyDuplicatesSrc1() {
+		return keyDuplicatesSrc1;
+	}
+
+	/**
+	 * @return the keyDuplicatesSrc2
+	 */
+	public int getKeyDuplicatesSrc2() {
+		return keyDuplicatesSrc2;
+	}
+
+	/**
 	 * The method executed before providing any data to the layout object.
 	 * @throws SQLException 
 	 * @throws LigretoException 
@@ -625,16 +673,34 @@ public abstract class JoinLayout {
 		for (int i=0; i < keyColumns.length; i++) {
 			noResultColumns.put(keyColumns[i], null);
 		}
-
-		int resultCount = getColumnCount() - noResultColumns.size();
 				
-		resultColumns = new int[resultCount];
-		
 		// Store the information about the result column's indices
-		for (int i=0, i1=1; i < resultCount; i++, i1++) {
+		resultColumns = new int[getColumnCount() - noResultColumns.size()];		
+		for (int i = 0, i1 = 1; i < resultColumns.length; i++, i1++) {
 			while (noResultColumns.containsKey(i1))
 				i1++;
+			Assert.assertTrue(i1 <= getColumnCount());
 			resultColumns[i] = i1;
+		}
+		
+		if (comparedColumns != null) {
+			ignoredColumns = new int[resultColumns.length - comparedColumns.length];
+			for (int i = 0, i1 = 1; i < ignoredColumns.length; i++, i1++) {
+				while (noResultColumns.containsKey(i1) || MiscUtils.arrayContains(comparedColumns, i1))
+					i1++;
+				Assert.assertTrue(i1 <= getColumnCount());
+				ignoredColumns[i] = i1;
+			}
+		} else if (ignoredColumns != null) {
+			comparedColumns = new int[resultColumns.length - ignoredColumns.length];
+			for (int i = 0, i1 = 1; i < comparedColumns.length; i++, i1++) {
+				while (noResultColumns.containsKey(i1) || MiscUtils.arrayContains(ignoredColumns, i1))
+					i1++;
+				Assert.assertTrue(i1 <= getColumnCount());
+				comparedColumns[i] = i1;
+			}
+		} else {
+			Assert.assertTrue(true, "At least one of 'comparedColumns' or 'ignoredColumns' have to be specified.");
 		}
 		
 		xmlToResult1 = new int[getColumnCount()];
@@ -643,7 +709,7 @@ public abstract class JoinLayout {
 		for (int i=0; i < getColumnCount(); i++) {
 			xmlToResult1[i] = -1;
 			xmlToResult2[i] = -1;
-			for (int j=0; j < resultCount; j++) {
+			for (int j=0; j < resultColumns.length; j++) {
 				if (resultColumns[j] == i + 1) {
 					xmlToResult1[i] = j;
 					xmlToResult2[i] = j;

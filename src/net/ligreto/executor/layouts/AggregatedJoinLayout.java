@@ -38,7 +38,6 @@ public class AggregatedJoinLayout extends JoinLayout {
 
 	protected HashMap<Row, AggregationResult> aggregationMap = new HashMap<Row, AggregationResult>();
 	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
-	int[] resultColumns = null;
 
 	public AggregatedJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		super(targetBuilder, ligretoParameters);
@@ -83,25 +82,37 @@ public class AggregatedJoinLayout extends JoinLayout {
 				}
 			}
 		}
-		// Do some sanity checks
-		int resultCount = getColumnCount() - noResultColumns.size();
-		
-		resultColumns = new int[resultCount];
-		
-		// Store the information about the result column's indices
-		for (int i=0, i1=1; i < resultCount; i++, i1++) {
-			while (noResultColumns.containsKey(i1))
-				i1++;
-			resultColumns[i] = i1;
-		}
 	}
 
+	protected ColumnAggregationResult processColumn(JoinResultType resultType, int index) throws DataException {
+		Column columnValue1, columnValue2;
+		ColumnAggregationResult colResult = null;
+		switch (resultType) {
+		case LEFT:
+			columnValue1 = new Column(dp1, index);
+			colResult = new ColumnAggregationResult(columnValue1, null);
+			break;
+		case RIGHT:
+			columnValue2 = new Column(dp2, index);
+			colResult = new ColumnAggregationResult(null, columnValue2);
+			break;
+		case INNER:
+			columnValue1 = new Column(dp1, index);
+			columnValue2 = new Column(dp2, index);
+			colResult = new ColumnAggregationResult(columnValue1, columnValue2);
+			break;
+		default:
+			throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
+		}
+		return colResult;
+	}
+	
 	@Override
 	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
 
 		// Get the value of group by columns first
 		Row row = new Row();
-		AggregationResult result = new AggregationResult(resultColumns.length);
+		AggregationResult result = new AggregationResult(comparedColumns.length + ignoredColumns.length);
 		switch (resultType) {
 		case INNER:
 		case LEFT:
@@ -115,37 +126,20 @@ public class AggregatedJoinLayout extends JoinLayout {
 		}
 
 		// Loop through all the columns to be in the result
-		for (int i = 0; i < resultColumns.length; i++) {
-			
-			// Get the indices of result columns into the result sets
-			int i1 = resultColumns[i];
-			int i2 = resultColumns[i];
-			
-			Column columnValue1, columnValue2;
-			ColumnAggregationResult colResult = null;
-			switch (resultType) {
-			case LEFT:
-				columnValue1 = new Column(dp1, i1);
-				colResult = new ColumnAggregationResult(columnValue1, null);
-				break;
-			case RIGHT:
-				columnValue2 = new Column(dp2, i2);
-				colResult = new ColumnAggregationResult(null, columnValue2);
-				break;
-			case INNER:
-				columnValue1 = new Column(dp1, i1);
-				columnValue2 = new Column(dp2, i2);
-				colResult = new ColumnAggregationResult(columnValue1, columnValue2);
-				break;
-			default:
-				throw new IllegalArgumentException("Unexpected value of JoinResultType enumeration");
-			}
+		for (int i = 0; i < comparedColumns.length; i++) {
+			ColumnAggregationResult colResult = processColumn(resultType, comparedColumns[i]);
+			/*
 			if (cmpArray[i] == 0) {
 				colResult.setDifference(0);
 				colResult.setDifferenceCount(0);
 				colResult.setDifferenceRatio(0);
 			}
+			*/
 			result.setColumnResult(i, colResult);
+		}
+		for (int i = 0; i < ignoredColumns.length; i++) {
+			ColumnAggregationResult colResult = processColumn(resultType, ignoredColumns[i]);
+			result.setColumnResult(comparedColumns.length + i, colResult);
 		}
 		
 		
@@ -166,26 +160,35 @@ public class AggregatedJoinLayout extends JoinLayout {
 		for (Row f : treeSet) {
 			AggregationResult result = aggregationMap.get(f);
 			for (int i=0; i < result.getColumnCount(); i++) {
-				ColumnAggregationResult cResult = result.getColumnResult(i);
+
+				OutputStyle style;
 				targetBuilder.nextRow();
-				targetBuilder.dumpCell(0, getResultColumnName(i), OutputStyle.ROW_HEADER);
+				if (i >= comparedColumns.length) {
+					targetBuilder.dumpCell(0, getColumnName(ignoredColumns[i - comparedColumns.length]), OutputStyle.ROW_HEADER_DISABLED);
+					style = OutputStyle.DISABLED;
+				} else {
+					targetBuilder.dumpCell(0, getColumnName(comparedColumns[i]), OutputStyle.ROW_HEADER);
+					style = OutputStyle.DEFAULT;
+				}
 				targetBuilder.shiftPosition(1);
 				for (int j=0; j < f.getFields().length; j++) {
-					targetBuilder.dumpCell(j, f.getFields()[j].getColumnValue(), OutputFormat.DEFAULT);
+					targetBuilder.dumpCell(j, f.getFields()[j].getColumnValue(), OutputFormat.DEFAULT, style);
 				}
 				targetBuilder.shiftPosition(f.getFields().length);
-				targetBuilder.dumpCell(0, cResult.getDifferenceCount(), OutputFormat.DEFAULT);
-				targetBuilder.dumpCell(1, cResult.getDifferenceRatio(), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
+				
+				ColumnAggregationResult cResult = result.getColumnResult(i);
+				targetBuilder.dumpCell(0, cResult.getDifferenceCount(), OutputFormat.DEFAULT, style);
+				targetBuilder.dumpCell(1, cResult.getDifferenceRatio(), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
 
 				// Dump the difference metrics if we have numeric column
 				if (cResult.isNumeric()) {
-					targetBuilder.dumpCell(2, cResult.getRelativeDifference(), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS);
-					targetBuilder.dumpCell(3, cResult.getDifference(), OutputFormat.DEFAULT);
-					targetBuilder.dumpCell(5, cResult.getTotalValue(), OutputFormat.DEFAULT);
+					targetBuilder.dumpCell(2, cResult.getRelativeDifference(), OutputFormat.PERCENTAGE_3_DECIMAL_DIGITS, style);
+					targetBuilder.dumpCell(3, cResult.getDifference(), OutputFormat.DEFAULT, style);
+					targetBuilder.dumpCell(5, cResult.getTotalValue(), OutputFormat.DEFAULT, style);
 				}
 				
 				// Dump the other column values
-				targetBuilder.dumpCell(4, cResult.getRowCount(), OutputFormat.DEFAULT);
+				targetBuilder.dumpCell(4, cResult.getRowCount(), OutputFormat.DEFAULT, style);
 			}
 		}
 		return super.finish();

@@ -34,6 +34,15 @@
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</comparison>
+			<comparison key="1" columns="2,4">
+				<layout target="interlaced3!B2" type="interlaced"/>
+				<layout target="normal3!B2" type="normal"/>
+				<layout target="detailed3!B2" type="detailed"/>
+				<layout target="aggregated3!B2" type="aggregated"/>
+				<layout target="summary3!B2" type="summary"/>
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</comparison>
 			<comparison key="1" columns="">
 				<layout target="nocolumns!B2" type="interlaced"/>
 				<sql data-source="Source1">select * from join_table1</sql>

@@ -14,7 +14,9 @@ public interface BuilderInterface {
 		HIGHLIGHTED,
 		DISABLED,
 		TOP_HEADER,
-		ROW_HEADER
+		ROW_HEADER,
+		TOP_HEADER_DISABLED,
+		ROW_HEADER_DISABLED
 	};
 	
 	/** Keep the enumeration of the possible cell formatting changes. */

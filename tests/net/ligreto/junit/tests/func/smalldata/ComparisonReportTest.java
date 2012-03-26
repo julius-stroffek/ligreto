@@ -82,9 +82,4 @@ public class ComparisonReportTest {
 	public void testWrongCollationInComparisonDump() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		TestUtil.testReport("wrongcollationdumpreport", true);
 	}
-	
-	@Test
-	public void testColumnComparison() throws SAXException, IOException, LigretoException {
-		TestUtil.testReport("columnscomparisonreport", true);
-	}
 }

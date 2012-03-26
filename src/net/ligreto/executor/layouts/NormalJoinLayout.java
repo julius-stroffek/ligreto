@@ -25,13 +25,23 @@ public class NormalJoinLayout extends JoinLayout {
 		}
 		targetBuilder.shiftPosition(keyColumns.length);
 		
-		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp1.getColumnName(resultColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
+		for (int i = 0; i < comparedColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp1.getColumnName(comparedColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
-		targetBuilder.shiftPosition(resultColumns.length);
+		targetBuilder.shiftPosition(comparedColumns.length);
 
-		for (int i = 0; i < resultColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp2.getColumnName(resultColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
+		for (int i = 0; i < comparedColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp2.getColumnName(comparedColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
+		}
+		targetBuilder.shiftPosition(comparedColumns.length);
+		
+		for (int i = 0; i < ignoredColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp1.getColumnName(ignoredColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER_DISABLED);
+		}
+		targetBuilder.shiftPosition(ignoredColumns.length);
+
+		for (int i = 0; i < ignoredColumns.length; i++) {
+			targetBuilder.dumpCell(i, dp2.getColumnName(ignoredColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER_DISABLED);
 		}
 	}
 
@@ -47,13 +57,23 @@ public class NormalJoinLayout extends JoinLayout {
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 			
-			for (int i = 0; i < resultColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]), OutputStyle.HIGHLIGHTED);
+			for (int i = 0; i < comparedColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(comparedColumns[i]), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.shiftPosition(resultColumns.length);
+			targetBuilder.shiftPosition(comparedColumns.length);
 
-			for (int i = 0; i < resultColumns.length; i++) {
+			for (int i = 0; i < comparedColumns.length; i++) {
 				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
+			}
+			targetBuilder.shiftPosition(comparedColumns.length);
+
+			for (int i = 0; i < ignoredColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(ignoredColumns[i]), OutputStyle.DISABLED);
+			}
+			targetBuilder.shiftPosition(ignoredColumns.length);
+
+			for (int i = 0; i < ignoredColumns.length; i++) {
+				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.DISABLED);
 			}
 			break;
 			
@@ -63,13 +83,23 @@ public class NormalJoinLayout extends JoinLayout {
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 			
-			for (int i = 0; i < resultColumns.length; i++) {
+			for (int i = 0; i < comparedColumns.length; i++) {
 				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.shiftPosition(resultColumns.length);
+			targetBuilder.shiftPosition(comparedColumns.length);
 
-			for (int i = 0; i < resultColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]), OutputStyle.HIGHLIGHTED);
+			for (int i = 0; i < comparedColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(comparedColumns[i]), OutputStyle.HIGHLIGHTED);
+			}
+			targetBuilder.shiftPosition(comparedColumns.length);
+
+			for (int i = 0; i < ignoredColumns.length; i++) {
+				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.DISABLED);
+			}
+			targetBuilder.shiftPosition(ignoredColumns.length);
+
+			for (int i = 0; i < ignoredColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(ignoredColumns[i]), OutputStyle.DISABLED);
 			}
 			break;
 			
@@ -79,15 +109,25 @@ public class NormalJoinLayout extends JoinLayout {
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 			
-			for (int i = 0; i < resultColumns.length; i++) {
+			for (int i = 0; i < comparedColumns.length; i++) {
 				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
-				targetBuilder.dumpCell(i, dp1.getObject(resultColumns[i]), style);
+				targetBuilder.dumpCell(i, dp1.getObject(comparedColumns[i]), style);
 			}
-			targetBuilder.shiftPosition(resultColumns.length);
+			targetBuilder.shiftPosition(comparedColumns.length);
 
-			for (int i = 0; i < resultColumns.length; i++) {
+			for (int i = 0; i < comparedColumns.length; i++) {
 				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
-				targetBuilder.dumpCell(i, dp2.getObject(resultColumns[i]), style);
+				targetBuilder.dumpCell(i, dp2.getObject(comparedColumns[i]), style);
+			}
+			targetBuilder.shiftPosition(comparedColumns.length);
+
+			for (int i = 0; i < ignoredColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(ignoredColumns[i]), OutputStyle.DISABLED);
+			}
+			targetBuilder.shiftPosition(ignoredColumns.length);
+
+			for (int i = 0; i < ignoredColumns.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(ignoredColumns[i]), OutputStyle.DISABLED);
 			}
 			break;
 			

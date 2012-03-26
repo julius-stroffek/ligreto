@@ -9,6 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	PrepareTestData.class,
+	ColumnComparisonTest.class,
 	ComparisonReportTest.class,
 	DetailedLayoutTest.class,
 	DuplicateLayoutTest.class,

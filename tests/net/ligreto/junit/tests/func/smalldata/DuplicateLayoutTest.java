@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
  */
 public class DuplicateLayoutTest {
 	@Test
-	public void testComparisionReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+	public void testDuplicateLayout() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		TestUtil.testReport("duplicatelayoutreport", true);
 	}
 }

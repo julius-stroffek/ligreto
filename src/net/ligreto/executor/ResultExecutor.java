@@ -13,6 +13,7 @@ import net.ligreto.executor.layouts.JoinLayout;
 import net.ligreto.parser.nodes.LimitNode;
 import net.ligreto.parser.nodes.ResultNode;
 import net.ligreto.parser.nodes.RowLimitNode;
+import net.ligreto.util.MiscUtils;
 
 public class ResultExecutor extends Executor {
 
@@ -98,6 +99,10 @@ public class ResultExecutor extends Executor {
 		Double relativeDifferenceLimit = limitNode.getRelativeDifference();
 		int resultColumn = joinLayout.translateToResultColumn(columnIndex);
 		if (resultColumn >= 0) {
+			if (!MiscUtils.arrayContains(joinLayout.getIgnoredColumns(), columnIndex)) {
+				log.warn("Column used in result is not included in the compared columns: " + columnIndex);
+				log.warn("We still use this column for result determination.");
+			}
 			ColumnAggregationResult columnResult = joinLayout.getColumnAggregationResult(resultColumn);
 
 			log.info("Checking \"" + joinLayout.getResultColumnName(resultColumn) + "\" column result:");
@@ -157,6 +162,7 @@ public class ResultExecutor extends Executor {
 		resultStatus = new ResultStatus();
 		resultStatus.setDifferentRowCount(joinLayout.getDifferentRowCount());
 		resultStatus.setTotalRowCount(joinLayout.getTotalRowCount());
+		resultStatus.setDuplicateKeyCount(joinLayout.getKeyDuplicatesSrc1() + joinLayout.getKeyDuplicatesSrc2());
 		try {
 			if (resultNode != null && resultNode.isEnabled()) {
 				RowLimitNode rowLimitNode = resultNode.getRowLimitNode();
