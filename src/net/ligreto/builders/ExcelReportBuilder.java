@@ -700,4 +700,11 @@ public class ExcelReportBuilder extends ReportBuilder {
 			}
 		}
 	}
+
+	/**
+	 * @return true if there is a template file used.
+	 */
+	public boolean hasTemplate() {
+		return template == null || "".equals(template);
+	}
 }

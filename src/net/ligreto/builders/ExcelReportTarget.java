@@ -26,6 +26,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -88,7 +89,7 @@ public class ExcelReportTarget extends ReportTarget {
 	protected short[] rgbHighlightColor = { 200, 0, 0 };
 
 	/** Specifies the highlight text color for highlighted cells. */
-	protected short[] rgbDisabledColor = { 100, 100, 100 };
+	protected short[] rgbDisabledColor = { 150, 150, 150 };
 
 	/** This is the hash table with all the colors from HSSF color palette. */
 	protected Hashtable<String, HSSFColor> hssfColors = null;
@@ -128,6 +129,14 @@ public class ExcelReportTarget extends ReportTarget {
 	/** Indicates whether the cells should be highlighted when applicable. */
 	protected boolean highlight;
 
+	protected CellStyle defaultStyle = null;
+	protected CellStyle highlightedStyle = null;
+	protected CellStyle disabledStyle = null;
+	protected CellStyle topHeaderStyle = null;
+	protected CellStyle topHeaderDisabledStyle = null;
+	protected CellStyle rowHeaderStyle = null;
+	protected CellStyle rowHeaderDisabledStyle = null;
+	
 	/** Creates the target instance bound to ExcelReportBuilder. */
 	public ExcelReportTarget(ExcelReportBuilder reportBuilder, Sheet sheet, int baseRowNumber, int baseColumnPosition) {
 		super(reportBuilder);
@@ -384,7 +393,7 @@ public class ExcelReportTarget extends ReportTarget {
 			break;
 		case SXSSF:
 			// HSSF approach should work anyway
-			setHSSFCellStyle(cell, outputStyle);
+			setSXSSFCellStyle((SXSSFCell)cell, outputStyle);
 			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for format processing.");
@@ -420,6 +429,176 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFont(font);
 	}
 
+	protected void setSXSSFCellStyle(SXSSFCell cell, OutputStyle outputStyle) {
+		XSSFCellStyle style = (XSSFCellStyle) cell.getCellStyle();
+
+		// Get the font based on the style
+		short boldFont;
+		short fillColor;
+		short fontColor;
+		short cellStyle;
+		switch (outputStyle) {
+		case TOP_HEADER_DISABLED:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case ROW_HEADER_DISABLED:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case TOP_HEADER:
+			fillColor = HSSFColor.GREY_40_PERCENT.index;
+			fontColor = HSSFColor.BLACK.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case ROW_HEADER:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.BLACK.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case DISABLED:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.GREY_40_PERCENT.index;
+			cellStyle = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		case HIGHLIGHTED:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.RED.index;
+			cellStyle = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		default:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.BLACK.index;
+			cellStyle = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		}
+		
+		CellStyle newStyle = cloneStyle(style);
+		Font font = wb.getFontAt(style.getFontIndex());
+		Font newFont = wb.createFont();
+		newFont.setBoldweight(boldFont);
+		newFont.setColor(fontColor);
+		newFont.setFontHeight(font.getFontHeight());
+		newFont.setFontName(font.getFontName());
+		newFont.setItalic(font.getItalic());
+		newFont.setStrikeout(font.getStrikeout());
+		newFont.setTypeOffset(font.getTypeOffset());
+		newFont.setUnderline(font.getUnderline());
+		
+		newStyle.setFillPattern(cellStyle);
+		newStyle.setFillForegroundColor(fillColor);
+		cell.setCellStyle(newStyle);
+	}
+
+	protected CellStyle createCellStyle(OutputStyle outputStyle) {
+		short boldFont;
+		short fillColor;
+		short fontColor;
+		short fillPattern;
+		switch (outputStyle) {
+		case TOP_HEADER_DISABLED:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			fillPattern = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case ROW_HEADER_DISABLED:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			fillPattern = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case TOP_HEADER:
+			fillColor = HSSFColor.GREY_40_PERCENT.index;
+			fontColor = HSSFColor.BLACK.index;
+			fillPattern = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case ROW_HEADER:
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.BLACK.index;
+			fillPattern = CellStyle.SOLID_FOREGROUND;
+			boldFont = Font.BOLDWEIGHT_BOLD;
+			break;
+		case DISABLED:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.GREY_40_PERCENT.index;
+			fillPattern = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		case HIGHLIGHTED:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.RED.index;
+			fillPattern = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		default:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.BLACK.index;
+			fillPattern = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		}
+		Font font = wb.createFont();
+		font.setBoldweight(boldFont);
+		font.setColor(fontColor);
+		CellStyle cellStyle = wb.createCellStyle();
+		cellStyle.setFont(font);
+		cellStyle.setFillForegroundColor(fillColor);
+		cellStyle.setFillPattern(fillPattern);
+
+		return cellStyle;
+	}
+	
+	protected CellStyle getCellStyle(OutputStyle outputStyle) {
+		switch (outputStyle) {
+		case TOP_HEADER_DISABLED:
+			if (topHeaderDisabledStyle == null) {
+				topHeaderDisabledStyle = createCellStyle(outputStyle);
+			}
+			return topHeaderDisabledStyle;
+		case ROW_HEADER_DISABLED:
+			if (rowHeaderDisabledStyle == null) {
+				rowHeaderDisabledStyle = createCellStyle(outputStyle);
+			}
+			return rowHeaderDisabledStyle;
+		case TOP_HEADER:
+			if (topHeaderStyle == null) {
+				topHeaderStyle = createCellStyle(outputStyle);
+			}
+			return topHeaderStyle;
+		case ROW_HEADER:
+			if (rowHeaderStyle == null) {
+				rowHeaderStyle = createCellStyle(outputStyle);
+			}
+			return rowHeaderStyle;
+		case DISABLED:
+			if (disabledStyle == null) {
+				disabledStyle = createCellStyle(outputStyle);
+			}
+			return disabledStyle;
+		case HIGHLIGHTED:
+			if (highlightedStyle == null) {
+				highlightedStyle = createCellStyle(outputStyle);
+			}
+			return highlightedStyle;
+		default:
+			if (defaultStyle == null) {
+				defaultStyle = createCellStyle(OutputStyle.DEFAULT);
+			}
+			return defaultStyle;
+		}
+	}
+	
 	protected void setHSSFCellStyle(Cell cell, OutputStyle outputStyle) {
 		CellStyle style = cell.getCellStyle();
 
@@ -429,30 +608,48 @@ public class ExcelReportTarget extends ReportTarget {
 		short boldFont;
 		short fillColor;
 		short fontColor;
+		short cellStyle;
 		switch (outputStyle) {
 		case TOP_HEADER_DISABLED:
-			fillColor = HSSFColor.GREY_40_PERCENT.index;
-			fontColor = HSSFColor.GREY_80_PERCENT.index;
+			fillColor = HSSFColor.GREY_25_PERCENT.index;
+			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
 			boldFont = Font.BOLDWEIGHT_BOLD;
 			break;
 		case ROW_HEADER_DISABLED:
 			fillColor = HSSFColor.GREY_25_PERCENT.index;
 			fontColor = HSSFColor.GREY_50_PERCENT.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
 			boldFont = Font.BOLDWEIGHT_BOLD;
 			break;
 		case TOP_HEADER:
 			fillColor = HSSFColor.GREY_40_PERCENT.index;
 			fontColor = HSSFColor.BLACK.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
 			boldFont = Font.BOLDWEIGHT_BOLD;
 			break;
 		case ROW_HEADER:
 			fillColor = HSSFColor.GREY_25_PERCENT.index;
 			fontColor = HSSFColor.BLACK.index;
+			cellStyle = CellStyle.SOLID_FOREGROUND;
 			boldFont = Font.BOLDWEIGHT_BOLD;
 			break;
+		case DISABLED:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.GREY_40_PERCENT.index;
+			cellStyle = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
+		case HIGHLIGHTED:
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.RED.index;
+			cellStyle = CellStyle.NO_FILL;
+			boldFont = Font.BOLDWEIGHT_NORMAL;
+			break;
 		default:
-			fillColor = HSSFColor.GREY_25_PERCENT.index;
-			fontColor = HSSFColor.AUTOMATIC.index;
+			fillColor = HSSFColor.AUTOMATIC.index;
+			fontColor = HSSFColor.BLACK.index;
+			cellStyle = CellStyle.NO_FILL;
 			boldFont = Font.BOLDWEIGHT_NORMAL;
 			break;
 		}
@@ -473,7 +670,7 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFont(newFont);
 		short oldFillPattern = style.getFillPattern();
 		short oldFillColor = style.getFillForegroundColor();
-		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+		style.setFillPattern(cellStyle);
 		style.setFillForegroundColor(fillColor);
 		CellStyle newStyle = cloneStyle(style);
 		cell.setCellStyle(newStyle);
@@ -484,10 +681,11 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFillForegroundColor(oldFillColor);
 	}
 
-	protected void setSXSSFCellColor(Cell cell, short[] rgb) {
+	protected void setSXSSFCellColor(SXSSFCell cell, short[] rgb) {
+		SXSSFWorkbook swb = (SXSSFWorkbook) wb;
 		CellStyle style = cell.getCellStyle();
 
-		Font font = wb.getFontAt(style.getFontIndex());
+		Font font = swb.getFontAt(style.getFontIndex());
 
 		// Just a temporary hard coding until SXSSF will implement
 		// the proper color setup.
@@ -496,7 +694,7 @@ public class ExcelReportTarget extends ReportTarget {
 			newColor = HSSFColor.RED.index;
 		}
 
-		Font newFont = wb.findFont(font.getBoldweight(), newColor, font.getFontHeight(), font.getFontName(), font.getItalic(),
+		Font newFont = swb.findFont(font.getBoldweight(), newColor, font.getFontHeight(), font.getFontName(), font.getItalic(),
 				font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
 		if (newFont == null) {
 			newFont = wb.createFont();
@@ -628,21 +826,27 @@ public class ExcelReportTarget extends ReportTarget {
 		}
 
 		// Set up the desired output style
-		switch (outputStyle) {
-		case DEFAULT:
-			break;
-		case HIGHLIGHTED:
-			if (highlight) {
-				setCellColor(cell, rgbHighlightColor);
-			}
-			break;
-		case DISABLED:
-			setCellColor(cell, rgbDisabledColor);
-			break;
-		default:
-			if (isHeaderStyle()) {
+		if (reportBuilder.hasTemplate()) {
+			// We need to adjust the cell style individually for each cell
+			switch (outputStyle) {
+			case HIGHLIGHTED:
+				if (highlight) {
+					setCellColor(cell, rgbHighlightColor);
+				}
+				break;
+			case ROW_HEADER:
+			case ROW_HEADER_DISABLED:
+			case TOP_HEADER:
+			case TOP_HEADER_DISABLED:
+				if (isHeaderStyle()) {
+					setHSSFCellStyle(cell, outputStyle);
+				}
+				break;
+			default:
 				setHSSFCellStyle(cell, outputStyle);
 			}
+		} else {
+			cell.setCellStyle(getCellStyle(outputStyle));
 		}
 	}
 

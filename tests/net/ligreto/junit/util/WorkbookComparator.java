@@ -44,8 +44,7 @@ public class WorkbookComparator {
 			result = false;
 		}
 		if (w1.getNumCellStyles() != w2.getNumCellStyles()) {
-			log.error("The number of cell styles differs: " + w1.getNumCellStyles() + ", " + w2.getNumCellStyles());
-			result = false;
+			log.warn("The number of cell styles differs: " + w1.getNumCellStyles() + ", " + w2.getNumCellStyles());
 		}
 		if (w1.getNumberOfFonts() != w2.getNumberOfFonts()) {
 			log.error("The number of fonts differs: " + w1.getNumberOfFonts() + ", " + w2.getNumberOfFonts());
