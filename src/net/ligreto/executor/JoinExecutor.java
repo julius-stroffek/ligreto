@@ -443,20 +443,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 
-				if (dResult1 == 0) {
-					log.error("Duplicate entries found.");
-					rsComparator.error(log, col1);
-					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
-					}
-				}
-				if (dResult2 == 0) {
-					log.error("Duplicate entries found.");
-					rsComparator.error(log, col2);
-					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
-					}
-				}
+				assert(dResult1 != 0);
+				assert(dResult2 != 0);
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
 					rsComparator.error(log, pCol1);
@@ -534,14 +522,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// the collation we are using here for processing
 				col1 = LigretoComparator.duplicate(dp1, key);
 				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
+				assert(dResult1 != 0);
 
-				if (dResult1 == 0) {
-					log.error("Duplicate entries found.");
-					rsComparator.error(log, col1);
-					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(0).getDataSource(), firstTarget));
-					}
-				}
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
 					rsComparator.error(log, pCol1);
@@ -580,14 +562,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// the collation we are using here for processing
 				col2 = LigretoComparator.duplicate(dp2, key);
 				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
+				assert(dResult2 != 0);
 
-				if (dResult2 == 0) {
-					log.error("Duplicate entries found.");
-					rsComparator.error(log, col2);
-					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, joinNode.getSqlQueries().get(1).getDataSource(), firstTarget));
-					}
-				}
 				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
 					log.error("Wrong collation found.");
 					rsComparator.error(log, pCol2);
