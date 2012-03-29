@@ -4,7 +4,6 @@
 package net.ligreto.junit.tests.func.owndata;
 
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,14 +11,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
-import net.ligreto.parser.Parser;
-import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.junit.util.TestUtil;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -78,27 +72,11 @@ public class NumericTypesTest {
 
 	@Test
 	public void testNumericTypesInJoin() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("numericjoinreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		executor.execute();
-				
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("numericjoinreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/numericjoinreport.xlsx"))
-		).areSame());
+		TestUtil.testReport("numericjoinreport", false);
 	}
 	
 	@Test
 	public void testNumericTypesInAggregatedJoin() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("numericaggregatedreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		executor.execute();
-		
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("numericaggregatedreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/numericaggregatedreport.xlsx"))
-		).areSame());
+		TestUtil.testReport("numericaggregatedreport", false);
 	}
 }

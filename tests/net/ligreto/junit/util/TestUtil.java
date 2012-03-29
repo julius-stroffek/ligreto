@@ -97,16 +97,27 @@ public class TestUtil {
 		log.info("Generated report file: " + generatedReportFile);
 		log.info("Desired report file: " + desiredReportFile);
 
+		boolean result;
 		if ("yes".equals(System.getProperty("excel97"))) {
-			Assert.assertTrue(new HSSFWorkbookComparator(
+			result = new HSSFWorkbookComparator(
 					new HSSFWorkbook(new FileInputStream(generatedReportFile)),
 					new HSSFWorkbook(new FileInputStream(desiredReportFile))
-				).areSame(), reportName);						
+				).areSame();
 		} else {
-			Assert.assertTrue(new XSSFWorkbookComparator(
+			result = new XSSFWorkbookComparator(
 					new XSSFWorkbook(new FileInputStream(generatedReportFile)),
 					new XSSFWorkbook(new FileInputStream(desiredReportFile))
-				).areSame(), reportName);						
+				).areSame();						
+		}
+		if (result) {
+			log.info("Files match.");
+			log.info("Generated report file: " + generatedReportFile);
+			log.info("Desired report file: " + desiredReportFile);
+		} else {
+			log.error("Files differ!");
+			log.error("Generated report file: " + generatedReportFile);
+			log.error("Desired report file: " + desiredReportFile);
+			Assert.assertTrue(false, "Report differs: " + reportName);
 		}
 	}
 	

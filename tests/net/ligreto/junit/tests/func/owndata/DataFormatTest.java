@@ -1,6 +1,5 @@
 package net.ligreto.junit.tests.func.owndata;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -13,14 +12,9 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
-import net.ligreto.parser.Parser;
-import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.junit.util.TestUtil;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -69,23 +63,11 @@ public class DataFormatTest {
 
 	@Test
 	public void testDataFormatReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("dataformatreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("dataformatreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/dataformatreport.xlsx"))
-		).areSame());
+		TestUtil.testReport("dataformatreport");
 	}
 	
 	@Test
 	public void testNoDataFormatReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("nodataformatreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		executor.execute();
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("nodataformatreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/nodataformatreport.xlsx"))
-		).areSame());
+		TestUtil.testReport("nodataformatreport");
 	}
 }

@@ -14,10 +14,25 @@
 	<report name="Duplicate Report" options="autoFilter, autoSize,headerStyle">
 		<output file="duplicatelayoutreport.xlsx"/>
 		<data>
-			<comparison key="1" sort="internal" duplicates="process">
+			<comparison key="1" sort="external" duplicates="process">
 			    <layout target="summary!A1" type="summary"/>
 			    <layout target="interlaced!A1" type="interlaced"/>
 			    <layout target="duplicates!A1" type="duplicates"/>
+				<sql data-source="Source1"><![CDATA[
+				  select * from join_table1 a
+				  left outer join join_table1 b
+				  on (b.id = 7 and a.id = b.id) or (b.id = 5 and a.id <> 7) or (b.id = a.id)
+				]]></sql>
+				<sql data-source="Source2"><![CDATA[
+				  select * from join_table2 a
+				  left outer join join_table2 b
+				  on b.id = 7 or a.id = b.id
+				]]></sql>
+			</comparison>
+			<comparison key="1" sort="internal" duplicates="process">
+			    <layout target="summaryi!A1" type="summary"/>
+			    <layout target="interlacedi!A1" type="interlaced"/>
+			    <layout target="duplicatesi!A1" type="duplicates"/>
 				<sql data-source="Source1"><![CDATA[
 				  select * from join_table1 a
 				  left outer join join_table1 b

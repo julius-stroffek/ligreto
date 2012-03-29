@@ -6,6 +6,7 @@ package net.ligreto.parser.nodes;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -26,10 +27,10 @@ public class LigretoNode extends Node {
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(LigretoNode.class);
 
-	protected HashMap<String, DataSourceNode> dataSourceMap = new HashMap<String, DataSourceNode>();
-	protected HashMap<String, String> queryMap = new HashMap<String, String>();
-	protected HashMap<String, String> paramMap = new HashMap<String, String>();
-	protected HashMap<String, Void> lockedParams = new HashMap<String, Void>();
+	protected Map<String, DataSourceNode> dataSourceMap = new HashMap<String, DataSourceNode>();
+	protected Map<String, String> queryMap = new HashMap<String, String>(128);
+	protected Map<String, String> paramMap = new HashMap<String, String>(256);
+	protected Map<String, Void> lockedParams = new HashMap<String, Void>(256);
 	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
 	protected List<PtpNode> ptpNodes = new LinkedList<PtpNode>();
 	protected LigretoParameters ligretoParameters = new LigretoParameters();

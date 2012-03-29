@@ -102,6 +102,9 @@ public class Column implements Comparable<Object> {
 
 	@Override
 	public int compareTo(Object obj) {
+		if (obj == null) {
+			return LigretoComparator.getInstance().compareNulls(false, true);
+		}
 		if (!(obj instanceof Column))
 			throw new IllegalArgumentException("Could not compare Column against other objects.");
 		

@@ -3,6 +3,7 @@ package net.ligreto.executor.layouts;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
@@ -130,12 +131,42 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		@Override
 		public int compareTo(AnalysisEntry o) {
 			// We do not care about nulls as there should not be nulls at all as counts
-			return o.count.compareTo(count);
+			int result = o.count.compareTo(count);
+			if (result == 0) {
+				assert(cols1.length == cols2.length);
+				assert(cols1.length == o.cols1.length);
+				assert(o.cols1.length == o.cols2.length);
+				for (int i=0; i < cols1.length; i++) {
+					if (cols1[i] != null || o.cols1[i] != null) {
+						if (cols1[i] != null) {
+							result = cols1[i].compareTo(o.cols1[i]);
+						} else {
+							result = -o.cols1[i].compareTo(cols1[i]);
+						}
+					}
+					if (result != 0) {
+						return result;
+					}
+					if (cols2[i] != null || o.cols2[i] != null) {
+						if (cols2[i] != null) {
+							result = cols2[i].compareTo(o.cols2[i]);
+						} else {
+							result = -o.cols2[i].compareTo(cols2[i]);
+						}
+					}
+					if (result != 0) {
+						return result;
+					}
+				}
+			} else {
+				return result;
+			}
+			throw new RuntimeException("Unexpected part of the code was reached.");
 		}		
 	}
 	
-	protected HashMap<AnalysisEntry, Integer> analysisMap = new HashMap<AnalysisEntry, Integer>();
-	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
+	protected Map<AnalysisEntry, Integer> analysisMap = new HashMap<AnalysisEntry, Integer>(4096);
+	protected Map<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
 	int[] resultColumns = null;
 	int resultCount = 0;
 

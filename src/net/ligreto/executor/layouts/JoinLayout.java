@@ -2,6 +2,7 @@ package net.ligreto.executor.layouts;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
@@ -113,7 +114,7 @@ public abstract class JoinLayout {
 	protected Integer dumpedRawCountLimit = null;
 
 	/** Column metrics related fields. */
-	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
+	protected Map<Integer, Void> noResultColumns = new HashMap<Integer, Void>(256);
 	int[] resultColumns = null;
 	int[] xmlToResult1 = null;
 	int[] xmlToResult2 = null;

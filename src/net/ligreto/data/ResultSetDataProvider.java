@@ -369,7 +369,7 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public boolean hasDuplicateKey() throws DataException {
-		return hasDuplicateKey && nextHasDuplicateKey;
+		return hasDuplicateKey || nextHasDuplicateKey;
 	}
 
 	@Override

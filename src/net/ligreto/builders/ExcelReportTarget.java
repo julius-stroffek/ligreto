@@ -133,7 +133,7 @@ public class ExcelReportTarget extends ReportTarget {
 	/** Indicates whether the cells should be highlighted when applicable. */
 	protected boolean highlight;
 
-	protected Map<Pair<OutputStyle, String>, CellStyle> cellStyles = new HashMap<Pair<OutputStyle, String>, CellStyle>();
+	protected Map<Pair<OutputStyle, String>, CellStyle> cellStyles = new HashMap<Pair<OutputStyle, String>, CellStyle>(512);
 	
 	/** Creates the target instance bound to ExcelReportBuilder. */
 	public ExcelReportTarget(ExcelReportBuilder reportBuilder, Sheet sheet, int baseRowNumber, int baseColumnPosition) {
@@ -362,19 +362,20 @@ public class ExcelReportTarget extends ReportTarget {
 	 * 
 	 * @param cell
 	 *            The cell where to set the font color.
+	 * @throws LigretoException 
 	 */
-	protected void setCellStyle(Cell cell, OutputStyle outputStyle) {
+	protected void updateCellStyle(Cell cell, OutputStyle outputStyle, String formatString) throws LigretoException {
 		switch (outputFileFormat) {
 		case HSSF:
-			setHSSFCellStyle(cell, outputStyle);
+			updateHSSFCellStyle(cell, outputStyle, formatString);
 			break;
 		case XSSF:
 			// HSSF approach should work anyway
-			setHSSFCellStyle(cell, outputStyle);
+			updateHSSFCellStyle(cell, outputStyle, formatString);
 			break;
 		case SXSSF:
 			// HSSF approach should work anyway
-			setHSSFCellStyle(cell, outputStyle);
+			updateHSSFCellStyle(cell, outputStyle, formatString);
 			break;
 		default:
 			throw new UnimplementedMethodException("Unknown output format for format processing.");
@@ -565,7 +566,7 @@ public class ExcelReportTarget extends ReportTarget {
 		return style;
 	}
 	
-	protected void setHSSFCellStyle(Cell cell, OutputStyle outputStyle) {
+	protected void updateHSSFCellStyle(Cell cell, OutputStyle outputStyle, String formatString) throws LigretoException {
 		CellStyle style = cell.getCellStyle();
 
 		Font font = wb.getFontAt(style.getFontIndex());
@@ -575,51 +576,57 @@ public class ExcelReportTarget extends ReportTarget {
 		short fillColor;
 		short fontColor;
 		short cellStyle;
-		switch (outputStyle) {
-		case TOP_HEADER_DISABLED:
-			fillColor = HSSFColor.GREY_25_PERCENT.index;
-			fontColor = HSSFColor.GREY_50_PERCENT.index;
-			cellStyle = CellStyle.SOLID_FOREGROUND;
-			boldFont = Font.BOLDWEIGHT_BOLD;
-			break;
-		case ROW_HEADER_DISABLED:
-			fillColor = HSSFColor.GREY_25_PERCENT.index;
-			fontColor = HSSFColor.GREY_50_PERCENT.index;
-			cellStyle = CellStyle.SOLID_FOREGROUND;
-			boldFont = Font.BOLDWEIGHT_BOLD;
-			break;
-		case TOP_HEADER:
-			fillColor = HSSFColor.GREY_40_PERCENT.index;
-			fontColor = HSSFColor.BLACK.index;
-			cellStyle = CellStyle.SOLID_FOREGROUND;
-			boldFont = Font.BOLDWEIGHT_BOLD;
-			break;
-		case ROW_HEADER:
-			fillColor = HSSFColor.GREY_25_PERCENT.index;
-			fontColor = HSSFColor.BLACK.index;
-			cellStyle = CellStyle.SOLID_FOREGROUND;
-			boldFont = Font.BOLDWEIGHT_BOLD;
-			break;
-		case DISABLED:
-			fillColor = HSSFColor.AUTOMATIC.index;
-			fontColor = HSSFColor.GREY_40_PERCENT.index;
-			cellStyle = CellStyle.NO_FILL;
-			boldFont = Font.BOLDWEIGHT_NORMAL;
-			break;
-		case HIGHLIGHTED:
-			fillColor = HSSFColor.AUTOMATIC.index;
-			fontColor = HSSFColor.RED.index;
-			cellStyle = CellStyle.NO_FILL;
-			boldFont = Font.BOLDWEIGHT_NORMAL;
-			break;
-		default:
-			fillColor = HSSFColor.AUTOMATIC.index;
-			fontColor = HSSFColor.BLACK.index;
-			cellStyle = CellStyle.NO_FILL;
-			boldFont = Font.BOLDWEIGHT_NORMAL;
-			break;
+		if (outputStyle != null) {
+			switch (outputStyle) {
+			case TOP_HEADER_DISABLED:
+				fillColor = HSSFColor.GREY_25_PERCENT.index;
+				fontColor = HSSFColor.GREY_50_PERCENT.index;
+				cellStyle = CellStyle.SOLID_FOREGROUND;
+				boldFont = Font.BOLDWEIGHT_BOLD;
+				break;
+			case ROW_HEADER_DISABLED:
+				fillColor = HSSFColor.GREY_25_PERCENT.index;
+				fontColor = HSSFColor.GREY_50_PERCENT.index;
+				cellStyle = CellStyle.SOLID_FOREGROUND;
+				boldFont = Font.BOLDWEIGHT_BOLD;
+				break;
+			case TOP_HEADER:
+				fillColor = HSSFColor.GREY_40_PERCENT.index;
+				fontColor = HSSFColor.BLACK.index;
+				cellStyle = CellStyle.SOLID_FOREGROUND;
+				boldFont = Font.BOLDWEIGHT_BOLD;
+				break;
+			case ROW_HEADER:
+				fillColor = HSSFColor.GREY_25_PERCENT.index;
+				fontColor = HSSFColor.BLACK.index;
+				cellStyle = CellStyle.SOLID_FOREGROUND;
+				boldFont = Font.BOLDWEIGHT_BOLD;
+				break;
+			case DISABLED:
+				fillColor = HSSFColor.AUTOMATIC.index;
+				fontColor = HSSFColor.GREY_40_PERCENT.index;
+				cellStyle = CellStyle.NO_FILL;
+				boldFont = Font.BOLDWEIGHT_NORMAL;
+				break;
+			case HIGHLIGHTED:
+				fillColor = style.getFillForegroundColor();
+				fontColor = HSSFColor.RED.index;
+				cellStyle = style.getFillPattern();
+				boldFont = font.getBoldweight();
+				break;
+			default:
+				fillColor = style.getFillForegroundColor();
+				fontColor = font.getColor();
+				cellStyle = style.getFillPattern();
+				boldFont = font.getBoldweight();
+				break;
+			}
+		} else {
+			fillColor = style.getFillForegroundColor();
+			fontColor = font.getColor();
+			cellStyle = style.getFillPattern();
+			boldFont = font.getBoldweight();			
 		}
-
 		Font newFont = wb.findFont(boldFont, fontColor, font.getFontHeight(), font.getFontName(), font.getItalic(),
 				font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
 		if (newFont == null) {
@@ -636,8 +643,16 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFont(newFont);
 		short oldFillPattern = style.getFillPattern();
 		short oldFillColor = style.getFillForegroundColor();
+		short oldDataFormat = style.getDataFormat();
 		style.setFillPattern(cellStyle);
 		style.setFillForegroundColor(fillColor);
+		if (formatString != null) {
+			try {
+				style.setDataFormat(dataFormat.getFormat(formatString));
+			} catch (Exception e) {
+				throw new LigretoException("Unknown format string: " + formatString, e);
+			}
+		}
 		CellStyle newStyle = cloneStyle(style);
 		cell.setCellStyle(newStyle);
 
@@ -645,6 +660,7 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFont(font);
 		style.setFillPattern(oldFillPattern);
 		style.setFillForegroundColor(oldFillColor);
+		style.setDataFormat(oldDataFormat);
 	}
 
 	protected void setSXSSFCellColor(SXSSFCell cell, short[] rgb) {
@@ -801,7 +817,9 @@ public class ExcelReportTarget extends ReportTarget {
 			throw new RuntimeException("Unexpected value of CellFormat enumeration.");
 		}
 
-		if (outputStyle != OutputStyle.DEFAULT || dataFormat != null) {
+		if (reportBuilder.hasTemplate()) {
+			updateCellStyle(cell, outputStyle, dataFormat);
+		} else if (outputStyle != OutputStyle.DEFAULT || dataFormat != null) {
 			cell.setCellStyle(getCellStyle(outputStyle, dataFormat));
 		}
 	}

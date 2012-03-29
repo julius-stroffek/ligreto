@@ -3,8 +3,6 @@
  */
 package net.ligreto.junit.tests.func.owndata;
 
-
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,11 +13,10 @@ import java.util.Properties;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
-import net.ligreto.junit.util.XSSFWorkbookComparator;
+import net.ligreto.junit.util.TestUtil;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -88,16 +85,8 @@ public class KeyLayoutTest {
 	}
 
 	@Test
-	public void testKeyReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
-		LigretoNode ligreto = Parser.parse("keyreport.xml");
-		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
-		executor.execute();
-		
-		Assert.assertTrue(new XSSFWorkbookComparator(
-				new XSSFWorkbook(new FileInputStream("keyreport.xlsx")),
-				new XSSFWorkbook(new FileInputStream("desired/keyreport.xlsx"))
-		).areSame());
+	public void testKeyLayout() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		TestUtil.testReport("keyreport", false);
 	}
 	
 	@Test

@@ -17,7 +17,7 @@ import net.ligreto.exceptions.DataException;
 public class DataProviderUtils {
 	
 	/** Holds the association of SQL type and type name. */
-	protected static Map<Integer, String> sqlTypeMap = new HashMap<Integer, String>();
+	protected static Map<Integer, String> sqlTypeMap = new HashMap<Integer, String>(128);
 	
 	/** Initialize the sql type name association array. */
 	static {

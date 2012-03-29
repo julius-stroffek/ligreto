@@ -90,7 +90,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * The hash map that stores the last free row number for the specified target.
 	 * It is used for append operation on the target.
 	 */
-	HashMap<TargetInfo, TargetInfo> targetMap = new HashMap<TargetInfo, TargetInfo>();
+	HashMap<TargetInfo, TargetInfo> targetMap = new HashMap<TargetInfo, TargetInfo>(128);
 	
 	/** The output file type enumeration. */
 	protected enum OutputFileFormat {HSSF, XSSF, SXSSF};
@@ -706,6 +706,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * @return true if there is a template file used.
 	 */
 	public boolean hasTemplate() {
-		return template == null || "".equals(template);
+		return template != null;
 	}
 }
