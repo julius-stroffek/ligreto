@@ -7,6 +7,7 @@ import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataException;
+import net.ligreto.exceptions.LigretoException;
 
 public class InterlacedJoinLayout extends JoinLayout {
 
@@ -15,7 +16,7 @@ public class InterlacedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "# of Diffs", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1, 1);
@@ -46,7 +47,7 @@ public class InterlacedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, IOException {
+	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, rowDiffs, OutputFormat.DEFAULT, rowDiffs > 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT);
 		targetBuilder.shiftPosition(1);

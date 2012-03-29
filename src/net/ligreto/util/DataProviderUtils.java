@@ -46,8 +46,9 @@ public class DataProviderUtils {
 		
 		switch (dp.getColumnType(columnIndex)) {
 		case Types.BIGINT:
-		case Types.INTEGER:
 			return new Long(dp.getLong(columnIndex));
+		case Types.INTEGER:
+			return new Integer(dp.getInteger(columnIndex));
 		case Types.DOUBLE:
 		case Types.FLOAT:
 			return new Double(dp.getDouble(columnIndex));

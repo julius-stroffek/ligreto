@@ -7,8 +7,6 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
-import net.ligreto.exceptions.DataException;
-import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.JoinNode.DuplicatesStrategy;
 import net.ligreto.parser.nodes.ResultNode;
@@ -37,7 +35,7 @@ public class SummaryJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Summary of Rows", OutputStyle.TOP_HEADER);
 		targetBuilder.dumpCell(1, "Value", OutputStyle.TOP_HEADER);

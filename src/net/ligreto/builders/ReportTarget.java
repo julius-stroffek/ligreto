@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
+import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.LigretoNode;
 
 /**
@@ -91,17 +92,17 @@ public abstract class ReportTarget implements TargetInterface {
 	}
 	
 	@Override
-	public void dumpCell(int i, Object value) {
+	public void dumpCell(int i, Object value) throws LigretoException {
 		dumpCell(i, value, OutputFormat.DEFAULT, OutputStyle.DEFAULT);
 	}
 	
 	@Override
-	public void dumpCell(int i, Object value, OutputFormat outputFormat) {
+	public void dumpCell(int i, Object value, OutputFormat outputFormat) throws LigretoException {
 		dumpCell(i, value, outputFormat, OutputStyle.DEFAULT);
 	}
 	
 	@Override
-	public void dumpCell(int i, Object value, OutputStyle outputStyle) {
+	public void dumpCell(int i, Object value, OutputStyle outputStyle) throws LigretoException {
 		dumpCell(i, value, OutputFormat.DEFAULT, outputStyle);
 	}
 		

@@ -47,8 +47,7 @@ public class WorkbookComparator {
 			log.warn("The number of cell styles differs: " + w1.getNumCellStyles() + ", " + w2.getNumCellStyles());
 		}
 		if (w1.getNumberOfFonts() != w2.getNumberOfFonts()) {
-			log.error("The number of fonts differs: " + w1.getNumberOfFonts() + ", " + w2.getNumberOfFonts());
-			result = false;
+			log.warn("The number of fonts differs: " + w1.getNumberOfFonts() + ", " + w2.getNumberOfFonts());
 		}
 		if (w1.getNumberOfNames() != w2.getNumberOfNames()) {
 			log.error("The number of named areas differs: " + w1.getNumberOfNames() + ", " + w2.getNumberOfNames());

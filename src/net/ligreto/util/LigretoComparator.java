@@ -196,7 +196,7 @@ public class LigretoComparator {
 	}
 	
 	public int compareAsDataSource(DataProvider dp1, int[] on1, DataProvider dp2, int[] on2) throws DataException {
-		Assert.assertTrue(on1.length == on2.length);
+		assert(on1.length == on2.length);
 		
 		int cResult;
 		for (int i=0; i < on1.length; i++) {
@@ -394,8 +394,8 @@ public class LigretoComparator {
 	 * @throws LigretoException
 	 */
 	public int[] compareOthersAsDataSource(DataProvider dp1, int[] key1, int[] columns1, DataProvider dp2, int[] key2, int[] columns2) throws SQLException, LigretoException {
-		Assert.assertTrue(key1.length == key2.length);
-		Assert.assertTrue(columns1.length == columns2.length);
+		assert(key1.length == key2.length);
+		assert(columns1.length == columns2.length);
 		
 		int colCount1 = dp1.getColumnCount();
 		int colCount2 = dp2.getColumnCount();
@@ -421,8 +421,8 @@ public class LigretoComparator {
 			while (MiscUtils.arrayContains(key2, i2))
 				i2++;
 			
-			Assert.assertTrue(i1 <= colCount1);
-			Assert.assertTrue(i2 <= colCount2);
+			assert(i1 <= colCount1);
+			assert(i2 <= colCount2);
 			
 			boolean i1Valid = MiscUtils.arrayContains(columns1, i1);
 			boolean i2Valid = MiscUtils.arrayContains(columns2, i2);
@@ -442,8 +442,8 @@ public class LigretoComparator {
 			while (MiscUtils.arrayContains(key2, i2))
 				i2++;
 			
-			Assert.assertTrue(i1 <= colCount1);
-			Assert.assertTrue(i2 <= colCount2);
+			assert(i1 <= colCount1);
+			assert(i2 <= colCount2);
 			
 			boolean i1Valid = MiscUtils.arrayContains(columns1, i1);
 			boolean i2Valid = MiscUtils.arrayContains(columns2, i2);
@@ -456,7 +456,7 @@ public class LigretoComparator {
 					dp2.getString(i1);
 					result[j] = compareNulls(true, dp2.wasNull());
 				} else {
-					Assert.assertTrue(false);
+					assert(false);
 				}
 			} else if (i1Valid || i2Valid) {
 				throw new LigretoException("Only one from two matching columns is listed for comparison. 1st: " + i1 + "; 2nd: "

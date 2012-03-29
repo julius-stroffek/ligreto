@@ -14,11 +14,16 @@ public class Row implements Comparable<Object> {
 	
 	@Override
 	public int hashCode() {
+		final int prime = 31;
 		if (columns == null)
 			return 0;	
+		int hColCount = 2;
+		if (hColCount > columns.length) {
+			hColCount = columns.length;
+		}
 		int hash = 0;
-		for (int i=0; i < columns.length; i++) {
-			hash += columns[i].hashCode();
+		for (int i=0; i < hColCount; i++) {
+			hash = prime*hash + columns[i].hashCode();
 		}
 		return hash;
 	}

@@ -8,46 +8,10 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import org.junit.Assert;
-
 import net.ligreto.exceptions.DataException;
-import net.ligreto.util.LigretoComparator;
 
 public class SortingDataProvider extends DataProvider {
 
-	protected class DataProviderRow implements Comparable<DataProviderRow> {
-		
-		protected int[] columnTypes;
-		protected Object[] columnValues;
-		protected int[] keyColumns;
-		
-		public DataProviderRow(int[] columnTypes, Object[] columnValues, int[] keyColumns) {
-			this.columnTypes = columnTypes;
-			this.columnValues = columnValues;
-			this.keyColumns = keyColumns;
-		}
-
-		@Override
-		public int compareTo(DataProviderRow other) {
-			int result = 0;
-
-			Assert.assertTrue(columnTypes.length == other.columnTypes.length);
-			Assert.assertTrue(keyColumns.length == other.keyColumns.length);
-			try {
-				for (int i = 0; i < keyColumns.length; i++) {
-					result = LigretoComparator.getInstance().compare(columnTypes[keyColumns[i] - 1],
-							columnValues[keyColumns[i] - 1], other.columnTypes[other.keyColumns[i] - 1],
-							other.columnValues[other.keyColumns[i] - 1]);
-					if (result != 0)
-						break;
-				}
-			} catch (DataException e) {
-				throw new IllegalArgumentException(e);
-			}
-			
-			return result;
-		}
-	}
 	protected DataProvider dataProvider;
 	protected int columnCount;
 	protected int[] columnTypes;
@@ -74,14 +38,9 @@ public class SortingDataProvider extends DataProvider {
 		for (int i=0; i < columnCount; i++) {
 			columnTypes[i] = dataProvider.getColumnType(i+1);
 		}
-		Object[] columnValues = null;
 		DataProviderRow row = null;
 		while (dataProvider.next()) {
-			columnValues = new Object[columnCount];
-			for (int i=0; i < columnCount; i++) {
-				columnValues[i] = dataProvider.getObject(i+1);
-			}
-			row = new DataProviderRow(columnTypes, columnValues, keyColumns);
+			row = new DataProviderRow(columnTypes, dataProvider, keyColumns);
 			rowList.add(row);
 		}
 		DataProviderRow[] arrayType = new DataProviderRow[0];
@@ -94,7 +53,7 @@ public class SortingDataProvider extends DataProvider {
 	
 	@Override
 	public boolean next() throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		currentRow++;
 		
 		// We are already over the data
@@ -115,7 +74,7 @@ public class SortingDataProvider extends DataProvider {
 			if (cmpKey == 0) {
 				duplicateKey = true;
 			} else {
-				Assert.assertTrue(cmpKey == -1);
+				assert(cmpKey == -1);
 			}
 		}
 		
@@ -124,9 +83,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Boolean getBoolean(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.BOOLEAN);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.BOOLEAN);
 		Boolean result = (Boolean) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -134,9 +93,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Integer getInteger(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.INTEGER);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.INTEGER);
 		Integer result = (Integer) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -144,9 +103,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Long getLong(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.BIGINT);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.BIGINT);
 		Long result = (Long) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -154,8 +113,8 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Double getDouble(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index < columnTypes.length);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index < columnTypes.length);
 		Double result = null;
 		switch (columnTypes[index-1]) {
 		case Types.DOUBLE:
@@ -163,7 +122,7 @@ public class SortingDataProvider extends DataProvider {
 			result = (Double) rows[currentRow].columnValues[index-1];
 			break;
 		default:
-			Assert.assertTrue(false);
+			assert(false);
 			// Just to keep the compiler quiet
 			return null;
 		}
@@ -173,9 +132,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Timestamp getTimestamp(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.TIMESTAMP);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.TIMESTAMP);
 		Timestamp result = (Timestamp) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -183,9 +142,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public BigDecimal getBigDecimal(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.TIMESTAMP);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.TIMESTAMP);
 		BigDecimal result = (BigDecimal) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -193,8 +152,8 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Object getObject(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
 		Object result = rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -202,9 +161,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public String getString(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.TIMESTAMP);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.TIMESTAMP);
 		String result = (String) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -212,43 +171,43 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public int getColumnType(int index) throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return columnTypes[index-1];
 	}
 
 	@Override
 	public String getColumnLabel(int index) throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return dataProvider.getColumnLabel(index);
 	}
 
 	@Override
 	public String getColumnName(int index) throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return dataProvider.getColumnName(index);
 	}
 
 	@Override
 	public int getColumnCount() throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return columnTypes.length;
 	}
 
 	@Override
 	public int getOriginalIndex(int index) throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return dataProvider.getOriginalIndex(index);
 	}
 
 	@Override
 	public int getIndex(int originalIndex) throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return dataProvider.getIndex(originalIndex);
 	}
 
 	@Override
 	public boolean wasNull() throws DataException {
-		Assert.assertTrue(prepared);
+		assert(prepared);
 		return wasNull;
 	}
 
@@ -269,9 +228,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Time getTime(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.TIMESTAMP);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.TIMESTAMP);
 		Time result = (Time) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;
@@ -279,9 +238,9 @@ public class SortingDataProvider extends DataProvider {
 
 	@Override
 	public Date getDate(int index) throws DataException {
-		Assert.assertTrue(prepared && currentRow < rows.length);
-		Assert.assertTrue(index > 0 && index <= columnTypes.length);
-		Assert.assertTrue(columnTypes[index-1] == Types.TIMESTAMP);
+		assert(prepared && currentRow < rows.length);
+		assert(index > 0 && index <= columnTypes.length);
+		assert(columnTypes[index-1] == Types.TIMESTAMP);
 		Date result = (Date) rows[currentRow].columnValues[index-1];
 		wasNull = (result == null);
 		return result;

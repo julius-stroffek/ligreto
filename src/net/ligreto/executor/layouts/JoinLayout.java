@@ -17,7 +17,6 @@ import net.ligreto.executor.ResultExecutor;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
-import net.ligreto.util.Assert;
 import net.ligreto.util.MiscUtils;
 
 /**
@@ -159,8 +158,9 @@ public abstract class JoinLayout {
 	 * @throws SQLException 
 	 * @throws DataSourceNotDefinedException 
 	 * @throws IOException 
-	 * @throws DataException */
-	public abstract void dumpHeader() throws DataSourceNotDefinedException, IOException, DataException;
+	 * @throws DataException 
+	 * @throws LigretoException */
+	public abstract void dumpHeader() throws DataSourceNotDefinedException, IOException, DataException, LigretoException;
 	
 	/**
 	 * This function converts the specified column index from XML into the index
@@ -172,7 +172,7 @@ public abstract class JoinLayout {
 	 * @throws LigretoException 
 	 */
 	public int translateToResultColumn(int index) throws LigretoException {
-		Assert.assertTrue(startCalled);
+		assert(startCalled);
 
 		int rc1 = dp1.getIndex(index);
 		int rc2 = dp2.getIndex(index);
@@ -201,7 +201,7 @@ public abstract class JoinLayout {
 	 * @throws SQLException
 	 */
 	public String getResultColumnName(int i) throws DataException {
-		Assert.assertTrue(startCalled);
+		assert(startCalled);
 
 		if (i < 0 || i >= resultColumns.length)
 			throw new IllegalArgumentException("Result column index out of range: " + i);
@@ -217,7 +217,7 @@ public abstract class JoinLayout {
 	 * @throws SQLException
 	 */
 	public String getColumnName(int i) throws DataException {
-		Assert.assertTrue(startCalled);
+		assert(startCalled);
 
 		if (i <= 0 || i > getColumnCount())
 			throw new IllegalArgumentException("Column index out of range: " + i);
@@ -296,7 +296,7 @@ public abstract class JoinLayout {
 	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws LigretoException, IOException {
 		
 		// Check for proper initialization
-		Assert.assertTrue(startCalled);
+		assert(startCalled);
 		
 		// We will not accept more rows if we are over limit
 		if (isOverLimit()) {
@@ -468,9 +468,10 @@ public abstract class JoinLayout {
 	 * 
 	 * @param dataSourceIndex The index of data source that the duplicate belongs to.
 	 * @throws IOException 
+	 * @throws LigretoException 
 	 * @throws SQLException
 	 */
-	public void dumpDuplicate(int dataSourceIndex) throws DataException, IOException {
+	public void dumpDuplicate(int dataSourceIndex) throws DataException, IOException, LigretoException {
 		switch (dataSourceIndex) {
 		case 0:
 			rowCountSrc1++;
@@ -602,7 +603,7 @@ public abstract class JoinLayout {
 	 * @throws DataException 
 	 */
 	public int getColumnCount() throws DataException {
-		Assert.assertTrue(dp1.getColumnCount() == dp2.getColumnCount());
+		assert(dp1.getColumnCount() == dp2.getColumnCount());
 		return dp1.getColumnCount();
 	}
 	
@@ -679,7 +680,7 @@ public abstract class JoinLayout {
 		for (int i = 0, i1 = 1; i < resultColumns.length; i++, i1++) {
 			while (noResultColumns.containsKey(i1))
 				i1++;
-			Assert.assertTrue(i1 <= getColumnCount());
+			assert(i1 <= getColumnCount());
 			resultColumns[i] = i1;
 		}
 		
@@ -688,7 +689,7 @@ public abstract class JoinLayout {
 			for (int i = 0, i1 = 1; i < ignoredColumns.length; i++, i1++) {
 				while (noResultColumns.containsKey(i1) || MiscUtils.arrayContains(comparedColumns, i1))
 					i1++;
-				Assert.assertTrue(i1 <= getColumnCount());
+				assert(i1 <= getColumnCount());
 				ignoredColumns[i] = i1;
 			}
 		} else if (ignoredColumns != null) {
@@ -696,11 +697,11 @@ public abstract class JoinLayout {
 			for (int i = 0, i1 = 1; i < comparedColumns.length; i++, i1++) {
 				while (noResultColumns.containsKey(i1) || MiscUtils.arrayContains(ignoredColumns, i1))
 					i1++;
-				Assert.assertTrue(i1 <= getColumnCount());
+				assert(i1 <= getColumnCount());
 				comparedColumns[i] = i1;
 			}
 		} else {
-			Assert.assertTrue(true, "At least one of 'comparedColumns' or 'ignoredColumns' have to be specified.");
+			throw new RuntimeException("At least one of 'comparedColumns' or 'ignoredColumns' have to be specified.");
 		}
 		
 		xmlToResult1 = new int[getColumnCount()];
@@ -726,7 +727,7 @@ public abstract class JoinLayout {
 	 * @return the result status 
 	 */
 	public ResultStatus finish() throws IOException, LigretoException {
-		Assert.assertTrue(startCalled);
+		assert(startCalled);
 		targetBuilder.finish();
 		ResultExecutor executor = new ResultExecutor(layoutNode.getResultNode(), this);
 		resultStatus = executor.execute();

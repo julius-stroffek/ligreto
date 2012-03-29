@@ -37,7 +37,6 @@ import net.ligreto.parser.nodes.JoinNode.SortingStrategy;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.Node.Attitude;
-import net.ligreto.util.Assert;
 import net.ligreto.util.MiscUtils;
 import net.ligreto.util.LigretoComparator;
 
@@ -298,8 +297,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			LigretoComparator rsComparator = LigretoComparator.getInstance(joinNode.getLigretoNode().getLigretoParameters());
 			rsComparator.setComparator(comparator);
 			
-			DataProvider dp1 = new ResultSetDataProvider(rs1, excl1);
-			DataProvider dp2 = new ResultSetDataProvider(rs2, excl2);
+			DataProvider dp1 = new ResultSetDataProvider(rs1, key, excl1);
+			DataProvider dp2 = new ResultSetDataProvider(rs2, key, excl2);
 			String dSrc1 =  joinNode.getSqlQueries().get(0).getDataSource();
 			String dSrc2 =  joinNode.getSqlQueries().get(1).getDataSource();		
 			dp1.setCaption(Database.getInstance().getDataSourceNode(dSrc1).getDescription());		
@@ -327,7 +326,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					while (MiscUtils.arrayContains(key, i1))
 						i1++;
 					
-					Assert.assertTrue(i1 <= dp1.getColumnCount());
+					assert(i1 <= dp1.getColumnCount());
 
 					columns[i] = i1;
 				}

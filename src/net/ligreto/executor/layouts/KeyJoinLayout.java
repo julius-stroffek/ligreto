@@ -5,7 +5,7 @@ import java.io.IOException;
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
-import net.ligreto.exceptions.DataException;
+import net.ligreto.exceptions.LigretoException;
 
 public class KeyJoinLayout extends JoinLayout {
 
@@ -14,7 +14,7 @@ public class KeyJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		
 		for (int i = 0; i < keyColumns.length; i++) {
@@ -28,7 +28,7 @@ public class KeyJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, IOException {		
+	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws IOException, LigretoException {		
 		targetBuilder.nextRow();
 		switch (resultType) {
 		case LEFT:

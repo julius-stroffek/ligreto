@@ -12,9 +12,7 @@ import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.Column;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
-import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.util.Assert;
 import net.ligreto.util.LigretoComparator;
 
 /**
@@ -63,7 +61,7 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		 * @throws DataException if there are any issues in getting the data
 		 */
 		AnalysisEntry(DataProvider dp1, int[] columns1, DataProvider dp2, int[] columns2) throws DataException {
-			Assert.assertTrue(columns1.length == columns2.length);
+			assert(columns1.length == columns2.length);
 			cols1 = null;
 			if (dp1 != null && columns1 != null && columns1.length > 0) {
 				cols1 = LigretoComparator.duplicate(dp1, columns1);
@@ -146,7 +144,7 @@ public class AnalyticalJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "# of Occur.", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1, 2);

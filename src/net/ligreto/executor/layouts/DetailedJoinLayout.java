@@ -8,7 +8,6 @@ import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.exceptions.DataException;
-import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.DataProviderUtils;
 
@@ -21,7 +20,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Column Name", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1);
@@ -38,7 +37,7 @@ public class DetailedJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(3, "Relative", OutputStyle.TOP_HEADER);
 	}
 
-	protected void dumpLeft(int index, OutputStyle style) throws DataException, IOException {
+	protected void dumpLeft(int index, OutputStyle style) throws IOException, LigretoException {
 		if (style != OutputStyle.DISABLED) {
 			style = OutputStyle.HIGHLIGHTED;
 		}
@@ -62,7 +61,7 @@ public class DetailedJoinLayout extends JoinLayout {
 		}	
 	}
 	
-	protected void dumpRight(int index, OutputStyle style) throws DataException, IOException {
+	protected void dumpRight(int index, OutputStyle style) throws IOException, LigretoException {
 		if (style != OutputStyle.DISABLED) {
 			style = OutputStyle.HIGHLIGHTED;
 		}
@@ -209,6 +208,13 @@ public class DetailedJoinLayout extends JoinLayout {
 				return str2.equals(str1) ? "no" : "yes";
 		}
 		
+		if (columnValue1 instanceof Integer) {
+			columnValue1 = new Long((Integer)columnValue1);
+		}
+		if (columnValue2 instanceof Integer) {
+			columnValue2 = new Long((Integer)columnValue2);
+		}
+		
 		if (columnValue1 instanceof Long && columnValue2 instanceof Long) {
 			double diff = calculateDifference((Long)columnValue1, (Long)columnValue2);
 			return diff != 0 ? new Double(diff) : "no";
@@ -252,6 +258,13 @@ public class DetailedJoinLayout extends JoinLayout {
 		// If one of the values is not number, report just empty string
 		if (columnValue1 == null || columnValue2 == null) {
 			return "";
+		}
+		
+		if (columnValue1 instanceof Integer) {
+			columnValue1 = new Long((Integer)columnValue1);
+		}
+		if (columnValue2 instanceof Integer) {
+			columnValue2 = new Long((Integer)columnValue2);
 		}
 		
 		double diff;

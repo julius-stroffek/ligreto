@@ -10,7 +10,6 @@ import java.sql.Types;
 import java.sql.Date;
 
 import net.ligreto.exceptions.DataException;
-import net.ligreto.util.Assert;
 
 public class ResultSetDataProvider extends DataProvider {
 	
@@ -18,19 +17,36 @@ public class ResultSetDataProvider extends DataProvider {
 	protected int[] originalIndices;
 	protected int[] dataProviderIndices;
 	
-	public ResultSetDataProvider(ResultSet resultSet) throws SQLException {
+	protected boolean wasNull = false;
+	protected int[] keyColumns = null;
+	protected int[] columnTypes = null;
+	protected DataProviderRow currentRow = null;
+	protected DataProviderRow nextRow = null;
+	protected boolean hasDuplicateKey = false;
+	protected boolean nextHasDuplicateKey = false;
+	protected int indexInDuplicates = 0;
+	
+	public ResultSetDataProvider(ResultSet resultSet, int[] keyColumns) throws DataException, SQLException {
 		this.resultSet = resultSet;
+		this.keyColumns = keyColumns;
 		ResultSetMetaData rsmd = resultSet.getMetaData();
 		originalIndices = new int[rsmd.getColumnCount()];
 		dataProviderIndices  = new int[rsmd.getColumnCount()];
+		columnTypes = new int[rsmd.getColumnCount()];
 		for (int i=0; i < rsmd.getColumnCount(); i++) {
 			originalIndices[i] = i+1;
 			dataProviderIndices[i] = i+1;
+			columnTypes[i] = rsmd.getColumnType(i+1);
 		}
+		resultSet.next();
+		nextRow = new DataProviderRow(columnTypes, resultSet, keyColumns);
+		hasDuplicateKey = false;
+		nextHasDuplicateKey = false;
 	}
 
-	public ResultSetDataProvider(ResultSet resultSet, int[] excludeColumns) throws SQLException {
+	public ResultSetDataProvider(ResultSet resultSet, int[] keyColumns, int[] excludeColumns) throws SQLException, DataException {
 		this.resultSet = resultSet;
+		this.keyColumns = keyColumns;
 		ResultSetMetaData rsmd = resultSet.getMetaData();
 		
 		boolean[] columnExcluded = new boolean[rsmd.getColumnCount()];
@@ -50,21 +66,44 @@ public class ResultSetDataProvider extends DataProvider {
 		
 		originalIndices = new int[rsmd.getColumnCount() - excludedCount];
 		dataProviderIndices  = new int[rsmd.getColumnCount()];
+		columnTypes = new int[rsmd.getColumnCount() - excludedCount];
 		for (int i=1, r=0; i <= rsmd.getColumnCount(); i++) {
 			if (columnExcluded[i-1]) {
 				dataProviderIndices[i-1] = -1;
 			} else {
 				dataProviderIndices[i-1] = r+1;
 				originalIndices[r] = i;
+				columnTypes[r] = rsmd.getColumnType(i);
 				r++;
 			}
 		}
+		if (resultSet.next()) {
+			nextRow = new DataProviderRow(columnTypes, resultSet, originalIndices, keyColumns);
+		} else {
+			nextRow = null;
+		}
+		hasDuplicateKey = false;
+		nextHasDuplicateKey = false;
 	}
 
 	@Override
 	public boolean next() throws DataException {
 		try {
-			return resultSet.next();
+			hasDuplicateKey = nextHasDuplicateKey;
+			currentRow = nextRow;
+			if (hasDuplicateKey) {
+				indexInDuplicates++;
+			} else {
+				indexInDuplicates = 0;
+			}
+			if (currentRow != null && resultSet.next()) {
+				nextRow = new DataProviderRow(columnTypes, resultSet, originalIndices, keyColumns);
+				nextHasDuplicateKey = currentRow.compareTo(nextRow) == 0;
+			} else {
+				nextRow = null;
+				nextHasDuplicateKey = false;
+			}
+			return currentRow != null;
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
@@ -72,129 +111,122 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public Boolean getBoolean(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			Boolean result = resultSet.getBoolean(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Boolean) result;
 		}
 	}
 
 	@Override
 	public Integer getInteger(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			Integer result = resultSet.getInt(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Integer) result;
 		}
 	}
 
 	@Override
 	public Long getLong(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			Long result = resultSet.getLong(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Long) result;
 		}
 	}
 
 	@Override
 	public Double getDouble(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			Double result = resultSet.getDouble(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Double) result;
 		}
 	}
 
 	@Override
 	public Timestamp getTimestamp(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			Timestamp result = resultSet.getTimestamp(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Timestamp) result;
 		}
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			BigDecimal result = resultSet.getBigDecimal(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (BigDecimal) result;
 		}
 	}
 
 	@Override
 	public String getString(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			String result = resultSet.getString(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			if (result instanceof String) {
+				return (String) result;
+			} else {
+				return result.toString();
+			}
 		}
 	}
 
 	@Override
 	public Time getTime(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		Time result;
-		try {
-			result = resultSet.getTime(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Time) result;
 		}
 	}
 
 	@Override
 	public Date getDate(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		Date result;
-		try {
-			result = resultSet.getDate(originalIndices[index-1]);
-			if (resultSet.wasNull())
-				return null;
-			else
-				return result;
-		} catch (SQLException e) {
-			throw new DataException(e);
+		assert(index > 0 && index <= originalIndices.length);
+
+		Object result = currentRow.columnValues[index-1];
+		wasNull = result == null;
+		if (wasNull) {
+			return null;
+		} else {
+			return (Date) result;
 		}
 	}
 
@@ -265,17 +297,13 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public int getColumnType(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
-		try {
-			return resultSet.getMetaData().getColumnType(originalIndices[index-1]);
-		} catch (SQLException e) {
-			throw new DataException(e);
-		}
+		assert(index > 0 && index <= originalIndices.length);
+		return columnTypes[index-1];
 	}
 
 	@Override
 	public String getColumnLabel(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		assert(index > 0 && index <= originalIndices.length);
 		try {
 			return resultSet.getMetaData().getColumnLabel(originalIndices[index-1]);
 		} catch (SQLException e) {
@@ -285,7 +313,7 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public String getColumnName(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		assert(index > 0 && index <= originalIndices.length);
 		try {
 			return resultSet.getMetaData().getColumnName(originalIndices[index-1]);
 		} catch (SQLException e) {
@@ -300,14 +328,14 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public int getOriginalIndex(int index) throws DataException {
-		Assert.assertTrue(index > 0 && index <= originalIndices.length);
+		assert(index > 0 && index <= originalIndices.length);
 		return originalIndices[index-1];
 	}
 
 	@Override
 	public int getIndex(int originalIndex) throws DataException {
 		try {
-			Assert.assertTrue(originalIndex > 0 && originalIndex <= resultSet.getMetaData().getColumnCount());
+			assert(originalIndex > 0 && originalIndex <= resultSet.getMetaData().getColumnCount());
 		} catch (SQLException e) {
 			throw new DataException(e);
 		}
@@ -316,11 +344,7 @@ public class ResultSetDataProvider extends DataProvider {
 
 	@Override
 	public boolean wasNull() throws DataException {
-		try {
-			return resultSet.wasNull();
-		} catch (SQLException e) {
-			throw new DataException(e);
-		}
+		return wasNull;
 	}
 
 	@Override
@@ -339,24 +363,17 @@ public class ResultSetDataProvider extends DataProvider {
 	}
 
 	@Override
-	public boolean isActive() throws DataException {
-		// TODO Auto-generated method stub
-		try {
-			return !resultSet.isBeforeFirst() && !resultSet.isAfterLast();
-		} catch (SQLException e) {
-			throw new DataException("Error on data source.", e);
-		}
+	public boolean isActive() {
+		return currentRow != null;
 	}
 
 	@Override
 	public boolean hasDuplicateKey() throws DataException {
-		// TODO Auto-generated method stub
-		return false;
+		return hasDuplicateKey && nextHasDuplicateKey;
 	}
 
 	@Override
 	public int getIndexInDuplicates() throws DataException {
-		// TODO Auto-generated method stub
-		return 0;
+		return indexInDuplicates;
 	}
 }

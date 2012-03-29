@@ -2,14 +2,13 @@ package net.ligreto.executor.layouts;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-
 import net.ligreto.LigretoParameters;
 import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
+import net.ligreto.exceptions.LigretoException;
 
 public class DuplicatesJoinLayout extends JoinLayout {
 
@@ -18,7 +17,7 @@ public class DuplicatesJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Data Source", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1);
@@ -42,7 +41,7 @@ public class DuplicatesJoinLayout extends JoinLayout {
 	}
 	
 	@Override
-	public void dumpDuplicate(int dataSourceIndex) throws DataException, IOException {
+	public void dumpDuplicate(int dataSourceIndex) throws IOException, LigretoException {
 		// Call the parent function first
 		super.dumpDuplicate(dataSourceIndex);
 		
@@ -55,8 +54,7 @@ public class DuplicatesJoinLayout extends JoinLayout {
 			dp = dp2;
 			break;
 		default:
-			Assert.assertTrue(false);
-			break;
+			throw new RuntimeException("Unexpectidly reaching unreachable code.");
 		}
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, dp.getCaption(), OutputFormat.DEFAULT);

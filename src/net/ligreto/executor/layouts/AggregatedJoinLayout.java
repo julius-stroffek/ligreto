@@ -14,7 +14,6 @@ import net.ligreto.data.ColumnAggregationResult;
 import net.ligreto.data.Column;
 import net.ligreto.data.Row;
 import net.ligreto.exceptions.DataException;
-import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.LigretoComparator;
 
@@ -44,7 +43,7 @@ public class AggregatedJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpHeader() throws DataException, DataSourceNotDefinedException, IOException {
+	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Column Name", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1);

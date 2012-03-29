@@ -116,9 +116,9 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 							}
 							
 							// Create the data provider and process the result
-							DataProvider dp = new ResultSetDataProvider(rs, excl);
+							DataProvider dp = new ResultSetDataProvider(rs, new int[0], excl);
 							if (callBack.prepareProcessing(sqlNode, dp)) {
-								while (rs.next()) {
+								while (dp.next()) {
 									result.addRow();
 									callBack.processResultSetRow(dp);
 								}

@@ -72,7 +72,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 		
 		@Override
 		public int hashCode() {
-			return sheet + row + column;
+			final int prime = 31;
+			return prime*prime*sheet + prime*row + column;
 		}
 		
 		@Override

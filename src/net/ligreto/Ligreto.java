@@ -84,10 +84,16 @@ public class Ligreto {
 		String[] files = cmd.getArgs();
 		
 		if (cmd.hasOption("debug") || cmd.hasOption("trace")) {
+			// Get the proper log level
 			Level logLevel = Level.DEBUG;
 			if (cmd.hasOption("trace")) {
 				logLevel = Level.TRACE;
 			}
+			
+			// Enable java assertions
+			Ligreto.class.getClassLoader().setDefaultAssertionStatus(true);
+			
+			// Increase the log severity
 			Logger.getRootLogger().setLevel(logLevel);
 			log.setLevel(logLevel);
 		}
