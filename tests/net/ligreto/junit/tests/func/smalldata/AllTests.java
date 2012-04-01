@@ -16,7 +16,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	Excel97ReportTest.class,
 	ExcludeColumnsTest.class,	
 	InternalSortTest.class,
-	PtpReportTest.class
+	PtpReportTest.class,
+	StrictTypesTest.class
 })
 public class AllTests {
 	/**

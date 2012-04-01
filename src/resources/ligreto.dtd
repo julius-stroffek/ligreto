@@ -105,10 +105,15 @@
 
 <!ELEMENT row-limit EMPTY>
 <!ATTLIST row-limit enabled CDATA #IMPLIED>			<!-- (true|false) -->
+<!ATTLIST row-limit total-row-count CDATA #IMPLIED>
 <!ATTLIST row-limit rel-diff-count CDATA #IMPLIED>
 <!ATTLIST row-limit abs-diff-count CDATA #IMPLIED>
 <!ATTLIST row-limit rel-non-matched-count CDATA #IMPLIED>
 <!ATTLIST row-limit abs-non-matched-count CDATA #IMPLIED>
+<!ATTLIST row-limit rel-equal-count CDATA #IMPLIED>
+<!ATTLIST row-limit abs-equal-count CDATA #IMPLIED>
+<!ATTLIST row-limit rel-matched-count CDATA #IMPLIED>
+<!ATTLIST row-limit abs-matched-count CDATA #IMPLIED>
 
 <!ELEMENT ptp (preprocess*,transfer+,postprocess*)>
 <!ATTLIST ptp name CDATA #IMPLIED>

@@ -520,17 +520,32 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "enabled") != null) {
 						rowLimit.setEnabled(getAttributeValue(atts, "enabled"));
 					}
+					if (getAttributeValue(atts, "total-row-count") != null) {
+						rowLimit.setTotalRows(getAttributeValue(atts, "total-row-count"));
+					}
 					if (getAttributeValue(atts, "abs-diff-count") != null) {
 						rowLimit.setAbsoluteDifference(getAttributeValue(atts, "abs-diff-count"));
 					}
 					if (getAttributeValue(atts, "rel-diff-count") != null) {
 						rowLimit.setRelativeDifference(getAttributeValue(atts, "rel-diff-count"));
 					}
+					if (getAttributeValue(atts, "abs-non-matched-count") != null) {
+						rowLimit.setAbsoluteNonMatched(getAttributeValue(atts, "abs-non-matched-count"));
+					}
 					if (getAttributeValue(atts, "rel-non-matched-count") != null) {
 						rowLimit.setRelativeNonMatched(getAttributeValue(atts, "rel-non-matched-count"));
 					}
-					if (getAttributeValue(atts, "abs-non-matched-count") != null) {
-						rowLimit.setAbsoluteNonMatched(getAttributeValue(atts, "abs-non-matched-count"));
+					if (getAttributeValue(atts, "abs-equal-count") != null) {
+						rowLimit.setAbsoluteEqual(getAttributeValue(atts, "abs-equal-count"));
+					}
+					if (getAttributeValue(atts, "rel-equal-count") != null) {
+						rowLimit.setRelativeEqual(getAttributeValue(atts, "rel-equal-count"));
+					}
+					if (getAttributeValue(atts, "abs-matched-count") != null) {
+						rowLimit.setAbsoluteMatched(getAttributeValue(atts, "abs-matched-count"));
+					}
+					if (getAttributeValue(atts, "rel-matched-count") != null) {
+						rowLimit.setRelativeMatched(getAttributeValue(atts, "rel-matched-count"));
 					}
 					result.setRowLimitNode(rowLimit);
 				} else if ("limit".equals(localName)) {

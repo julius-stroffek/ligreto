@@ -1,0 +1,5 @@
+* Strict types test.
+* Limits for total row count, equal and matched row counts.
+* Result collector.
+* Chained row matching.
+* GUI/ligui.

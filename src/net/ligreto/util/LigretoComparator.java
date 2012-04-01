@@ -243,7 +243,7 @@ public class LigretoComparator {
 					+ DataProviderUtils.getJdbcTypeName(fieldType2)
 				);
 			} else {
-				result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
+				result = compareAsDataSource(fieldValue1.toString(), fieldValue2.toString());
 			}
 		} else {
 			switch (fieldType1) {

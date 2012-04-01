@@ -122,7 +122,7 @@ public class MiscUtils {
 	 * @param doubleString
 	 * @return the parsed double value
 	 */
-	public static Double parseDouble(String doubleString) {
+	public static double parseDouble(String doubleString) {
 		return Double.parseDouble(doubleString);
 	}
 
@@ -133,7 +133,7 @@ public class MiscUtils {
 	 * @param doublePercentage
 	 * @return the parsed double value
 	 */
-	public static Double parseDoublePercentage(String doublePercentage) {
+	public static double parseDoublePercentage(String doublePercentage) {
 		String trimmed = doublePercentage.trim();
 		if (trimmed.endsWith("%")) {
 			trimmed = trimmed.substring(0, trimmed.length() - 1);
@@ -143,6 +143,16 @@ public class MiscUtils {
 		}
 	}
 	
+	/**
+	 * Parses the specified string as long.
+	 * 
+	 * @param absoluteDifference the string to be parsed
+	 * @return the value of long
+	 */
+	public static long parseLong(String absoluteDifference) {
+		return Long.parseLong(absoluteDifference);
+	}
+
 	/**
 	 * Dumps exception messages across all the exception causes.
 	 * 

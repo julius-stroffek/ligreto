@@ -10,6 +10,16 @@ import org.xml.sax.SAXException;
 
 public class ResultRowLimitTest {
 	@Test
+	public void testResultRowTotalRowCountLimitSuccess() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("result-row-trc-succ-report", true);		
+	}
+	
+	@Test
+	public void testResultRowTotalRowCountLimitFailure() throws SAXException, IOException, LigretoException {	
+		TestUtil.testReport("result-row-trc-fail-report", false);
+	}
+	
+	@Test
 	public void testResultRowRelativeDifferenceCountLimitSuccess() throws SAXException, IOException, LigretoException {
 		TestUtil.testReport("result-row-rdc-succ-report", true);		
 	}

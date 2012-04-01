@@ -61,12 +61,25 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(1);
 		targetBuilder.dumpCell(0, totalRowCount, OutputFormat.DEFAULT);
 		targetBuilder.dumpCell(1, totalRowCount/(double)totalRowCount, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
+		if (rowLimitNode != null) {
+			if (rowLimitNode.getTotalRows() != null) {
+				targetBuilder.dumpCell(3, rowLimitNode.getTotalRows(), OutputFormat.DEFAULT);
+			}
+		}
 		
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Equal Rows", OutputStyle.ROW_HEADER);
 		targetBuilder.shiftPosition(1);
 		targetBuilder.dumpCell(0, equalRowCount, OutputFormat.DEFAULT);
 		targetBuilder.dumpCell(1, equalRowCount/(double)totalRowCount, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
+		if (rowLimitNode != null) {
+			if (rowLimitNode.getRelativeEqual() != null) {
+				targetBuilder.dumpCell(2, rowLimitNode.getRelativeEqual(), OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
+			}
+			if (rowLimitNode.getAbsoluteEqual() != null) {
+				targetBuilder.dumpCell(3, rowLimitNode.getAbsoluteEqual(), OutputFormat.DEFAULT);
+			}
+		}
 
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Different Rows", OutputStyle.ROW_HEADER);
@@ -87,6 +100,14 @@ public class SummaryJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(1);
 		targetBuilder.dumpCell(0, matchingRowCount, OutputFormat.DEFAULT);
 		targetBuilder.dumpCell(1, matchingRowCount/(double)totalRowCount, OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
+		if (rowLimitNode != null) {
+			if (rowLimitNode.getRelativeMatched() != null) {
+				targetBuilder.dumpCell(2, rowLimitNode.getRelativeMatched(), OutputFormat.PERCENTAGE_2_DECIMAL_DIGITS);
+			}
+			if (rowLimitNode.getAbsoluteMatched() != null) {
+				targetBuilder.dumpCell(3, rowLimitNode.getAbsoluteMatched(), OutputFormat.DEFAULT);
+			}
+		}
 		
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Non-matching Rows", OutputStyle.ROW_HEADER);

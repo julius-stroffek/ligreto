@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="ligreto.strictTypes" value="false"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Strict Types Report" options="autoFilter, autoSize,headerStyle" locale="en_US">
+		<output file="stricttypessuccess.xls"/> <!-- Extension should be adjusted automatically -->
+		<data>
+ 			<comparison key="1" >
+ 				<layout target="full!B2" type="interlaced"/>
+				<sql data-source="Source1">select cast(id as char(3)), first_name, last_name, cast(age as char(3)) from join_table1</sql>
+				<sql data-source="Source2">select id, first_name, last_name, age from join_table2</sql>
+			</comparison>
+		</data>
+	</report>
+</ligreto>

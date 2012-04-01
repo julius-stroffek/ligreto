@@ -40,24 +40,53 @@ public class ResultExecutor extends Executor {
 		return msg;
 	}
 	
+	private String compareLimit(long value, Long limit) {
+		String msg;
+		if (value <= limit) {
+			msg = "SUCCESS";
+		} else {
+			resultStatus.setAccepted(false);
+			msg = "FAILURE";
+		}
+		return msg;
+	}
+	
 	private void processRowLimitNode(RowLimitNode rowLimitNode) {
-		Double absoluteDifferenceLimit = rowLimitNode.getAbsoluteDifference();
+		Long totalRowCountLimit = rowLimitNode.getTotalRows();
+		Long absoluteDifferenceLimit = rowLimitNode.getAbsoluteDifference();
 		Double relativeDifferenceLimit = rowLimitNode.getRelativeDifference();
-		Double absoluteNonMatchedLimit = rowLimitNode.getAbsoluteNonMatched();
+		Long absoluteNonMatchedLimit = rowLimitNode.getAbsoluteNonMatched();
 		Double relativeNonMatchedLimit = rowLimitNode.getRelativeNonMatched();
-		
+		Long absoluteEqualLimit = rowLimitNode.getAbsoluteEqual();
+		Double relativeEqualLimit = rowLimitNode.getRelativeEqual();
+		Long absoluteMatchedLimit = rowLimitNode.getAbsoluteMatched();
+		Double relativeMatchedLimit = rowLimitNode.getRelativeMatched();
+
 		int differentRowCount = joinLayout.getDifferentRowCount();
 		int totalRowCount = joinLayout.getTotalRowCount();
 		int matchingRowCount = joinLayout.getMatchingRowCount();
 		
 		int absoluteDifference = differentRowCount;
 		double relativeDifference = absoluteDifference / (double)totalRowCount;
+		int absoluteEqual = totalRowCount - differentRowCount;
+		double relativeEqual = absoluteEqual / (double)totalRowCount;
+		int absoluteMatched = matchingRowCount;
+		double relativeMatched = absoluteMatched / (double)totalRowCount;
 		int absoluteNonMatched = totalRowCount - matchingRowCount;
 		double relativeNonMatched = absoluteNonMatched / (double)totalRowCount;
 		
+		if (totalRowCountLimit != null) {
+			String statusMsg = compareLimit(totalRowCount, totalRowCountLimit);
+			String msg = String.format("%s: Total Row Count: %d; Limit: %d", statusMsg, totalRowCount, totalRowCountLimit);
+			log.info(msg);
+		} else {
+			String msg = String.format("%s: Total Row Count: %d", "SKIPPED", totalRowCount);
+			log.info(msg);
+		}
+
 		if (absoluteDifferenceLimit != null) {
 			String statusMsg = compareLimit(absoluteDifference, absoluteDifferenceLimit);
-			String msg = String.format("%s: Absolute Count of Different Rows: %d; Limit: %d", statusMsg, absoluteDifference, absoluteDifferenceLimit.intValue());
+			String msg = String.format("%s: Absolute Count of Different Rows: %d; Limit: %d", statusMsg, absoluteDifference, absoluteDifferenceLimit);
 			log.info(msg);
 		} else {
 			String msg = String.format("%s: Absolute Count of Different Rows: %d", "SKIPPED", absoluteDifference);
@@ -75,7 +104,7 @@ public class ResultExecutor extends Executor {
 
 		if (absoluteNonMatchedLimit != null) {
 			String statusMsg = compareLimit(absoluteNonMatched, absoluteNonMatchedLimit);
-			String msg = String.format("%s: Absolute Count of Non Matched Rows: %d; Limit: %d", statusMsg, absoluteNonMatched, absoluteNonMatchedLimit.intValue());
+			String msg = String.format("%s: Absolute Count of Non Matched Rows: %d; Limit: %d", statusMsg, absoluteNonMatched, absoluteNonMatchedLimit);
 			log.info(msg);
 		} else {
 			String msg = String.format("%s: Absolute Count of Non Matched Rows: %d", "SKIPPED", absoluteNonMatched);
@@ -88,6 +117,42 @@ public class ResultExecutor extends Executor {
 			log.info(msg);
 		} else {
 			String msg = String.format("%s: Relative Count of Non Matched Rows: %f", "SKIPPED", relativeNonMatched);
+			log.info(msg);
+		}
+
+		if (absoluteEqualLimit != null) {
+			String statusMsg = compareLimit(absoluteEqual, absoluteEqualLimit);
+			String msg = String.format("%s: Absolute Count of Equal Rows: %d; Limit: %d", statusMsg, absoluteEqual, absoluteEqualLimit);
+			log.info(msg);
+		} else {
+			String msg = String.format("%s: Absolute Count of Equal Rows: %d", "SKIPPED", absoluteEqual);
+			log.info(msg);
+		}
+		
+		if (relativeEqualLimit != null) {
+			String statusMsg = compareLimit(relativeEqual, relativeEqualLimit);
+			String msg = String.format("%s: Relative Count of Equal Rows: %f; Limit: %f", statusMsg, relativeEqual, relativeEqualLimit);
+			log.info(msg);
+		} else {
+			String msg = String.format("%s: Relative Count of Equal Rows: %f", "SKIPPED", relativeEqual);
+			log.info(msg);
+		}
+
+		if (absoluteMatchedLimit != null) {
+			String statusMsg = compareLimit(absoluteMatched, absoluteMatchedLimit);
+			String msg = String.format("%s: Absolute Count of Matched Rows: %d; Limit: %d", statusMsg, absoluteMatched, absoluteMatchedLimit);
+			log.info(msg);
+		} else {
+			String msg = String.format("%s: Absolute Count of Matched Rows: %d", "SKIPPED", absoluteMatched);
+			log.info(msg);
+		}
+		
+		if (relativeMatchedLimit != null) {
+			String statusMsg = compareLimit(relativeMatched, relativeMatchedLimit);
+			String msg = String.format("%s: Relative Count of Matched Rows: %f; Limit: %f", statusMsg, relativeMatched, relativeMatchedLimit);
+			log.info(msg);
+		} else {
+			String msg = String.format("%s: Relative Count of Matched Rows: %f", "SKIPPED", relativeMatched);
 			log.info(msg);
 		}
 	}
