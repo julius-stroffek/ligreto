@@ -15,6 +15,7 @@ import net.ligreto.LigretoParameters;
 import net.ligreto.data.Column;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
+import net.ligreto.exceptions.DataTypeMismatchException;
 import net.ligreto.exceptions.LigretoException;
 
 /**
@@ -165,8 +166,16 @@ public class LigretoComparator {
 		nullOrdering = NullOrdering.Unspecified;
 	}
 	
-	public int compareAsDataSource(DataProvider dp1, int on1, DataProvider dp2, int on2) throws DataException {
-		return compareAsDataSource(dp1.getColumnType(on1), dp1.getObject(on1), dp2.getColumnType(on2), dp2.getObject(on2));
+	public int compareAsDataSource(DataProvider dp1, int column1, DataProvider dp2, int column2) throws DataException, DataTypeMismatchException {
+		int retValue;
+		try {
+			retValue = compareAsDataSource(dp1.getColumnType(column1), dp1.getObject(column1), dp2.getColumnType(column2), dp2.getObject(column2));
+		} catch (DataTypeMismatchException e) {
+			e.setColumnIndices(dp1.getOriginalIndex(column1), dp2.getOriginalIndex(column2));
+			e.setColumnNames(dp1.getColumnName(column1), dp2.getColumnName(column2));
+			throw e;
+		}
+		return retValue;
 	}
 	
 	public int compare(String s1, String s2) {
@@ -195,12 +204,12 @@ public class LigretoComparator {
 		return comparator.compare(s1.trim(), s2.trim());
 	}
 	
-	public int compareAsDataSource(DataProvider dp1, int[] on1, DataProvider dp2, int[] on2) throws DataException {
-		assert(on1.length == on2.length);
+	public int compareAsDataSource(DataProvider dp1, int[] columns1, DataProvider dp2, int[] columns2) throws DataException, DataTypeMismatchException {
+		assert(columns1.length == columns2.length);
 		
 		int cResult;
-		for (int i=0; i < on1.length; i++) {
-			cResult = compareAsDataSource(dp1, on1[i], dp2, on2[i]);
+		for (int i=0; i < columns1.length; i++) {
+			cResult = compareAsDataSource(dp1, columns1[i], dp2, columns2[i]);
 			if (cResult != 0)
 				return cResult;
 		}
@@ -223,7 +232,7 @@ public class LigretoComparator {
 		return compareAsDataSource(field1.getColumnType(), field1.getColumnValue(), field2.getColumnType(), field2.getColumnValue());
 	}
 	
-	public int compareAsDataSource(int fieldType1, Object fieldValue1, int fieldType2, Object fieldValue2) throws DataException {
+	public int compareAsDataSource(int fieldType1, Object fieldValue1, int fieldType2, Object fieldValue2) throws DataException, DataTypeMismatchException {
 		int result = 0;
 		// Take care of the null values first
 		boolean isNull1 = fieldValue1 == null;
@@ -237,11 +246,7 @@ public class LigretoComparator {
 		
 		if (fieldType1 != fieldType2) {
 			if (ligretoParameters.getStrictTypes()) {
-				throw new DataException(
-					"Data types differ: "
-					+ DataProviderUtils.getJdbcTypeName(fieldType1) + "; "
-					+ DataProviderUtils.getJdbcTypeName(fieldType2)
-				);
+				throw new DataTypeMismatchException(fieldType1, fieldType2);
 			} else {
 				result = compareAsDataSource(fieldValue1.toString(), fieldValue2.toString());
 			}
@@ -284,9 +289,6 @@ public class LigretoComparator {
 		}
 		
 		for (int i=0; i < fields1.length; i++) {
-			if (fields1[i].getColumnType() != fields2[i].getColumnType()) {
-				throw new LigretoException("The columns to compare have different types.");
-			}
 			result = compareAsDataSource(fields1[i], fields2[i]);
 			if (result != 0)
 				break;

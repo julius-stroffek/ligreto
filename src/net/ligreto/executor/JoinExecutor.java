@@ -2,12 +2,9 @@ package net.ligreto.executor;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,6 +22,7 @@ import net.ligreto.data.Column;
 import net.ligreto.data.DataProvider;
 import net.ligreto.data.ResultSetDataProvider;
 import net.ligreto.data.SortingDataProvider;
+import net.ligreto.data.SqlExecutionThread;
 import net.ligreto.exceptions.CollationException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
@@ -55,7 +53,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	private static final String duplicateJoinColumnsError = "The rows received are duplicate in columns specified as 'on' columns; use 'on' columns that are unique; data source: %s; target: %s";
 	
 	/** The logger instance for the class. */
-	private Log log = LogFactory.getLog(JoinExecutor.class);
+	private static Log log = LogFactory.getLog(JoinExecutor.class);
 
 	/** Iterable object holding the join nodes to be processed. */
 	protected Iterable<JoinNode> joinNodes;
@@ -148,18 +146,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		if (sqlQueries.size() > 2)
 			throw new UnimplementedMethodException("Join of more than 2 tables is not yet implemented");
 		
-		Connection cnn1 = null, cnn2 = null;
-		Statement stm1 = null, stm2 = null;
-		CallableStatement cstm1 = null, cstm2 = null;
+		SqlExecutionThread exec1 = null;
+		SqlExecutionThread exec2 = null;
 		ResultSet rs1 = null, rs2 = null;
 		try {
-			cnn1 = Database.getInstance().getConnection(sqlQueries.get(0).getDataSource());
-			cnn2 = Database.getInstance().getConnection(sqlQueries.get(1).getDataSource());
-		
 			StringBuilder qry1 = new StringBuilder(sqlQueries.get(0).getQuery().toString());
 			StringBuilder qry2 = new StringBuilder(sqlQueries.get(1).getQuery().toString());			
-			stm1 = cnn1.createStatement();
-			stm2 = cnn2.createStatement();
 			
 			int key[] = joinNode.getKey();
 			if (key == null)
@@ -182,39 +174,20 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				qry2.deleteCharAt(qry2.length() - 1);
 			}
 			
-			switch (sqlQueries.get(0).getQueryType()) {
-			case STATEMENT:
-				log.info("Executing the SQL statement on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
-				log.info(qry1);
-				stm1 = cnn1.createStatement();
-				rs1 = stm1.executeQuery(qry1.toString());
-				break;
-			case CALL:
-				log.info("Executing the SQL callable statement on \"" + sqlQueries.get(0).getDataSource() + "\" data source:");
-				log.info(qry1);
-				cstm1 = cnn1.prepareCall(qry1.toString());
-				rs1 = cstm1.executeQuery();
-				break;
-			default:
-				throw new LigretoException("Unknown query type.");
+			exec1 = SqlExecutionThread.executeQuery(sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
+			exec2 = SqlExecutionThread.executeQuery(sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
+
+			try {
+				exec1.join();
+				exec2.join();
+			} catch (InterruptedException e) {
+				throw new LigretoException("Execution interrupted.", e);
 			}
-			
-			switch (sqlQueries.get(1).getQueryType()) {
-			case STATEMENT:
-				log.info("Executing the SQL statement on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
-				log.info(qry2);
-				stm2 = cnn2.createStatement();
-				rs2 = stm2.executeQuery(qry2.toString());
-				break;
-			case CALL:
-				log.info("Executing the SQL callable statement on \"" + sqlQueries.get(1).getDataSource() + "\" data source:");
-				log.info(qry2);
-				cstm2 = cnn2.prepareCall(qry2.toString());
-				rs2 = cstm2.executeQuery();
-				break;
-			default:
-				throw new LigretoException("Unknown query type.");
-			}
+
+			exec1.throwExceptions();
+			exec2.throwExceptions();
+			rs1 = exec1.getResultSet();
+			rs2 = exec2.getResultSet();			
 			
 			ResultSetMetaData rsmd1 = rs1.getMetaData();
 			ResultSetMetaData rsmd2 = rs2.getMetaData();
@@ -603,8 +576,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			}
 		}
 		finally {
-			Database.close(cnn1, stm1, cstm1, rs1);
-			Database.close(cnn2, stm2, cstm2, rs2);
+			if (exec1 != null) {
+				exec1.cleanup();
+			}
+			if (exec2 != null) {
+				exec2.cleanup();
+			}
 		}
 		result.info(log, "JOIN COMPARISON");
 		return result;

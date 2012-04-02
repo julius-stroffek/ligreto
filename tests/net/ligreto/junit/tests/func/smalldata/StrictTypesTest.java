@@ -7,7 +7,7 @@ package net.ligreto.junit.tests.func.smalldata;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import net.ligreto.exceptions.DataException;
+import net.ligreto.exceptions.DataTypeMismatchException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.TestUtil;
@@ -36,7 +36,7 @@ public class StrictTypesTest {
 			Throwable c2 = c1.getCause();
 			
 			// Check that we got the right exception with the proper cause
-			if (c2 instanceof DataException) {
+			if (c2 instanceof DataTypeMismatchException) {
 				exceptionThrown = true;
 			} else {
 				throw e;
@@ -58,7 +58,7 @@ public class StrictTypesTest {
 			Throwable c2 = c1.getCause();
 			
 			// Check that we got the right exception with the proper cause
-			if (c2 instanceof DataException) {
+			if (c2 instanceof DataTypeMismatchException) {
 				exceptionThrown = true;
 			} else {
 				throw e;

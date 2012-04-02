@@ -58,4 +58,44 @@ public class ResultRowLimitTest {
 	public void testResultRowAbsoluteNonMatchedCountLimitFailure() throws SAXException, IOException, LigretoException {		
 		TestUtil.testReport("result-row-anmc-fail-report", false);		
 	}
+
+	@Test
+	public void testResultRowAbsoluteEqualCountLimitSuccess() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-aec-succ-report", true);		
+	}
+
+	@Test
+	public void testResultRowAbsoluteEqualCountLimitFailure() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-aec-fail-report", false);		
+	}
+
+	@Test
+	public void testResultRowRelativeEqualCountLimitSuccess() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-rec-succ-report", true);		
+	}
+
+	@Test
+	public void testResultRowRelativeEqualCountLimitFailure() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-rec-fail-report", false);		
+	}
+
+	@Test
+	public void testResultRowAbsoluteMatchedCountLimitSuccess() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-amc-succ-report", true);		
+	}
+
+	@Test
+	public void testResultRowAbsoluteMatchedCountLimitFailure() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-amc-fail-report", false);		
+	}
+
+	@Test
+	public void testResultRowRelativeMatchedCountLimitSuccess() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-rmc-succ-report", true);		
+	}
+
+	@Test
+	public void testResultRowRelativeMatchedCountLimitFailure() throws SAXException, IOException, LigretoException {		
+		TestUtil.testReport("result-row-rmc-fail-report", false);		
+	}
 }
