@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
 public class Ligreto {
 
 	/** The version string identifying the current version. */
-	public static final String version = "2012.3";
+	public static final String version = "2012.4";
 	
 	/** The maximal exit status returned as result of ligreto operations. */
 	public static final int MAX_RESULT_EXIT_STATUS = 250;
@@ -40,6 +40,11 @@ public class Ligreto {
 	/** The logger instance for the class. */
 	private static Logger log = Logger.getLogger(Ligreto.class);
 
+	public static void exit(int exitCode) {
+		log.debug("EXIT STATUS: " + exitCode);
+		System.exit(exitCode);
+	}
+	
 	/**
 	 * @param args The command-line arguments
 	 */
@@ -107,7 +112,7 @@ public class Ligreto {
 				false
 			);
 			//formatter.printHelp(cmdLineSyntax, header, options, footer, autoUsage)
-			System.exit(1);
+			exit(1);
 		}
 		
 		// Use Excel97 format if requested
@@ -136,22 +141,22 @@ public class Ligreto {
 			resultCount = resultStatus.getDifferentRowCount();
 		} catch (SAXException e) {
 			MiscUtils.printThrowableMessages(log, e);
-			System.exit(EXCEPTION_EXIT_STATUS);
+			exit(EXCEPTION_EXIT_STATUS);
 		} catch (IOException e) {
 			MiscUtils.printThrowableMessages(log, e);
-			System.exit(EXCEPTION_EXIT_STATUS);
+			exit(EXCEPTION_EXIT_STATUS);
 		} catch (LigretoException e) {
 			MiscUtils.printThrowableMessages(log, e);
-			System.exit(EXCEPTION_EXIT_STATUS);
+			exit(EXCEPTION_EXIT_STATUS);
 		}
 		if (resultStatus.isAccepted()) {
-			System.exit(0);
+			exit(0);
 		} else if (resultCount > MAX_RESULT_EXIT_STATUS) {
-			System.exit(MAX_RESULT_EXIT_STATUS);
+			exit(MAX_RESULT_EXIT_STATUS);
 		} else if (resultCount > 0) {
-			System.exit((int)resultCount);
+			exit((int)resultCount);
 		}
 		// Exit with +1 when we do not know the different row count
-		System.exit(MAX_RESULT_EXIT_STATUS + 1);
+		exit(MAX_RESULT_EXIT_STATUS + 1);
 	}
 }

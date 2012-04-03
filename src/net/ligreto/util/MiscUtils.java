@@ -187,7 +187,7 @@ public class MiscUtils {
 			if (dotIndex >= 0) {
 				fileName = fileName.substring(0, dotIndex) + fileExt;
 			} else {
-				fileName += "fileExt";
+				fileName += fileExt;
 			}
 		}
 		return fileName;
