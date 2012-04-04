@@ -88,6 +88,7 @@
 	</target>
 	<target name="test.func" depends="test.prepare">
 		<junit fork="true" dir="${testing}" printsummary="yes" haltonfailure="false" haltonerror="true">
+			<jvmarg value="-Xmx512m"/>
 			<test name="net.ligreto.junit.tests.func.AllTests"/>
 			<classpath refid="test.classpath"/>
 			<formatter type="plain" usefile="true"/>
