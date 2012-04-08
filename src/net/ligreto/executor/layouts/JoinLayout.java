@@ -8,7 +8,7 @@ import net.ligreto.LigretoParameters;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.AggregationResult;
-import net.ligreto.data.Column;
+import net.ligreto.data.Field;
 import net.ligreto.data.ColumnAggregationResult;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
@@ -224,7 +224,26 @@ public abstract class JoinLayout {
 			throw new IllegalArgumentException("Column index out of range: " + i);
 
 		String colName = dp1.getColumnName(i);
-		String col2Name = dp1.getColumnName(i);
+		String col2Name = dp2.getColumnName(i);
+		if (! colName.equalsIgnoreCase(col2Name)) {
+			colName = colName + " / " + col2Name;
+		}
+
+		return colName;
+	}
+	
+	/**
+	 * Function will provide the name of the specified result column.
+	 * 
+	 * @param i the original index of the column (including the excluded columns)
+	 * @return the name of the i-th column
+	 * @throws SQLException
+	 */
+	public String getOriginalColumnName(int i) throws DataException {
+		assert(startCalled);
+
+		String colName = dp1.getOriginalColumnName(i);
+		String col2Name = dp2.getOriginalColumnName(i);
 		if (! colName.equalsIgnoreCase(col2Name)) {
 			colName = colName + " / " + col2Name;
 		}
@@ -257,19 +276,19 @@ public abstract class JoinLayout {
 			// Get the indices of result columns into the result sets
 			int r = resultColumns[i];
 			
-			Column columnValue1, columnValue2;
+			Field columnValue1, columnValue2;
 			switch (resultType) {
 			case LEFT:
-				columnValue1 = new Column(dp1, r);
+				columnValue1 = new Field(dp1, r);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, null));
 				break;
 			case RIGHT:
-				columnValue2 = new Column(dp2, r);
+				columnValue2 = new Field(dp2, r);
 				result.setColumnResult(i, new ColumnAggregationResult(null, columnValue2));
 				break;
 			case INNER:
-				columnValue1 = new Column(dp1, r);
-				columnValue2 = new Column(dp2, r);
+				columnValue1 = new Field(dp1, r);
+				columnValue2 = new Field(dp2, r);
 				result.setColumnResult(i, new ColumnAggregationResult(columnValue1, columnValue2));
 				break;
 			default:

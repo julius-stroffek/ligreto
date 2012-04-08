@@ -12,7 +12,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 
 import net.ligreto.LigretoParameters;
-import net.ligreto.data.Column;
+import net.ligreto.data.Field;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataTypeMismatchException;
@@ -216,19 +216,19 @@ public class LigretoComparator {
 		return 0;
 	}
 
-	public static Column[] duplicate(DataProvider dp, int[] on) throws DataException {
+	public static Field[] duplicate(DataProvider dp, int[] on) throws DataException {
 		if (on == null) {
-			return new Column[0];
+			return new Field[0];
 		}
-		Column[] result = new Column[on.length];
+		Field[] result = new Field[on.length];
 
 		for (int i=0; i < on.length; i++) {
-			result[i] = new Column(dp, on[i]);
+			result[i] = new Field(dp, on[i]);
 		}
 		return result;
 	}
 
-	public int compareAsDataSource(Column field1, Column field2) throws LigretoException {
+	public int compareAsDataSource(Field field1, Field field2) throws LigretoException {
 		return compareAsDataSource(field1.getColumnType(), field1.getColumnValue(), field2.getColumnType(), field2.getColumnValue());
 	}
 	
@@ -282,7 +282,7 @@ public class LigretoComparator {
 		return result;
 	}
 
-	public int compareAsDataSource(Column[] fields1, Column[] fields2) throws LigretoException {
+	public int compareAsDataSource(Field[] fields1, Field[] fields2) throws LigretoException {
 		int result = 0;
 		if (fields1.length != fields2.length) {
 			throw new LigretoException("The field arrays to compare have different lengths.");
@@ -301,7 +301,7 @@ public class LigretoComparator {
 		return result;
 	}
 
-	public int compare(Column field1, Column field2) throws DataException {
+	public int compare(Field field1, Field field2) throws DataException {
 		return compare(field1.getColumnType(), field1.getColumnValue(), field2.getColumnType(), field2.getColumnValue());
 	}
 
@@ -357,7 +357,7 @@ public class LigretoComparator {
 		return result;
 	}
 
-	public int compare(Column[] fields1, Column[] fields2) throws LigretoException {
+	public int compare(Field[] fields1, Field[] fields2) throws LigretoException {
 		int result = 0;
 		if (fields1.length != fields2.length) {
 			throw new LigretoException("The field arrays to compare have different lengths.");
@@ -502,7 +502,7 @@ public class LigretoComparator {
 		return 0;
 	}
 
-	public void error(Log log, Column[] col) {
+	public void error(Log log, Field[] col) {
 		log.error("Key columns:");
 		for (int c=0; c < col.length; c++) {
 			if (col[c] != null && col[c].getColumnValue() != null) {

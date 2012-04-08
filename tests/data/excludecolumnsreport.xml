@@ -23,8 +23,20 @@
 				<layout target="Sheet1!A1" type="interlaced" diffs="true"/>
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
-			</comparison>		
+			</comparison>
 			<sql data-source="Source1" target="Sheet2!A1" header="true" exclude="first_name">select * from join_table1</sql>
+			<comparison key="4" exclude="first_name">
+				<layout target="normal!A1" type="normal"/>
+<!--
+	 			<layout target="interlaced!A1" type="interlaced"/>
+				<layout target="detailed!A1" type="detailed"/>
+				<layout target="aggregated!A1" type="aggregated"/>
+				<layout target="key!A1" type="key"/>
+				<layout target="summary!A1" type="summary"/>
+-->
+				<sql data-source="Source1">select last_name, first_name, age, id from join_table1</sql>
+				<sql data-source="Source2">select last_name, first_name, age, id from join_table2</sql>
+			</comparison>		
 		</data>
 	</report>
 </ligreto>

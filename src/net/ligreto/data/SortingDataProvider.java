@@ -10,26 +10,69 @@ import java.util.LinkedList;
 
 import net.ligreto.exceptions.DataException;
 
+/**
+ * Data provider which sorts the data obtained from the underlying data provider
+ * by the values of key columns.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class SortingDataProvider extends DataProvider {
 
+	/** The data provider used to fetch the data to be sorted. */
 	protected DataProvider dataProvider;
+	
+	/** The number of columns of this data provider. */
 	protected int columnCount;
+	
+	/** The SQL data types for the columns. */
 	protected int[] columnTypes;
+	
+	/** The array of column indices that form the key. The first column has index 1. */
 	protected int[] keyColumns;
+	
+	/** The array of sorted rows. */
 	protected DataProviderRow[] rows;
+	
+	/** The index of current row. */
 	protected int currentRow;
+	
+	/** Indicates whether the data were successfully prepared. */
 	protected boolean prepared = false;
+	
+	/** Indicates whether last fetched field was null. */
 	protected boolean wasNull = false;
+	
+	/** The index within the set of rows with the same key column values. */
 	protected int indexInDuplicates = 0;
+	
+	/** Indicates whether the current row has duplicate key values with the previous or next row. */
 	protected boolean duplicateKey = false;
+	
+	/** The result of the last key comparison. It should be always only 0 or -1. */
 	protected int cmpKey = -1;
 	
+	/**
+	 * Creates the data provider sorting the data by the specified key columns.
+	 * 
+	 * @param dataProvider the data provider used to obtain the data
+	 * @param keyColumns the indices of the key columns
+	 * @throws DataException if any data access error occurred
+	 */
 	public SortingDataProvider(DataProvider dataProvider, int[] keyColumns) throws DataException {
 		this.dataProvider = dataProvider;
 		this.keyColumns = keyColumns;
 		setCaption(dataProvider.getCaption());
 	}
 
+	/**
+	 * Prepare the data for further processing.
+	 * 
+	 * This function will sort the data and does some further arrangement required
+	 * successfully retrieve the data from this data provider.
+	 * 
+	 * @throws DataException
+	 */
 	public void prepareData() throws DataException {
 		columnCount = dataProvider.getColumnCount();
 		columnTypes = new int[columnCount];
@@ -247,7 +290,7 @@ public class SortingDataProvider extends DataProvider {
 	}
 
 	@Override
-	public boolean isActive() throws DataException {
+	public boolean isValid() throws DataException {
 		if (!prepared) {
 			return false;
 		}

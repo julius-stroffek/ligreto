@@ -12,7 +12,7 @@ import net.ligreto.util.LigretoComparator;
  * @author Julius Stroffek
  *
  */
-public class Column implements Comparable<Object> {
+public class Field implements Comparable<Object> {
 
 	/** The column type that correspond to java.sql.Types definitions. */
 	protected int columnType;
@@ -27,7 +27,7 @@ public class Column implements Comparable<Object> {
 	 * Creates the instance from the result set. 
 	 * @throws DataException 
 	 */
-	public Column(DataProvider dp, int index) throws DataException {
+	public Field(DataProvider dp, int index) throws DataException {
 		columnType = dp.getColumnType(index);
 		columnValue = dp.getObject(index);
 		numeric = dp.isNumeric(index);
@@ -44,8 +44,8 @@ public class Column implements Comparable<Object> {
 	 * Function required for effective hashing.
 	 */
 	public boolean equals(Object o) {
-		if (o instanceof Column) {
-			Column f = (Column) o;
+		if (o instanceof Field) {
+			Field f = (Field) o;
 			if (columnType != f.columnType)
 				return false;
 			if (columnValue == null && f.columnValue == null)
@@ -105,10 +105,10 @@ public class Column implements Comparable<Object> {
 		if (obj == null) {
 			return LigretoComparator.getInstance().compareNulls(false, true);
 		}
-		if (!(obj instanceof Column))
+		if (!(obj instanceof Field))
 			throw new IllegalArgumentException("Could not compare Column against other objects.");
 		
-		Column f = (Column) obj;
+		Field f = (Field) obj;
 		try {
 			return LigretoComparator.getInstance().compare(this, f);
 		} catch (DataException e) {

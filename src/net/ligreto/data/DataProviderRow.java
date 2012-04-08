@@ -6,18 +6,47 @@ import java.sql.SQLException;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.util.LigretoComparator;
 
+/**
+ * This is the row of the data provider.
+ * 
+ * This class is mainly used to store the rows for sorting and to identify the rows
+ * with duplicate key columns.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class DataProviderRow implements Comparable<DataProviderRow> {
 	
+	/** The SQL data types for the columns. */
 	protected int[] columnTypes;
+	
+	/** The column values matching the SQL data types types. */
 	protected Object[] columnValues;
+	
+	/** The array of column indices that form the key. The first column has index 1. */
 	protected int[] keyColumns;
 	
+	/**
+	 * Create the data provider row.
+	 * 
+	 * @param columnTypes the SQL data types
+	 * @param columnValues the column values
+	 * @param keyColumns the indices of key columns
+	 */
 	public DataProviderRow(int[] columnTypes, Object[] columnValues, int[] keyColumns) {
 		this.columnTypes = columnTypes;
 		this.columnValues = columnValues;
 		this.keyColumns = keyColumns;
 	}
 
+	/**
+	 * Creates the data provider row from the current row of the specified data provider.
+	 * 
+	 * @param columnTypes the SQL data types
+	 * @param dataProvider the data provider to be used to fetch the column values
+	 * @param keyColumns the indices of key columns
+	 * @throws DataException if any data access error occurred
+	 */
 	public DataProviderRow(int[] columnTypes, DataProvider dataProvider, int[] keyColumns) throws DataException {
 		this.columnTypes = columnTypes;
 		this.keyColumns = keyColumns;
@@ -28,6 +57,14 @@ public class DataProviderRow implements Comparable<DataProviderRow> {
 		}
 	}
 
+	/**
+	 * Creates the data provider row from the current row of the specified {@link java.sql.ResultSet} object.
+	 * 
+	 * @param columnTypes the SQL data types
+	 * @param resultSet the result set used to fetch the columns values
+	 * @param keyColumns the indices of key columns
+	 * @throws DataException if any data access error occurred
+	 */
 	public DataProviderRow(int[] columnTypes, ResultSet resultSet, int[] keyColumns) throws DataException {
 		this.columnTypes = columnTypes;
 		this.keyColumns = keyColumns;
@@ -42,6 +79,16 @@ public class DataProviderRow implements Comparable<DataProviderRow> {
 		}
 	}
 
+	
+	/**
+	 * Creates the data provider row from the current row of the specified data provider.
+	 * 
+	 * @param columnTypes the SQL data types
+	 * @param dataProvider the data provider to be used to fetch the column values
+	 * @param columns the indices of columns to be copied
+	 * @param keyColumns the indices of key columns
+	 * @throws DataException if any data access error occurred
+	 */
 	public DataProviderRow(int[] columnTypes, DataProvider dataProvider, int[] columns, int[] keyColumns) throws DataException {
 		this.columnTypes = columnTypes;
 		this.keyColumns = keyColumns;
@@ -53,6 +100,15 @@ public class DataProviderRow implements Comparable<DataProviderRow> {
 		}
 	}
 
+	/**
+	 * Creates the data provider row from the current row of the specified {@link java.sql.ResultSet} object.
+	 * 
+	 * @param columnTypes the SQL data types
+	 * @param resultSet the result set used to fetch the columns values
+	 * @param columns the indices of columns to be copied
+	 * @param keyColumns the indices of key columns
+	 * @throws DataException if any data access error occurred
+	 */
 	public DataProviderRow(int[] columnTypes, ResultSet resultSet, int[] columns, int[] keyColumns) throws DataException {
 		this.columnTypes = columnTypes;
 		this.keyColumns = keyColumns;
@@ -68,6 +124,9 @@ public class DataProviderRow implements Comparable<DataProviderRow> {
 		}
 	}
 
+	/**
+	 * Compare the values of key columns only.
+	 */
 	@Override
 	public int compareTo(DataProviderRow other) {
 		int result = 0;

@@ -18,7 +18,7 @@ import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.TargetInterface;
-import net.ligreto.data.Column;
+import net.ligreto.data.Field;
 import net.ligreto.data.DataProvider;
 import net.ligreto.data.ResultSetDataProvider;
 import net.ligreto.data.SortingDataProvider;
@@ -377,10 +377,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			boolean hasNext1 = dp1.next();
 			boolean hasNext2 = dp2.next();
-			Column[] pCol1 = null;
-			Column[] pCol2 = null;
-			Column[] col1 = null;
-			Column[] col2 = null;
+			Field[] pCol1 = null;
+			Field[] pCol2 = null;
+			Field[] col1 = null;
+			Field[] col2 = null;
 			while (hasNext1 && hasNext2) {
 				
 				// First process the duplicates

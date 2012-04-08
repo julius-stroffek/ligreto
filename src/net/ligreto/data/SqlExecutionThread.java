@@ -13,24 +13,73 @@ import net.ligreto.Database;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.SqlNode;
 
+/**
+ * The class allowing to execute the SQL statement in the separate execution thread. This allows
+ * the parallel execution of multiple queries on various data sources. The instances of this class
+ * should be used as follows:
+ * <pre>
+ * SqlExecutionThread t1 = SqlExecutionThread.executeQuery(...);
+ * SqlExecutionThread t2 = SqlExecutionThread.executeQuery(...);
+ * try {
+ *     t1.join();
+ *     t2.join();
+ * } catch (InterruptedException e) {
+ *     throw new LigretoException("Execution interrupted.", e);
+ * }
+ * t1.throwExceptions();
+ * t2.throwExceptions();
+ * </pre>
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class SqlExecutionThread extends Thread {
 	
 	/** The logger instance for the class. */
 	private static Log log = LogFactory.getLog(SqlExecutionThread.class);
 
+	/** The connection into database. */
 	protected Connection cnn = null;
+	
+	/** The created statement on the connection. */
 	protected Statement stm = null;
+	
+	/** The created callable statement on the connection. */
 	protected CallableStatement cstm = null;
+	
+	/** The data source name where the query should be executed on. */
 	protected String dataSource = null;
+	
+	/** The query string to be executed. */
 	protected String query = null;
+	
+	/** The type of the query to be executed. */
 	protected SqlNode.QueryType queryType = null;
+	
+	/** The throwable object that was caught during the thread execution. */
 	protected Throwable throwable = null;
+	
+	/** The result set to be returned after execution. */
 	protected ResultSet resultSet = null;
 	
+	/**
+	 * Creates the instance.
+	 * 
+	 * Instances should be created only using static method {@link #executeQuery}.
+	 */
 	protected SqlExecutionThread() {
 		super();
 	}
 	
+	/**
+	 * Executes the specified query in the separate execution thread. The created thread is started
+	 * and returned as return value.
+	 * 
+	 * @param dataSource the data source name where the query should be executed
+	 * @param query the query string to be executed
+	 * @param queryType the type of the query
+	 * @return the created SqlExecutionThread object
+	 */
 	public static SqlExecutionThread executeQuery(String dataSource, String query, SqlNode.QueryType queryType) {
 		SqlExecutionThread instance = new SqlExecutionThread();
 		instance.dataSource = dataSource;
@@ -40,6 +89,9 @@ public class SqlExecutionThread extends Thread {
 		return instance;
 	}
 
+	/**
+	 * Execute the query. This method is called by {@link #start()}.
+	 */
 	@Override
 	public void run() {
 		try {
@@ -65,14 +117,30 @@ public class SqlExecutionThread extends Thread {
 		}
 	}
 	
+	/**
+	 * Provides the access to the throwable object that was thrown during the thread execution.
+	 * 
+	 * @return the throwable caught during the thread execution.
+	 */
 	public Throwable getThrowable() {
 		return throwable;
 	}
 	
+	/**
+	 * Provides the access to the result set.
+	 * 
+	 * @return the result set returned by the query execution.
+	 */
 	public ResultSet getResultSet() {
 		return resultSet;
 	}
 	
+	/**
+	 * Final cleanup. It will close result set, statement, connection.
+	 * 
+	 * @throws SQLException if database related problems occurred
+	 * @throws LigretoException if the query type is unknown
+	 */
 	public void cleanup() throws SQLException, LigretoException {
 		switch (queryType) {
 		case STATEMENT:
@@ -86,6 +154,12 @@ public class SqlExecutionThread extends Thread {
 		}
 	}
 
+	/**
+	 * This method will throw the exception in the current thread that was caught
+	 * during the query execution.
+	 * 
+	 * @throws LigretoException if the throwable object was caught during the query execution
+	 */
 	public void throwExceptions() throws LigretoException {
 		if (throwable != null) {
 			throw new LigretoException("Error while executing query on \"" + dataSource + "\".", throwable);

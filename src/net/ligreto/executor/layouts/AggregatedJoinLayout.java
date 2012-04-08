@@ -11,7 +11,7 @@ import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
 import net.ligreto.data.AggregationResult;
 import net.ligreto.data.ColumnAggregationResult;
-import net.ligreto.data.Column;
+import net.ligreto.data.Field;
 import net.ligreto.data.Row;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.LigretoException;
@@ -84,20 +84,20 @@ public class AggregatedJoinLayout extends JoinLayout {
 	}
 
 	protected ColumnAggregationResult processColumn(JoinResultType resultType, int index) throws DataException {
-		Column columnValue1, columnValue2;
+		Field columnValue1, columnValue2;
 		ColumnAggregationResult colResult = null;
 		switch (resultType) {
 		case LEFT:
-			columnValue1 = new Column(dp1, index);
+			columnValue1 = new Field(dp1, index);
 			colResult = new ColumnAggregationResult(columnValue1, null);
 			break;
 		case RIGHT:
-			columnValue2 = new Column(dp2, index);
+			columnValue2 = new Field(dp2, index);
 			colResult = new ColumnAggregationResult(null, columnValue2);
 			break;
 		case INNER:
-			columnValue1 = new Column(dp1, index);
-			columnValue2 = new Column(dp2, index);
+			columnValue1 = new Field(dp1, index);
+			columnValue2 = new Field(dp2, index);
 			colResult = new ColumnAggregationResult(columnValue1, columnValue2);
 			break;
 		default:

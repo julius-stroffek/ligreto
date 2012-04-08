@@ -11,21 +11,55 @@ import java.sql.Date;
 
 import net.ligreto.exceptions.DataException;
 
+/**
+ * The data provider class encapsulating the {@link java.sql.ResultSet} object into {@code DataProvider}.
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class ResultSetDataProvider extends DataProvider {
 	
+	/** The result set used to obtain the data. */
 	protected ResultSet resultSet;
+	
+	/** The array of original indices considering the excluded columns. */
 	protected int[] originalIndices;
+	
+	/** The array of data provider indices indexed by the original index considering the excluded columns. */
 	protected int[] dataProviderIndices;
 	
+	/** Indicates whether last fetched field was null. */
 	protected boolean wasNull = false;
+	
+	/** The indices of the key columns. */
 	protected int[] keyColumns = null;
+	
+	/** The column SQL types. */
 	protected int[] columnTypes = null;
+	
+	/** The current row. */
 	protected DataProviderRow currentRow = null;
+	
+	/** The next row coming after the call to {@link #next}. */
 	protected DataProviderRow nextRow = null;
+	
+	/** Indicates whether the current row has duplicate key values with the previous row. */
 	protected boolean hasDuplicateKey = false;
+	
+	/** Indicates whether the next row has duplicate key values with the current row. */
 	protected boolean nextHasDuplicateKey = false;
+	
+	/** The index within the set of rows with the same key column values. */
 	protected int indexInDuplicates = 0;
 	
+	/**
+	 * Constructs the data provider based on the specified result set.
+	 * 
+	 * @param resultSet the result set to be used to obtain the data
+	 * @param keyColumns the indices of key columns
+	 * @throws DataException if any data access error occurred
+	 * @throws SQLException if there was an error in the result set calls
+	 */
 	public ResultSetDataProvider(ResultSet resultSet, int[] keyColumns) throws DataException, SQLException {
 		this.resultSet = resultSet;
 		this.keyColumns = keyColumns;
@@ -44,6 +78,15 @@ public class ResultSetDataProvider extends DataProvider {
 		nextHasDuplicateKey = false;
 	}
 
+	/**
+	 * Constructs the data provider based on the specified result set.
+	 * 
+	 * @param resultSet the result set to be used to obtain the data
+	 * @param keyColumns the indices of key columns
+	 * @param excludeColumns the indices of columns to be excluded
+	 * @throws DataException if any data access error occurred
+	 * @throws SQLException if there was an error in the result set calls
+	 */
 	public ResultSetDataProvider(ResultSet resultSet, int[] keyColumns, int[] excludeColumns) throws SQLException, DataException {
 		this.resultSet = resultSet;
 		this.keyColumns = keyColumns;
@@ -363,7 +406,7 @@ public class ResultSetDataProvider extends DataProvider {
 	}
 
 	@Override
-	public boolean isActive() {
+	public boolean isValid() {
 		return currentRow != null;
 	}
 

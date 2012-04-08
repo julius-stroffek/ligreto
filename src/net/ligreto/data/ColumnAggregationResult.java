@@ -47,7 +47,7 @@ public class ColumnAggregationResult {
 	/**
 	 * Constructs the object representing the difference between the given objects.
 	 */
-	public ColumnAggregationResult(Column field1, Column field2) {
+	public ColumnAggregationResult(Field field1, Field field2) {
 		Object value1 = null, value2 = null;
 		if (field1 != null)
 			value1 = field1.getColumnValue();

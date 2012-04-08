@@ -10,7 +10,7 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface.OutputFormat;
 import net.ligreto.builders.BuilderInterface.OutputStyle;
 import net.ligreto.builders.TargetInterface;
-import net.ligreto.data.Column;
+import net.ligreto.data.Field;
 import net.ligreto.data.DataProvider;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.LigretoException;
@@ -39,8 +39,8 @@ public class AnalyticalJoinLayout extends JoinLayout {
 	 * @author Julius Stroffek
 	 */
 	protected class AnalysisEntry implements Comparable<AnalysisEntry> {
-		Column[] cols1 = null;
-		Column[] cols2 = null;
+		Field[] cols1 = null;
+		Field[] cols2 = null;
 		Integer count = 1;
 		int rowDiffs = 0;
 		
@@ -67,7 +67,7 @@ public class AnalyticalJoinLayout extends JoinLayout {
 			if (dp1 != null && columns1 != null && columns1.length > 0) {
 				cols1 = LigretoComparator.duplicate(dp1, columns1);
 			} else {
-				cols1 = new Column[columns1.length];
+				cols1 = new Field[columns1.length];
 				for (int i=0; i < columns1.length; i++) {
 					cols1[i] = null;
 				}
@@ -75,7 +75,7 @@ public class AnalyticalJoinLayout extends JoinLayout {
 			if (dp2 != null && columns2 != null && columns2.length > 0) {
 				cols2 = LigretoComparator.duplicate(dp2, columns2);
 			} else {
-				cols2 = new Column[columns2.length];
+				cols2 = new Field[columns2.length];
 				for (int i=0; i < columns2.length; i++) {
 					cols2[i] = null;
 				}

@@ -21,7 +21,7 @@ public class NormalJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(1, 1);
 		
 		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+			targetBuilder.dumpCell(i, getOriginalColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
 		}
 		targetBuilder.shiftPosition(keyColumns.length);
 		
@@ -53,7 +53,7 @@ public class NormalJoinLayout extends JoinLayout {
 		switch (resultType) {
 		case LEFT:
 			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+				targetBuilder.dumpCell(i, dp1.getOriginalObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
 			}
 			targetBuilder.shiftPosition(keyColumns.length);
 			
