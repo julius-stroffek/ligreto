@@ -9,6 +9,7 @@ import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
+import net.ligreto.util.AssertionUtil;
 import net.ligreto.util.MiscUtils;
 
 import org.apache.commons.cli.CommandLine;
@@ -96,7 +97,7 @@ public class Ligreto {
 			}
 			
 			// Enable java assertions
-			Ligreto.class.getClassLoader().setDefaultAssertionStatus(true);
+			AssertionUtil.enableAssertions();
 			
 			// Increase the log severity
 			Logger.getRootLogger().setLevel(logLevel);

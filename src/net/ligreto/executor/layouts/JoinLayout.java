@@ -560,7 +560,7 @@ public abstract class JoinLayout {
 	}
 	
 	/**
-	 * @param key The join columns for both data providers.
+	 * @param keyColumns The join columns for both data providers.
 	 */
 	public void setKeyColumns(int[] keyColumns) {
 		this.keyColumns = keyColumns;
@@ -595,11 +595,11 @@ public abstract class JoinLayout {
 	}
 
 	/**
-	 * @param groupBy
+	 * @param groupByColumns
 	 * 			The group by columns to set.
 	 */
-	public void setGroupByColumns(int[] groupByClumns) {
-		this.groupByColumns = groupByClumns;
+	public void setGroupByColumns(int[] groupByColumns) {
+		this.groupByColumns = groupByColumns;
 	}
 	
 	/**

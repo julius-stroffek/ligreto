@@ -28,6 +28,11 @@ public class ExcelStreamReportTarget extends ExcelReportTarget {
 		super(reportBuilder, sheet, baseRow, baseCol);
 	}
 	
+	/**
+	 * Flush the rows based of SXSSF streaming file.
+	 * 
+	 * @throws IOException if there was problem with I/O output
+	 */
 	protected void flushRows() throws IOException {
 		SXSSFSheet ss = (SXSSFSheet) sheet;
 		flush(false, true);
@@ -37,7 +42,7 @@ public class ExcelStreamReportTarget extends ExcelReportTarget {
 	@Override
 	public void nextRow() throws IOException {
 		// Flush the rows if the number of produced rows matched the specified number
-		if ((actualRowNumber - baseRowNumber) % FLUSH_ROW_INTERVAL == 0)
+		if ((currentRowNumber - baseRowNumber) % FLUSH_ROW_INTERVAL == 0)
 			flushRows();
 		// Do the rest of the job
 		super.nextRow();
@@ -48,7 +53,7 @@ public class ExcelStreamReportTarget extends ExcelReportTarget {
 		SXSSFSheet ss = (SXSSFSheet) sheet;
 		flush(true, true);
 		ss.flushRows();
-		targetInfo.lastRow = actualRowNumber;
+		targetInfo.lastRow = currentRowNumber;
 		targetInfo.inUse = false;
 	}
 

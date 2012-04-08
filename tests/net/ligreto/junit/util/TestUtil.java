@@ -45,6 +45,8 @@ public class TestUtil {
 		cnn.close();
 		cnn = DriverManager.getConnection("jdbc:derby:db2", properties);
 		cnn.close();
+		cnn = DriverManager.getConnection("jdbc:derby:db3", properties);
+		cnn.close();
 	}
 	
 	/** Stores the performance testing results into the target DB for further reference. */

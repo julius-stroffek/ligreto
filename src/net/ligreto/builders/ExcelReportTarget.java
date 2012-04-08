@@ -30,41 +30,27 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- * This is the implementation of the <code>ReportBuilder</code> to produce
- * Microsoft Excel HSSF files using Apache POI library.
- * 
- * There are certain options that could be passed to this implementation. The
- * supported options are:
- * <ul>
- * <li>autoFilter</li>
- * <li>autoSize</li>
- * <li>formatHeader</li>
- * <li>noDataFormat</li>
- * </ul>
+ * This is the implementation of the {@link TargetInterface} to produce
+ * Microsoft Excel HSSF/XSSF files using Apache POI library.
  * 
  * @author Julius Stroffek
+ * @see ExcelReportBuilder
  * 
  */
 public class ExcelReportTarget extends ReportTarget {
 
 	/**
 	 * This is a work-around constant that limits the row number in references
-	 * to things like auto filter. Apache POI library will fail if the cell
-	 * reference contains somehow higher number.
+	 * to functionality like auto filter. Apache POI library will fail if the cell
+	 * reference contains higher number.
 	 */
 	protected static int cellReferenceMaxRow = 1000000;
 
 	/**
-	 * The information about the target location. It is used for append
-	 * operation on the target.
+	 * The information about the target location that is maintained in the report builder.
 	 */
 	protected ExcelReportBuilder.TargetInfo targetInfo;
 
@@ -133,9 +119,20 @@ public class ExcelReportTarget extends ReportTarget {
 	/** Indicates whether the cells should be highlighted when applicable. */
 	protected boolean highlight;
 
+	/**
+	 * The hash map associating the requested {@link OutputStyle} and data format with the spreadsheet
+	 * style. This is used for speed optimization when using styles.
+	 */
 	protected Map<Pair<OutputStyle, String>, CellStyle> cellStyles = new HashMap<Pair<OutputStyle, String>, CellStyle>(512);
 	
-	/** Creates the target instance bound to ExcelReportBuilder. */
+	/**
+	 * Creates the target instance bound to ExcelReportBuilder.
+	 * 
+	 * @param reportBuilder the parent report builder
+	 * @param sheet the sheet where the output is dumped
+	 * @param baseRowNumber the row number where the dumps starts
+	 * @param baseColumnPosition the column number where the dump starts
+	 */
 	public ExcelReportTarget(ExcelReportBuilder reportBuilder, Sheet sheet, int baseRowNumber, int baseColumnPosition) {
 		super(reportBuilder);
 		this.reportBuilder = reportBuilder;
@@ -143,10 +140,17 @@ public class ExcelReportTarget extends ReportTarget {
 		this.wb = sheet.getWorkbook();
 		this.baseRowNumber = baseRowNumber;
 		this.baseColumnPosition = baseColumnPosition;
-		actualRowNumber = baseRowNumber - 1;
-		actualColumnPosition = baseColumnPosition;
+		currentRowNumber = baseRowNumber - 1;
+		currentColumnPosition = baseColumnPosition;
 	}
 
+	/**
+	 * Compare the specified styles.
+	 * 
+	 * @param s1 1st style to comapre
+	 * @param s2 2nd style to compare
+	 * @return true if the styles are equal
+	 */
 	private boolean compareStyles(CellStyle s1, CellStyle s2) {
 		if (s1.getAlignment() != s2.getAlignment())
 			return false;
@@ -192,16 +196,17 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 
 	/**
-	 * Clones the specified style. First all existing styles are scanned and if
-	 * the same style already exists it is re-used. Otherwise new style is
+	 * Clones the specified style. First, all existing styles are scanned and if
+	 * the same style already exists it is re-used. Otherwise, new style is
 	 * created. This method should be used for style de-duplication. First, you
-	 * should alter the already existing style as you need, then call cloneStyle
+	 * should alter the already existing style as you need. Then call cloneStyle
 	 * method and then reverse back your changes on the original style object.
 	 * Further, use the style object returned by cloneStyle as an altered style.
 	 * 
 	 * See the example below:
 	 * 
 	 * <pre>
+	 * font = style.getFont();
 	 * style.setFont(newFont);
 	 * CellStyle newStyle = cloneStyle(style);
 	 * cell.setCellStyle(newStyle);
@@ -209,6 +214,9 @@ public class ExcelReportTarget extends ReportTarget {
 	 * // Revert back the font on the old cell style
 	 * style.setFont(font);
 	 * </pre>
+	 * 
+	 * @param style the style to be cloned
+	 * @return the already existing style if it already exists, otherwise new style will get created and returned
 	 */
 	protected CellStyle cloneStyle(CellStyle style) {
 		// Go through all the existing styles and re-use it if there is a match
@@ -231,14 +239,12 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 
 	/**
-	 * This function will get the existing <code>Cell</code> object if it
+	 * This function will get the existing {@code Cell} object if it
 	 * already exists in the file or it will create a new one.
 	 * 
-	 * @param row
-	 *            cell row number
-	 * @param col
-	 *            cell column number
-	 * @return The <code>Cell</code> object.
+	 * @param row the row to get a cell
+	 * @param col column number
+	 * @return the created or already existing {@code Cell} object
 	 */
 	protected Cell createCell(Row row, int col) {
 		Cell cell = row.getCell(col);
@@ -254,13 +260,16 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 
 	/**
-	 * The method called to flush the target - i.e. create auto-filter, etc.
+	 * The method called to flush the target. It auto-sizes the columns, creates the auto-filter, etc.
+	 * 
+	 * @param lastFlush indicates whether this is the last call on the target
+	 * @param increaseSizeOnly indicates whether the size should be only increased
 	 */
 	protected void flush(boolean lastFlush, boolean increaseSizeOnly) {
 		if (lastFlush && autoFilter && lastColumnIndex > baseColumnPosition) {
 			if (baseRowNumber < cellReferenceMaxRow) {
-				if (actualRowNumber < cellReferenceMaxRow) {
-					sheet.setAutoFilter(new CellRangeAddress(baseRowNumber, actualRowNumber, baseColumnPosition, lastColumnIndex));
+				if (currentRowNumber < cellReferenceMaxRow) {
+					sheet.setAutoFilter(new CellRangeAddress(baseRowNumber, currentRowNumber, baseColumnPosition, lastColumnIndex));
 				} else {
 					sheet.setAutoFilter(new CellRangeAddress(baseRowNumber, cellReferenceMaxRow, baseColumnPosition,
 							lastColumnIndex));
@@ -292,76 +301,23 @@ public class ExcelReportTarget extends ReportTarget {
 		}
 	}
 
+	/**
+	 * Report the number of styles, fonts and similar characteristics of the excel file. This
+	 * information is dumped as debug message into the log.
+	 */
 	protected void reportExcelStatisctics() {
 		log.debug("The number of workbook styles: " + wb.getNumCellStyles());
 		log.debug("The number of workbook fonts:" + wb.getNumberOfFonts());
 	}
 
-	protected void setBoldFont(Cell cell) {
-		CellStyle style = cell.getCellStyle();
-
-		Font font = wb.getFontAt(style.getFontIndex());
-
-		Font newFont = wb.findFont(Font.BOLDWEIGHT_BOLD, font.getColor(), font.getFontHeight(), font.getFontName(),
-				font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-			newFont.setColor(font.getColor());
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-
 	/**
-	 * This function will set the font color of the specified cell to the
-	 * requested value.
+	 * This function will set the cell style to the specified output style.
 	 * 
 	 * The function will make sure that there will be only one <code>Font</code>
 	 * object created for the whole file even if the function is called multiple
 	 * times for different cells.
 	 * 
-	 * @param cell
-	 *            The cell where to set the font color.
-	 * @param rgb
-	 *            The new color to set.
-	 */
-	protected void setCellColor(Cell cell, short[] rgb) {
-		switch (outputFileFormat) {
-		case HSSF:
-			setHSSFCellColor(cell, rgb);
-			break;
-		case XSSF:
-			setHSSFCellColor(cell, rgb);
-//			setXSSFCellColor((XSSFCell) cell, rgb);
-			break;
-		case SXSSF:
-			setSXSSFCellColor((SXSSFCell) cell, rgb);
-			break;
-		default:
-			throw new UnimplementedMethodException("Unknown output format for color processing.");
-		}
-	}
-
-	/**
-	 * This function will set the cell style for the header row.
-	 * 
-	 * The function will make sure that there will be only one <code>Font</code>
-	 * object created for the whole file even if the function is called multiple
-	 * times for different cells.
-	 * 
-	 * @param cell
-	 *            The cell where to set the font color.
+	 * @param cell the cell where the style should be updated
 	 * @throws LigretoException 
 	 */
 	protected void updateCellStyle(Cell cell, OutputStyle outputStyle, String formatString) throws LigretoException {
@@ -382,6 +338,12 @@ public class ExcelReportTarget extends ReportTarget {
 		}
 	}
 
+	/**
+	 * Set the specified color for {code HSSFCell} like cell object.
+	 * 
+	 * @param cell the cell to set the color
+	 * @param rgb the color to set
+	 */
 	protected void setHSSFCellColor(Cell cell, short[] rgb) {
 		HSSFWorkbook hwb = (HSSFWorkbook) wb;
 		CellStyle style = cell.getCellStyle();
@@ -411,6 +373,13 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setFont(font);
 	}
 
+	/**
+	 * Set the cell style for the specified cell. If the style already exists, it is
+	 * used instead of creating a new style.
+	 * 
+	 * @param cell the cell to set the style
+	 * @param outputStyle the style type to set
+	 */
 	protected void setSXSSFCellStyle(SXSSFCell cell, OutputStyle outputStyle) {
 		XSSFCellStyle style = (XSSFCellStyle) cell.getCellStyle();
 
@@ -481,6 +450,14 @@ public class ExcelReportTarget extends ReportTarget {
 		cell.setCellStyle(newStyle);
 	}
 
+	/**
+	 * This method will create a new cell style for the specified style type.
+	 * 
+	 * @param outputStyle the style type
+	 * @param formatString the data format
+	 * @return the newly created cell style object
+	 * @throws LigretoException if there was an error creating the style
+	 */
 	protected CellStyle createCellStyle(OutputStyle outputStyle, String formatString) throws LigretoException {
 		short boldFont;
 		short fillColor;
@@ -556,6 +533,15 @@ public class ExcelReportTarget extends ReportTarget {
 		return cellStyle;
 	}
 	
+	/**
+	 * This method will look for the map of the already created cell styles and if the style
+	 * does not yet exist new one will get created.
+	 * 
+	 * @param outputStyle the desired cell style
+	 * @param formatString the data format string
+	 * @return the cell style matching the style type and data format
+	 * @throws LigretoException if there was an error creating the style
+	 */
 	protected CellStyle getCellStyle(OutputStyle outputStyle, String formatString) throws LigretoException {
 		Pair<OutputStyle, String> pair = new Pair<OutputStyle, String>(outputStyle, formatString);
 		CellStyle style = cellStyles.get(pair);
@@ -663,78 +649,10 @@ public class ExcelReportTarget extends ReportTarget {
 		style.setDataFormat(oldDataFormat);
 	}
 
-	protected void setSXSSFCellColor(SXSSFCell cell, short[] rgb) {
-		SXSSFWorkbook swb = (SXSSFWorkbook) wb;
-		CellStyle style = cell.getCellStyle();
-
-		Font font = swb.getFontAt(style.getFontIndex());
-
-		// Just a temporary hard coding until SXSSF will implement
-		// the proper color setup.
-		short newColor = HSSFColor.BLACK.index;
-		if (rgb[0] > rgb[1] && rgb[0] > rgb[2]) {
-			newColor = HSSFColor.RED.index;
-		}
-
-		Font newFont = swb.findFont(font.getBoldweight(), newColor, font.getFontHeight(), font.getFontName(), font.getItalic(),
-				font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(newColor);
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-
-	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
-		XSSFWorkbook twb = (XSSFWorkbook) wb;
-		XSSFCellStyle style = cell.getCellStyle();
-		XSSFFont font = style.getFont();
-		XSSFFont newFont = null;
-		XSSFColor newColor = new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2]));
-
-		log.debug("Setting color of cell c: " + cell.getColumnIndex() + " r: " + cell.getRowIndex() + " color: "
-				+ newColor.getIndexed());
-
-		// Look if the font already exists
-		newFont = twb.findFont(font.getBoldweight(), newColor.getIndexed(), font.getFontHeight(), font.getFontName(),
-				font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
-
-		// Clone the font if it does not exist yet
-		if (newFont == null || !newFont.getXSSFColor().equals(newColor)) {
-			newFont = twb.createFont();
-			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-
 	@Override
 	public void dumpCell(int i, Object value, OutputFormat outputFormat, OutputStyle outputStyle) throws LigretoException {
 		String dataFormat = null;
-		Cell cell = createCell(row, actualColumnPosition + columnStep * i);
+		Cell cell = createCell(row, currentColumnPosition + columnStep * i);
 		if (value == null) {
 			cell.setCellValue(ligretoParameters.getNullString());
 			dataFormat = ligretoParameters.getExcelStringFormat();
@@ -827,11 +745,13 @@ public class ExcelReportTarget extends ReportTarget {
 	@Override
 	public void finish() throws IOException {
 		flush(true, false);
-		targetInfo.lastRow = actualRowNumber;
+		targetInfo.lastRow = currentRowNumber;
 		targetInfo.inUse = false;
 	}
 
 	/**
+	 * Return the workbook's data format object.
+	 * 
 	 * @return the dataFormat
 	 */
 	public DataFormat getDataFormat() {
@@ -839,35 +759,45 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 
 	/**
-	 * @return the targetInfo
+	 * Return the target info.
+	 * 
+	 * @return the target information structure
 	 */
 	public ExcelReportBuilder.TargetInfo getTargetInfo() {
 		return targetInfo;
 	}
 
 	/**
-	 * @return the autoFilter
+	 * Indicates whether auto-filter will be created.
+	 * 
+	 * @return the true if auto-filter will get created
 	 */
 	public boolean isAutoFilter() {
 		return autoFilter;
 	}
 
 	/**
-	 * @return the autoSize
+	 * Indicates whether columns will be auto-sized.
+	 * 
+	 * @return the true if the columns will get auto-sized
 	 */
 	public boolean isAutoSize() {
 		return autoSize;
 	}
 
 	/**
-	 * @return the headerStyle
+	 * Indicates whether cell style will be applied to header cells.
+	 * 
+	 * @return the true if the cell style will be applied to header cells
 	 */
 	public boolean isHeaderStyle() {
 		return headerStyle;
 	}
 
 	/**
-	 * @return the noDataFormat
+	 * Indicates whether data format will be set based on the data type.
+	 * 
+	 * @return the true if data format will not be set
 	 */
 	public boolean isNoDataFormat() {
 		return noDataFormat;
@@ -876,9 +806,9 @@ public class ExcelReportTarget extends ReportTarget {
 	@Override
 	public void nextRow() throws IOException {
 		super.nextRow();
-		row = sheet.getRow(actualRowNumber);
+		row = sheet.getRow(currentRowNumber);
 		if (row == null)
-			row = sheet.createRow(actualRowNumber);
+			row = sheet.createRow(currentRowNumber);
 	}
 
 	@Override
@@ -887,49 +817,55 @@ public class ExcelReportTarget extends ReportTarget {
 	}
 
 	/**
-	 * @param autoFilter
-	 *            the autoFilter to set
+	 * Set whether auto-filter should be created.
+	 * 
+	 * @param autoFilter true if auto-filter should be created
 	 */
 	public void setAutoFilter(boolean autoFilter) {
 		this.autoFilter = autoFilter;
 	}
 
 	/**
-	 * @param autoSize
-	 *            the autoSize to set
+	 * Set whether columns should be auto-sized.
+	 *
+	 * @param autoSize true if the columns should be auto-sized
 	 */
 	public void setAutoSize(boolean autoSize) {
 		this.autoSize = autoSize;
 	}
 
 	/**
-	 * @param dataFormat
-	 *            the dataFormat to set
+	 * Set data format maintaining the data formats for the whole workbook.
+	 * 
+	 * @param dataFormat the data format to set
 	 */
 	public void setDataFormat(DataFormat dataFormat) {
 		this.dataFormat = dataFormat;
 	}
 
 	/**
-	 * @param headerStyle
-	 *            the headerStyle to set
+	 * Set whether cell style should be adjusted for the header cells.
+	 * 
+	 * @param headerStyle true if the style should be adjusted for the header cells
 	 */
 	public void setHeaderStyle(boolean headerStyle) {
 		this.headerStyle = headerStyle;
 	}
 
 	/**
-	 * @param noDataFormat
-	 *            the noDataFormat to set
+	 * Set whether cells should have format set based on the data type.
+	 * 
+	 * @param noDataFormat true if the data format should not be set
 	 */
 	public void setNoDataFormat(boolean noDataFormat) {
 		this.noDataFormat = noDataFormat;
 	}
 
 	/**
-	 * @param targetInfo
-	 *            the targetInfo to set
-	 * @throws TargetException
+	 * Set the target info used to manage the position for the target.
+	 * 
+	 * @param targetInfo the target info to set
+	 * @throws TargetException if there was a problem with the target
 	 */
 	public void setTargetInfo(ExcelReportBuilder.TargetInfo targetInfo) throws TargetException {
 		if (targetInfo.inUse) {

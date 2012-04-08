@@ -5,37 +5,29 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import net.ligreto.exceptions.InvalidTargetException;
 import net.ligreto.exceptions.LigretoException;
-import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.util.MiscUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.streaming.SXSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- * This is the implementation of the <code>ReportBuilder</code> to produce
- * Microsoft Excel HSSF files using Apache POI library.
+ * This is the implementation of the {@code BuilderInterface} producing
+ * Microsoft Excel HSSF/XSSF files using Apache POI library.
  * 
- * There are certain options that could be passed to this implementation. The supported
- * options are:
+ * There are certain options that could be passed to this implementation.
+ * The supported options are:
  * <ul>
  *   <li>autoFilter</li>
  *   <li>autoSize</li>
@@ -54,13 +46,26 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * with the corresponding target.
 	 */
 	protected class TargetInfo {
+		
+		/** The sheet index. */
 		int sheet;
+		
+		/** The row number within the sheet. */
 		int row;
+		
+		/** The columns number within the row. */
 		int column;
+		
+		/** The last row where data were dumped to this target. */
 		int lastRow;
+		
+		/** Indicates whether the target is in use. */
 		boolean inUse;
+		
+		/** The string representation of this target. */
 		String name;
 		
+		/** Creates the target information class. */
 		public TargetInfo(String name, int sheet, int row, int column) {
 			this.name = name;
 			this.sheet = sheet;
@@ -88,9 +93,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 	
 	/**
 	 * The hash map that stores the last free row number for the specified target.
-	 * It is used for append operation on the target.
+	 * It is used for append operation on the targets.
 	 */
-	HashMap<TargetInfo, TargetInfo> targetMap = new HashMap<TargetInfo, TargetInfo>(128);
+	protected Map<TargetInfo, TargetInfo> targetMap = new HashMap<TargetInfo, TargetInfo>(128);
 	
 	/** The output file type enumeration. */
 	protected enum OutputFileFormat {HSSF, XSSF, SXSSF};
@@ -104,13 +109,13 @@ public class ExcelReportBuilder extends ReportBuilder {
 	/** The output stream where the output file will be written to. */
 	protected FileOutputStream out;
 	
-	/** The <code>Workbook</code> object for the output report. */
+	/** The {@code Workbook} object for the output report. */
 	protected Workbook wb;
 	
 	/** The workbook data format instance. */
 	protected DataFormat dataFormat;
 	
-	/** The <code>Sheet</code> object where the result is placed. */
+	/** The {@code Sheet} object where the result is placed. */
 	protected Sheet sheet;
 	
 	/** The actual row where the processed result row is stored. */
@@ -134,8 +139,8 @@ public class ExcelReportBuilder extends ReportBuilder {
 	/** Maximal column width for auto sized columns. */
 	protected int maxColumnWidth = 20480; 
 	
-	/** Holds the highest column index used for actual target. */
-	int lastColumnIndex = -1;
+	/** Holds the highest column index used for current target. */
+//	int lastColumnIndex = -1;
 	
 	/**
 	 * @return the autoFilter
@@ -237,7 +242,7 @@ public class ExcelReportBuilder extends ReportBuilder {
 			newTarget = createTarget(sheet, rowNum, colNum);
 			TargetInfo prevInfo = targetMap.get(info);
 			if (append &&  prevInfo != null) {
-				newTarget.setActualRowNumber(prevInfo.lastRow);
+				newTarget.setCurrentRow(prevInfo.lastRow);
 				log.info(
 						"Moved from the specified target row \""
 						+ prevInfo.row
@@ -253,367 +258,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 			throw new InvalidTargetException("The target reference is invalid: \"" + target + "\"");
 		}
 		return newTarget;
-	}
-	
-	/**
-	 * This function will get the existing <code>Cell</code>
-	 * object if it already exists in the file or it will
-	 * create a new one.
-	 * 
-	 * @param row cell row number
-	 * @param col cell column number
-	 * @return The <code>Cell</code> object. 
-	 */
-	protected Cell createCell(Row row, int col) {
-		Cell cell = row.getCell(col);
-		if (cell == null)
-			cell = row.createCell(col);
-		
-		// Manage the last column index
-		if (col > lastColumnIndex) {
-			lastColumnIndex = col;
-		}
-		
-		return cell;
-	}
-		
-	/**
-	 * This function will set the cell style for the header row.
-	 * 
-	 * The function will make sure that there will be only one
-	 * <code>Font</code> object created for the whole file
-	 * even if the function is called multiple times for different
-	 * cells.
-	 * 
-	 * @param cell The cell where to set the font color.
-	 */
-	protected void setHeaderStyle(Cell cell, OutputStyle outputStyle) {
-		switch (outputFileFormat) {
-		case HSSF:
-			setHSSFHeaderStyle(cell, outputStyle);
-			break;
-		case XSSF:
-			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell, outputStyle);
-			break;
-		case SXSSF:
-			// HSSF approach should work anyway
-			setHSSFHeaderStyle(cell, outputStyle);
-			break;
-		default:
-			throw new UnimplementedMethodException("Unknown output format for format processing.");
-		}
-	}
-	
-	protected void setHSSFHeaderStyle(Cell cell, OutputStyle outputStyle) {
-		CellStyle style = cell.getCellStyle();
-		
-		Font font = wb.getFontAt(style.getFontIndex());
-		
-		Font newFont = wb.findFont(
-				Font.BOLDWEIGHT_BOLD,
-				font.getColor(),
-				font.getFontHeight(),
-				font.getFontName(),
-				font.getItalic(),
-				font.getStrikeout(),
-				font.getTypeOffset(),
-				font.getUnderline()
-		);
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-			newFont.setColor(font.getColor());
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		short fillPattern = style.getFillPattern();
-		short fillColor = style.getFillForegroundColor();
-		style.setFillPattern(CellStyle.SOLID_FOREGROUND);
-		switch (outputStyle) {
-		case TOP_HEADER:
-			style.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
-			break;
-		case ROW_HEADER:
-			style.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
-			break;
-		default:
-			throw new RuntimeException("Unexpected value for HeaderType enumeration.");
-		}
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-		
-		// Revert back the font on the old cell style
-		style.setFont(font);
-		style.setFillPattern(fillPattern);
-		style.setFillForegroundColor(fillColor);
-	}
-	
-	protected void setBoldFont(Cell cell) {
-		CellStyle style = cell.getCellStyle();
-		
-		Font font = wb.getFontAt(style.getFontIndex());
-		
-		Font newFont = wb.findFont(
-				Font.BOLDWEIGHT_BOLD,
-				font.getColor(),
-				font.getFontHeight(),
-				font.getFontName(),
-				font.getItalic(),
-				font.getStrikeout(),
-				font.getTypeOffset(),
-				font.getUnderline()
-		);
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-			newFont.setColor(font.getColor());
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-		
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-
-	/**
-	 * This function will set the font color of the specified cell
-	 * to the requested value. 
-	 * 
-	 * The function will make sure that there will be only one
-	 * <code>Font</code> object created for the whole file
-	 * even if the function is called multiple times for different
-	 * cells.
-	 * 
-	 * @param cell The cell where to set the font color.
-	 * @param rgb The new color to set.
-	 */
-	protected void setCellColor(Cell cell, short[] rgb) {
-		switch (outputFileFormat) {
-		case HSSF:
-			setHSSFCellColor(cell, rgb);
-			break;
-		case XSSF:
-			setXSSFCellColor((XSSFCell)cell, rgb);
-			break;
-		case SXSSF:
-			setSXSSFCellColor((SXSSFCell)cell, rgb);
-			break;
-		default:
-			throw new UnimplementedMethodException("Unknown output format for color processing.");
-		}
-	}
-
-	protected void setHSSFCellColor(Cell cell, short[] rgb) {
-		HSSFWorkbook hwb = (HSSFWorkbook) wb;
-		CellStyle style = cell.getCellStyle();
-		
-		Font font = wb.getFontAt(style.getFontIndex());
-
-		HSSFColor newColor = hwb.getCustomPalette().findSimilarColor(rgb[0], rgb[1], rgb[2]);
-		
-		Font newFont = wb.findFont(
-				font.getBoldweight(),
-				newColor.getIndex(),
-				font.getFontHeight(),
-				font.getFontName(),
-				font.getItalic(),
-				font.getStrikeout(),
-				font.getTypeOffset(),
-				font.getUnderline()
-		);
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(newColor.getIndex());
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-		
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-	
-	protected void setXSSFCellColor(XSSFCell cell, short[] rgb) {
-		XSSFWorkbook twb = (XSSFWorkbook) wb;
-		XSSFCellStyle style = cell.getCellStyle();
-		XSSFFont font = style.getFont();
-		XSSFFont newFont = null;
-		XSSFColor newColor = new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2]));
-		
-		log.debug("Setting color of cell c: " + cell.getColumnIndex() + " r: " + cell.getRowIndex() + " color: " + newColor.getIndexed());
-				
-		// Look if the font already exists
-		newFont = twb.findFont(
-			font.getBoldweight(),
-			newColor.getIndexed(),
-			font.getFontHeight(),
-			font.getFontName(),
-			font.getItalic(),
-			font.getStrikeout(),
-			font.getTypeOffset(),
-			font.getUnderline()
-		);
-		
-		// Clone the font if it does not exist yet
-		if (newFont == null || !newFont.getXSSFColor().equals(newColor)) {
-		    newFont = twb.createFont();
-			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(new XSSFColor(new java.awt.Color(rgb[0], rgb[1], rgb[2])));
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-		
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-	
-	protected void setSXSSFCellColor(Cell cell, short[] rgb) {
-		CellStyle style = cell.getCellStyle();
-			
-		Font font = wb.getFontAt(style.getFontIndex());
-
-		// Just a temporary hard coding until SXSSF will implement
-		// the proper color setup.
-		short newColor = HSSFColor.BLACK.index;
-		if (rgb[0] > rgb[1] && rgb[0] > rgb[2]) {
-			newColor = HSSFColor.RED.index;
-		}
-			
-		Font newFont = wb.findFont(
-				font.getBoldweight(),
-				newColor,
-				font.getFontHeight(),
-				font.getFontName(),
-				font.getItalic(),
-				font.getStrikeout(),
-				font.getTypeOffset(),
-				font.getUnderline()
-		);
-		if (newFont == null) {
-			newFont = wb.createFont();
-			newFont.setBoldweight(font.getBoldweight());
-			newFont.setColor(newColor);
-			newFont.setFontHeight(font.getFontHeight());
-			newFont.setFontName(font.getFontName());
-			newFont.setItalic(font.getItalic());
-			newFont.setStrikeout(font.getStrikeout());
-			newFont.setTypeOffset(font.getTypeOffset());
-			newFont.setUnderline(font.getUnderline());
-		}
-		style.setFont(newFont);
-		CellStyle newStyle = cloneStyle(style);
-		cell.setCellStyle(newStyle);
-		
-		// Revert back the font on the old cell style
-		style.setFont(font);
-	}
-
-	/**
-	 *  Clones the specified style. First all existing styles are scanned and if the
-	 *  same style already exists it is re-used. Otherwise new style is created. This
-	 *  method should be used for style de-duplication. First, you should alter the
-	 *  already existing style as you need, then call cloneStyle method and then
-	 *  reverse back your changes on the original style object. Further, use the style
-	 *  object returned by cloneStyle as an altered style.
-	 *  
-	 *  See the example below:
-	 *  <pre>
-	 *  style.setFont(newFont);
-	 *	CellStyle newStyle = cloneStyle(style);
-	 *	cell.setCellStyle(newStyle);
-	 *	
-	 *	// Revert back the font on the old cell style
-	 *	style.setFont(font);
-	 *  </pre>
-	 */
-	protected CellStyle cloneStyle(CellStyle style) {
-		// Go through all the existing styles and re-use it if there is a match
-		for (short i=0; i < wb.getNumCellStyles(); i++) {
-			// Do not compare the style to itself
-			if (style.getIndex() == i)
-				continue;
-			// Compare the styles and use the already existing one instead of creating a new one
-			if (compareStyles(style, wb.getCellStyleAt(i))) {
-				return wb.getCellStyleAt(i);
-			}
-		}
-		
-		// Create a new style since the same one does not exist
-		CellStyle newStyle = wb.createCellStyle();
-		newStyle.cloneStyleFrom(style);
-		
-		return newStyle;
-	}
-	
-	private boolean compareStyles(CellStyle s1, CellStyle s2) {
-		if (s1.getAlignment() != s2.getAlignment())
-			return false;
-		if (s1.getBorderBottom() != s2.getBorderBottom())
-			return false;
-		if (s1.getBorderLeft() != s2.getBorderLeft())
-			return false;
-		if (s1.getBorderRight() != s2.getBorderRight())
-			return false;
-		if (s1.getBorderTop() != s2.getBorderTop())
-			return false;
-		if (s1.getBottomBorderColor() != s2.getBottomBorderColor())
-			return false;
-		if (s1.getDataFormat() != s2.getDataFormat())
-			return false;
-		if (s1.getDataFormatString() != s2.getDataFormatString())
-			return false;
-		if (s1.getFillBackgroundColor() != s2.getFillBackgroundColor())
-			return false;
-		if (s1.getFillForegroundColor() != s2.getFillForegroundColor())
-			return false;
-		if (s1.getFillPattern() != s2.getFillPattern())
-			return false;
-		if (s1.getFontIndex() != s2.getFontIndex())
-			return false;
-		if (s1.getHidden() != s2.getHidden())
-			return false;
-		if (s1.getIndention() != s2.getIndention())
-			return false;
-		if (s1.getLeftBorderColor() != s2.getLeftBorderColor())
-			return false;
-		if (s1.getRightBorderColor() != s2.getRightBorderColor())
-			return false;
-		if (s1.getRotation() != s2.getRotation())
-			return false;
-		if (s1.getTopBorderColor() != s2.getTopBorderColor())
-			return false;
-		if (s1.getVerticalAlignment() != s2.getVerticalAlignment())
-			return false;
-		if (s1.getWrapText() != s2.getWrapText())
-			return false;
-		return true;
 	}
 
 	protected void reportExcelStatisctics() {

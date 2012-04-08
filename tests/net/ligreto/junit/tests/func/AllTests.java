@@ -1,8 +1,8 @@
 package net.ligreto.junit.tests.func;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Properties;
+import net.ligreto.junit.tests.EnvironmentTest;
+import net.ligreto.junit.util.TestUtil;
+import net.ligreto.util.AssertionUtil;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -12,6 +12,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
+	EnvironmentTest.class,
 	net.ligreto.junit.tests.func.nodata.AllTests.class,
 	net.ligreto.junit.tests.func.owndata.AllTests.class,
 	net.ligreto.junit.tests.func.smalldata.AllTests.class,
@@ -24,19 +25,8 @@ public class AllTests {
 	 */
 	@BeforeClass
 	public static void setUp() throws Exception {
-		Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-		Properties properties = new Properties();
-		properties.setProperty("create", "true");
-		Connection cnn = DriverManager.getConnection("jdbc:derby:db1", properties);
-		cnn.close();
-		cnn = DriverManager.getConnection("jdbc:derby:db2", properties);
-		cnn.close();
-		cnn = DriverManager.getConnection("jdbc:derby:db3", properties);
-		cnn.close();
-		/*
-		cnn = DriverManager.getConnection("jdbc:derby:db4", properties);
-		cnn.close();
-		*/
+		AssertionUtil.enableAssertions();
+		TestUtil.createDBs();
 	}
 	
 	/**

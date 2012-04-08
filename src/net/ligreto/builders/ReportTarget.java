@@ -9,33 +9,8 @@ import net.ligreto.exceptions.LigretoException;
 import net.ligreto.parser.nodes.LigretoNode;
 
 /**
- * This class defines the interface between the various report executors
- * and the target report format. The main type of the output report format
- * is excel spreadsheet. However, any type of the output report format could
- * be used if the below interface could be implemented.
+ * The {@link TargetInterface} generic implementation.
  * 
- * This is the overall overview on what methods should be called during
- * life-cycle of this class in pseudo-code as called by the executors.
- * 
- * <pre>
- *   setTemplate("Template.xls");
- *   setOutput("Output.xls");
- *   
- *   for (tgt : targets) {
- *   	setTarget("A target ID string"); // For spreadsheet - e.g. "B:2"
- *   	for (row : rows) {
- *   		tgt.nextRow();
- *   		// Dump the i-th column from the ResultSet
- *   		tgt.dumpColumn(i, objectValue); 
- *   		// Could dump more cells here
- *   		tgt.shiftPosition(10);
- *   		// Could dump more cells here
- *   	}
- *   	tgt.finish();
- *   }
- *   
- * </pre>
- *  
  * @author Julius Stroffek
  *
  */
@@ -53,14 +28,14 @@ public abstract class ReportTarget implements TargetInterface {
 	protected int columnStep = 1;
 	
 	/**
-	 * The base row which is defined by the call to <code>setTarget</code>.
+	 * The base row which is defined by the call to <code>getTargetBuilder</code>.
 	 *
 	 * The numbering starts from 0.
 	 */
 	protected int baseRowNumber = 0;
 	
 	/**
-	 * The base column which is defined by the call to <code>setTarget</code>.
+	 * The base column which is defined by the call to <code>getTargetBuilder</code>.
 	 * 
 	 * The numbering starts from 0.
 	 */
@@ -73,7 +48,7 @@ public abstract class ReportTarget implements TargetInterface {
 	 * will get shifted by the call to <code>nextRow</code>
 	 * </p>
 	 */
-	protected int actualRowNumber = baseRowNumber-1;
+	protected int currentRowNumber = baseRowNumber-1;
 	
 	/**
 	 * The actual column number where the output is produced. The exact column number
@@ -81,12 +56,12 @@ public abstract class ReportTarget implements TargetInterface {
 	 * this <code>actCol</code> value and adding the value of the column number argument
 	 * specified in the <code>setColumn</code> method call.
 	 */
-	protected int actualColumnPosition = baseColumnPosition;
+	protected int currentColumnPosition = baseColumnPosition;
 		
 	/** The global ligreto parameters. */
 	protected LigretoParameters ligretoParameters;
 	
-	/** Nobody except child classes could create the instance. */
+	/** Instances should be created by static methods. */
 	protected ReportTarget(ReportBuilder reportBuilder) {
 		this.reportBuilder = reportBuilder;
 	}
@@ -107,15 +82,16 @@ public abstract class ReportTarget implements TargetInterface {
 	}
 		
 	/**
+	 * Set the current row number. This
 	 * @param actualRowNumber the actualRowNumber to set
 	 */
-	public void setActualRowNumber(int actualRowNumber) {
-		this.actualRowNumber = actualRowNumber;
+	public void setCurrentRow(int actualRowNumber) {
+		this.currentRowNumber = actualRowNumber;
 	}
 
 	@Override
 	public void nextRow() throws IOException {
-		actualRowNumber++;
+		currentRowNumber++;
 		setPosition(0,1);
 	}
 			
@@ -131,7 +107,7 @@ public abstract class ReportTarget implements TargetInterface {
 
 	@Override
 	public void setPosition(int columnPosition, int columnStep) {
-		actualColumnPosition = baseColumnPosition + columnPosition;
+		currentColumnPosition = baseColumnPosition + columnPosition;
 		this.columnStep = columnStep;
 	}
 
@@ -142,7 +118,7 @@ public abstract class ReportTarget implements TargetInterface {
 	
 	@Override
 	public void shiftPosition(int columnsToShift, int columnStep) {
-		actualColumnPosition += columnsToShift;
+		currentColumnPosition += columnsToShift;
 		this.columnStep = columnStep;
 	}
 }

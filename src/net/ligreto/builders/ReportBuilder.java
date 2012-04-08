@@ -8,37 +8,8 @@ import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.ReportNode;
 
 /**
- * This class defines the interface between the various report executors
- * and the target report format. The main type of the output report format
- * is excel spreadsheet. However, any type of the output report format could
- * be used if the below interface could be implemented.
+ * The {@link BuilderInterface} generic implementation.
  * 
- * This is the overall overview on what methods should be called during
- * life-cycle of this class in pseudo-code as called by the executors.
- * 
- * <pre>
- *   setTemplate("Template.xls");
- *   setOutput("Output.xls");
- *   
- *   for (tgt : targets) {
- *   	setTarget("A target ID string"); // For spreadsheet - e.g. "B:2"
- *   	for (row : rows) {
- *   		nextRow();
- *   		// Dump the i-th column from the ResultSet
- *   		setColumn(i, rs); 
- *   		// Could dump more columns here using setColumn method call
- *   		setColumnPosition(10);
- *   		// Could dump more columns here to shifted location using setColumn method call
- *   	}
- *   }
- *   
- * </pre>
- *
- * The report builder could automatically highlight the differences
- * or otherwise highlight certain column values as specified
- * by invoking <code>setHighlightArray</code> before the call
- * to any <code>setCell</code> methods.
- *  
  * @author Julius Stroffek
  *
  */
@@ -107,9 +78,6 @@ public abstract class ReportBuilder implements BuilderInterface {
 	 */
 	protected abstract TargetInterface createTarget(Sheet sheet, int baseRow, int baseCol);
 
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setTemplate(java.lang.String)
-	 */
 	@Override
 	public void setTemplate(String template) {
 		if (template != null) {
@@ -119,14 +87,12 @@ public abstract class ReportBuilder implements BuilderInterface {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.ligreto.builders.BuilderInterface#setOutput(java.lang.String)
-	 */
 	@Override
 	public void setOutputFileName(String output) {
 		this.output = ligretoNode.substituteParams(output);
 	}
-	
+
+	@Override
 	public void setLigretoParameters(LigretoParameters ligretoParameters) {
 		this.ligretoParameters = ligretoParameters;
 	}
