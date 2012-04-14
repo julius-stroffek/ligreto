@@ -25,10 +25,10 @@ public class DetailedJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(0, "Column Name", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1);
 		
-		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+		for (int i = 0; i < dp1.getKeyIndices().length; i++) {
+			targetBuilder.dumpCell(i, getKeyColumnName(i), OutputStyle.TOP_HEADER);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(dp1.getKeyIndices().length);
 		
 		targetBuilder.dumpCell(0, dp1.getCaption(), OutputStyle.TOP_HEADER);
 		targetBuilder.dumpCell(1, dp2.getCaption(), OutputStyle.TOP_HEADER);
@@ -45,10 +45,11 @@ public class DetailedJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(0, getColumnName(index), style == OutputStyle.DISABLED ? OutputStyle.ROW_HEADER_DISABLED : OutputStyle.ROW_HEADER);
 		targetBuilder.shiftPosition(1);
 
-		for (int j = 0; j < keyColumns.length; j++) {
-			targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), style);
+		int[] keyIndices = dp1.getKeyIndices();
+		for (int j = 0; j < keyIndices.length; j++) {
+			targetBuilder.dumpCell(j, dp1.getObject(keyIndices[j]), style);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(keyIndices.length);
 		
 		targetBuilder.dumpCell(0, dp1.getObject(index), style);
 		targetBuilder.dumpCell(1, ligretoParameters.getMissingString(), style);
@@ -69,10 +70,11 @@ public class DetailedJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(0, getColumnName(index), style == OutputStyle.DISABLED ? OutputStyle.ROW_HEADER_DISABLED : OutputStyle.ROW_HEADER);
 		targetBuilder.shiftPosition(1);
 
-		for (int j = 0; j < keyColumns.length; j++) {
-			targetBuilder.dumpCell(j, dp2.getObject(keyColumns[j]), style);
+		int[] keyIndices = dp2.getKeyIndices();
+		for (int j = 0; j < keyIndices.length; j++) {
+			targetBuilder.dumpCell(j, dp2.getObject(keyIndices[j]), style);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(keyIndices.length);
 		
 		targetBuilder.dumpCell(0, ligretoParameters.getMissingString(), style);
 		targetBuilder.dumpCell(1, dp2.getObject(index), style);
@@ -92,10 +94,11 @@ public class DetailedJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(1);
 
 		OutputStyle keyStyle = style == OutputStyle.DISABLED ? OutputStyle.DISABLED : OutputStyle.DEFAULT;
-		for (int j = 0; j < keyColumns.length; j++) {
-			targetBuilder.dumpCell(j, dp1.getObject(keyColumns[j]), keyStyle);
+		int[] keyIndices = dp1.getKeyIndices();
+		for (int j = 0; j < keyIndices.length; j++) {
+			targetBuilder.dumpCell(j, dp1.getObject(keyIndices[j]), keyStyle);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(keyIndices.length);
 
 		targetBuilder.dumpCell(0, dp1.getObject(index), style);
 		targetBuilder.dumpCell(1, dp2.getObject(index), style);

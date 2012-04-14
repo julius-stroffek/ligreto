@@ -17,50 +17,59 @@ public class KeyJoinLayout extends JoinLayout {
 	public void dumpHeader() throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		
-		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp1.getColumnName(keyColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
+		int[] keyIndices = dp1.getKeyIndices();
+		for (int i = 0; i < keyIndices.length; i++) {
+			targetBuilder.dumpCell(i, dp1.getColumnName(keyIndices[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(keyIndices.length);
 
-		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp2.getColumnName(keyColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
+		keyIndices = dp2.getKeyIndices();
+		for (int i = 0; i < keyIndices.length; i++) {
+			targetBuilder.dumpCell(i, dp2.getColumnName(keyIndices[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
 		}
 	}
 
 	@Override
 	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws IOException, LigretoException {		
 		targetBuilder.nextRow();
+		int[] keyIndices;
 		switch (resultType) {
 		case LEFT:
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+			keyIndices = dp1.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(keyIndices[i]), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.shiftPosition(keyColumns.length);
+			targetBuilder.shiftPosition(keyIndices.length);
 
-			for (int i = 0; i < keyColumns.length; i++) {
+			keyIndices = dp2.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
 				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
 			}
 			break;
 			
 		case RIGHT:
-			for (int i = 0; i < keyColumns.length; i++) {
+			keyIndices = dp1.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
 				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.shiftPosition(keyColumns.length);
+			targetBuilder.shiftPosition(keyIndices.length);
 
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+			keyIndices = dp2.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(keyIndices[i]), OutputStyle.HIGHLIGHTED);
 			}
 			break;
 			
 		case INNER:
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.DEFAULT);
+			keyIndices = dp1.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(keyIndices[i]), OutputStyle.DEFAULT);
 			}
-			targetBuilder.shiftPosition(keyColumns.length);
+			targetBuilder.shiftPosition(keyIndices.length);
 
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.DEFAULT);
+			keyIndices = dp2.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(keyIndices[i]), OutputStyle.DEFAULT);
 			}
 			break;
 

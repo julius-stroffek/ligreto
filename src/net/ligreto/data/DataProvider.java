@@ -35,8 +35,67 @@ public abstract class DataProvider {
 	/** The data source caption used in user output. */
 	protected String caption;
 	
-	/** The constructor could be used only by the subclasses. */
-	protected DataProvider() {
+	/** The array of original indices considering the excluded columns. */
+	protected int[] originalIndices;
+	
+	/** The array of data provider indices indexed by the original index considering the excluded columns. */
+	protected int[] dataProviderIndices;
+	
+	/** The array of key columns indices as they are ordered in this data provider output. */
+	protected int[] keyIndices;
+	
+	/** The array of original key column indices as corresponds to the columns in the query. */
+	protected int[] originalKeyIndices;
+	
+	/**
+	 * The constructor could be used only by the subclasses. It will creates the mapping arrays
+	 * for indices, original indices and key indices. None reference is kept for any of the arrays
+	 * provided as parameters.
+	 * 
+	 * @param columnCount the number of columns including the excluded columns
+	 * @param keyIndices the indices of key columns
+	 * @param excludeIndices the indices of columns to be excluded
+	 * @throws DataException if any error occurs
+	 */
+	protected DataProvider(int columnCount, int[] keyIndices, int[] excludeIndices) throws DataException {
+		this.keyIndices = new int[keyIndices.length];
+		
+		boolean[] columnExcluded = new boolean[columnCount];
+		for (int i=1; i <= columnCount; i++) {
+			columnExcluded[i-1] = false;
+		}
+		
+		int excludedCount = 0;
+		if (excludeIndices != null) {
+			for (int i=0; i < excludeIndices.length; i++) {
+				if (excludeIndices[i] > 0 && excludeIndices[i] <= columnCount) {
+					excludedCount++;
+					columnExcluded[excludeIndices[i]-1] = true;
+				}
+			}
+		}
+		
+		originalIndices = new int[columnCount - excludedCount];
+		dataProviderIndices  = new int[columnCount];
+		for (int i=1, r=0; i <= columnCount; i++) {
+			if (columnExcluded[i-1]) {
+				dataProviderIndices[i-1] = -1;
+			} else {
+				dataProviderIndices[i-1] = r+1;
+				originalIndices[r] = i;
+				r++;
+			}
+		}
+		
+		this.originalKeyIndices = new int[keyIndices.length];
+		this.keyIndices = new int[keyIndices.length];
+		for (int i=0; i < keyIndices.length; i++) {
+			if (keyIndices[i] < 1 || keyIndices[i] > columnCount) {
+				throw new DataException("Specified key column is out of the range: " + keyIndices[i]);
+			}
+			this.originalKeyIndices[i] = keyIndices[i];
+			this.keyIndices[i] = dataProviderIndices[keyIndices[i]-1];
+		}
 	}
 	
 	/** Move to the next available row. */
@@ -175,54 +234,6 @@ public abstract class DataProvider {
 	 */
 	public abstract int getIndex(int originalIndex) throws DataException;
 
-	public Object getOriginalObject(int originalIndex) throws DataException {
-		int index = getIndex(originalIndex);
-		if (index > 0) {
-			return getObject(index);
-		} else {
-			throw new DataException(
-				"The requested column was exceluded from the data: "
-				+ originalIndex + "; data source: " + getCaption()
-			);
-		}
-	}
-
-	public String getOriginalColumnLabel(int originalIndex) throws DataException {
-		int index = getIndex(originalIndex);
-		if (index > 0) {
-			return getColumnLabel(index);
-		} else {
-			throw new DataException(
-				"The requested column was exceluded from the data: "
-				+ originalIndex + "; data source: " + getCaption()
-			);
-		}
-	}
-
-	public String getOriginalColumnName(int originalIndex) throws DataException {
-		int index = getIndex(originalIndex);
-		if (index > 0) {
-			return getColumnName(index);
-		} else {
-			throw new DataException(
-				"The requested column was exceluded from the data: "
-				+ originalIndex + "; data source: " + getCaption()
-			);
-		}
-	}
-
-	public int getOriginalColumnType(int originalIndex) throws DataException {
-		int index = getIndex(originalIndex);
-		if (index > 0) {
-			return getColumnType(index);
-		} else {
-			throw new DataException(
-				"The requested column was exceluded from the data: "
-				+ originalIndex + "; data source: " + getCaption()
-			);
-		}
-	}
-
 	/**
 	 * Indicates whether the current row is active and valid.
 	 * 
@@ -299,5 +310,61 @@ public abstract class DataProvider {
 	 */
 	public void setCaption(String caption) {
 		this.caption = caption;
+	}
+	
+	public int[] getKeyIndices() {
+		return keyIndices;
+	}
+	
+	public int[] getOriginalKeyIndices() {
+		return originalKeyIndices;
+	}
+	
+	public Object getOriginalObject(int originalIndex) throws DataException {
+		int index = getIndex(originalIndex);
+		if (index > 0) {
+			return getObject(index);
+		} else {
+			throw new DataException(
+				"The requested column was excluded from the data: "
+				+ originalIndex + "; data source: " + getCaption()
+			);
+		}
+	}
+
+	public String getOriginalColumnLabel(int originalIndex) throws DataException {
+		int index = getIndex(originalIndex);
+		if (index > 0) {
+			return getColumnLabel(index);
+		} else {
+			throw new DataException(
+				"The requested column was exceluded from the data: "
+				+ originalIndex + "; data source: " + getCaption()
+			);
+		}
+	}
+
+	public String getOriginalColumnName(int originalIndex) throws DataException {
+		int index = getIndex(originalIndex);
+		if (index > 0) {
+			return getColumnName(index);
+		} else {
+			throw new DataException(
+				"The requested column was exceluded from the data: "
+				+ originalIndex + "; data source: " + getCaption()
+			);
+		}
+	}
+
+	public int getOriginalColumnType(int originalIndex) throws DataException {
+		int index = getIndex(originalIndex);
+		if (index > 0) {
+			return getColumnType(index);
+		} else {
+			throw new DataException(
+				"The requested column was exceluded from the data: "
+				+ originalIndex + "; data source: " + getCaption()
+			);
+		}
 	}
 }

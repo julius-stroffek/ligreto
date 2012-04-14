@@ -1,6 +1,7 @@
 package net.ligreto.data;
 
 import net.ligreto.exceptions.DataException;
+import net.ligreto.exceptions.DataTypeMismatchException;
 import net.ligreto.util.LigretoComparator;
 
 /**
@@ -112,6 +113,8 @@ public class Field implements Comparable<Object> {
 		try {
 			return LigretoComparator.getInstance().compare(this, f);
 		} catch (DataException e) {
+			throw new IllegalArgumentException(e);
+		} catch (DataTypeMismatchException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}

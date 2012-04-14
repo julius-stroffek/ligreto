@@ -27,10 +27,7 @@ public class SortingDataProvider extends DataProvider {
 	
 	/** The SQL data types for the columns. */
 	protected int[] columnTypes;
-	
-	/** The array of column indices that form the key. The first column has index 1. */
-	protected int[] keyColumns;
-	
+		
 	/** The array of sorted rows. */
 	protected DataProviderRow[] rows;
 	
@@ -60,8 +57,8 @@ public class SortingDataProvider extends DataProvider {
 	 * @throws DataException if any data access error occurred
 	 */
 	public SortingDataProvider(DataProvider dataProvider, int[] keyColumns) throws DataException {
+		super(dataProvider.getColumnCount(), keyColumns, null);
 		this.dataProvider = dataProvider;
-		this.keyColumns = keyColumns;
 		setCaption(dataProvider.getCaption());
 	}
 
@@ -83,7 +80,7 @@ public class SortingDataProvider extends DataProvider {
 		}
 		DataProviderRow row = null;
 		while (dataProvider.next()) {
-			row = new DataProviderRow(columnTypes, dataProvider, keyColumns);
+			row = new DataProviderRow(columnTypes, dataProvider, keyIndices);
 			rowList.add(row);
 		}
 		DataProviderRow[] arrayType = new DataProviderRow[0];

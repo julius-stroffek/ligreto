@@ -51,7 +51,7 @@ public abstract class JoinLayout {
 	protected AggregationResult currentResult;
 		
 	/** The column indices of the columns to be equal from both data providers. */
-	protected int[] keyColumns = null;
+	//protected int[] keyColumns = null;
 			
 	/** The columns which should be used for aggregated result. */
 	protected int[] groupByColumns = null;
@@ -208,6 +208,32 @@ public abstract class JoinLayout {
 			throw new IllegalArgumentException("Result column index out of range: " + i);
 
 		return getColumnName(resultColumns[i]);
+	}
+	
+	/**
+	 * Function will provide the name of the specified result column.
+	 * 
+	 * @param i the index of the column in the key indices array. First key column has index 0.
+	 * @return the name of the i-th column
+	 * @throws SQLException
+	 */
+	public String getKeyColumnName(int i) throws DataException {
+		assert(startCalled);
+
+		if (i < 0 || i >= dp1.getKeyIndices().length) {
+			throw new IllegalArgumentException(
+				"Key column index out of range: " + i + "; key column count: "
+				+ dp1.getKeyIndices().length
+			);
+		}
+
+		String colName = dp1.getColumnName(dp1.getKeyIndices()[i]);
+		String col2Name = dp2.getColumnName(dp2.getKeyIndices()[i]);
+		if (! colName.equalsIgnoreCase(col2Name)) {
+			colName = colName + " / " + col2Name;
+		}
+
+		return colName;
 	}
 	
 	/**
@@ -560,13 +586,6 @@ public abstract class JoinLayout {
 	}
 	
 	/**
-	 * @param keyColumns The join columns for both data providers.
-	 */
-	public void setKeyColumns(int[] keyColumns) {
-		this.keyColumns = keyColumns;
-	}
-	
-	/**
 	 * @return the comparedColumns
 	 */
 	public int[] getComparedColumns() {
@@ -684,15 +703,41 @@ public abstract class JoinLayout {
 	}
 
 	/**
-	 * The method executed before providing any data to the layout object.
+	 * Provides initialization for the layout processing. This method executed before
+	 * providing any data to the layout object. It calculates the arrays {@link comparedColumns}
+	 * and {@link ignoredColumns}. It adjusts the keyColumns for both result sets accordingly
+	 * with columns that will be excluded.
+	 * 
 	 * @throws SQLException 
 	 * @throws LigretoException 
 	 */
 	public void start() throws LigretoException {
 		startCalled = true;
+		
+		// Do the key column sanity check
+		if (dp1.getKeyIndices().length != dp2.getKeyIndices().length) {
+			throw new LigretoException(
+				"The number of key columns does not match: "
+				+ dp1.getKeyIndices().length + ", "
+				+ dp2.getKeyIndices().length
+			);
+		}
 
-		for (int i=0; i < keyColumns.length; i++) {
-			noResultColumns.put(keyColumns[i], null);
+		// First, we will check whether key indices match
+		for (int i=0; i < dp1.getKeyIndices().length; i++) {
+			int i1 = dp1.getKeyIndices()[i];
+			int i2 = dp2.getKeyIndices()[i];
+			if (i1 != i2) {
+				throw new LigretoException(
+					"Non-matching indices of key columns after excluding the columns: "
+					+ i1 + "; " + i2
+				);
+			}
+		}
+
+		// Store the information about key indices
+		for (int i=0; i < dp1.getKeyIndices().length; i++) {
+			noResultColumns.put(dp1.getKeyIndices()[i], null);
 		}
 				
 		// Store the information about the result column's indices

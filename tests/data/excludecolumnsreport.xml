@@ -15,17 +15,17 @@
 			<uri value="jdbc:derby:db2"/>
 		</data-source>
 	</data-sources>
-	<report>
-		<template file="blank.xlsx"/>
+	<report options="autoSize,headerStyle">
 		<output file="excludecolumnsreport.xlsx"/>
 		<data>
+			<sql data-source="Source1" target="data1!A1" header="true" exclude="first_name">select * from join_table1</sql>
+			<sql data-source="Source2" target="data2!A1" header="true" exclude="first_name">select * from join_table2</sql>
 			<comparison key="1" exclude="${exclude}">
-				<layout target="Sheet1!A1" type="interlaced" diffs="true"/>
+				<layout target="inter!A1" type="interlaced" diffs="true"/>
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</comparison>
-			<sql data-source="Source1" target="Sheet2!A1" header="true" exclude="first_name">select * from join_table1</sql>
-			<comparison key="3" exclude="first_name">
+			<comparison key="4" exclude="first_name">
 				<layout target="normal!A1" type="normal"/>
 	 			<layout target="interlaced!A1" type="interlaced"/>
 				<layout target="detailed!A1" type="detailed"/>

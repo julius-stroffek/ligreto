@@ -361,7 +361,6 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Setup other parameters required for the join layout
 				joinLayout.setJoinNode(joinNode);
 				joinLayout.setLayoutNode(layoutNode);
-				joinLayout.setKeyColumns(key);
 				joinLayout.setGroupByColumns(layoutNode.getGroupBy());
 				joinLayout.setResultStatus(result);
 				joinLayout.setDataProviders(dp1, dp2);
@@ -411,8 +410,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = LigretoComparator.duplicate(dp1, key);
-				col2 = LigretoComparator.duplicate(dp2, key);
+				col1 = LigretoComparator.duplicate(dp1, dp1.getKeyIndices());
+				col2 = LigretoComparator.duplicate(dp2, dp2.getKeyIndices());
 				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 
@@ -445,7 +444,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = rsComparator.compareAsDataSource(dp1, key, dp2, key);
+				int cResult = rsComparator.compareAsDataSource(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices());
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
@@ -457,7 +456,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, key, columns, dp2, key, columns);
+					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, dp1.getKeyIndices(), columns, dp2, dp2.getKeyIndices(), columns);
 					
 					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
 					for (JoinLayout joinLayout : layouts) {
@@ -493,7 +492,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext1) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col1 = LigretoComparator.duplicate(dp1, key);
+				col1 = LigretoComparator.duplicate(dp1, dp1.getKeyIndices());
 				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
 				assert(dResult1 != 0);
 
@@ -533,7 +532,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			while (hasNext2) {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
-				col2 = LigretoComparator.duplicate(dp2, key);
+				col2 = LigretoComparator.duplicate(dp2, dp2.getKeyIndices());
 				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
 				assert(dResult2 != 0);
 

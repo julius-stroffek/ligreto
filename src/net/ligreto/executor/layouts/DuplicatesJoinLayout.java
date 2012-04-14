@@ -21,10 +21,10 @@ public class DuplicatesJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, "Data Source", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1);
-		for (int i=0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, getColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+		for (int i=0; i < dp1.getKeyIndices().length; i++) {
+			targetBuilder.dumpCell(i, getKeyColumnName(i), OutputStyle.TOP_HEADER);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(dp1.getKeyIndices().length);
 		
 		for (int i=0; i < comparedColumns.length; i++) {
 			targetBuilder.dumpCell(i, getColumnName(comparedColumns[i]), OutputStyle.TOP_HEADER);
@@ -59,10 +59,12 @@ public class DuplicatesJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, dp.getCaption(), OutputFormat.DEFAULT);
 		targetBuilder.shiftPosition(1);
-		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, dp.getObject(keyColumns[i]), OutputStyle.DEFAULT);
+		
+		int[] keyIndices = dp.getKeyIndices();
+		for (int i = 0; i < keyIndices.length; i++) {
+			targetBuilder.dumpCell(i, dp.getObject(keyIndices[i]), OutputStyle.DEFAULT);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);							
+		targetBuilder.shiftPosition(keyIndices.length);							
 		
 		for (int i = 0; i < comparedColumns.length; i++) {
 			targetBuilder.dumpCell(i, dp.getObject(comparedColumns[i]), OutputStyle.DEFAULT);

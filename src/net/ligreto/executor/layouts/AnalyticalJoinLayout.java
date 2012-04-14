@@ -166,9 +166,6 @@ public class AnalyticalJoinLayout extends JoinLayout {
 	}
 	
 	protected Map<AnalysisEntry, Integer> analysisMap = new HashMap<AnalysisEntry, Integer>(4096);
-	protected Map<Integer, Void> noResultColumns = new HashMap<Integer, Void>();
-	int[] resultColumns = null;
-	int resultCount = 0;
 
 	public AnalyticalJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		super(targetBuilder, ligretoParameters);
@@ -185,25 +182,6 @@ public class AnalyticalJoinLayout extends JoinLayout {
 		targetBuilder.shiftPosition(1);
 		for (int i = 0; i < resultColumns.length; i++) {
 			targetBuilder.dumpCell(i, dp2.getColumnName(resultColumns[i]) + " (" + dp2.getCaption() + ")", OutputStyle.TOP_HEADER);
-		}
-	}
-
-	@Override
-	public void start() throws LigretoException {
-		super.start();
-		for (int i=0; i < keyColumns.length; i++) {
-			noResultColumns.put(keyColumns[i], null);
-		}
-
-		int resultCount = getColumnCount() - noResultColumns.size();
-		
-		resultColumns = new int[resultCount];
-		
-		// Store the information about the result column's indices
-		for (int i=0, i1=1; i < resultCount; i++, i1++) {
-			while (noResultColumns.containsKey(i1))
-				i1++;
-			resultColumns[i] = i1;
 		}
 	}
 

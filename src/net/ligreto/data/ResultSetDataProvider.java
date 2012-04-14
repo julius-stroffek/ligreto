@@ -22,18 +22,9 @@ public class ResultSetDataProvider extends DataProvider {
 	/** The result set used to obtain the data. */
 	protected ResultSet resultSet;
 	
-	/** The array of original indices considering the excluded columns. */
-	protected int[] originalIndices;
-	
-	/** The array of data provider indices indexed by the original index considering the excluded columns. */
-	protected int[] dataProviderIndices;
-	
 	/** Indicates whether last fetched field was null. */
 	protected boolean wasNull = false;
-	
-	/** The indices of the key columns. */
-	protected int[] keyColumns = null;
-	
+		
 	/** The column SQL types. */
 	protected int[] columnTypes = null;
 	
@@ -61,15 +52,13 @@ public class ResultSetDataProvider extends DataProvider {
 	 * @throws SQLException if there was an error in the result set calls
 	 */
 	public ResultSetDataProvider(ResultSet resultSet, int[] keyColumns) throws DataException, SQLException {
+		super(resultSet.getMetaData().getColumnCount(), keyColumns, null);
 		this.resultSet = resultSet;
-		this.keyColumns = keyColumns;
+		
 		ResultSetMetaData rsmd = resultSet.getMetaData();
-		originalIndices = new int[rsmd.getColumnCount()];
-		dataProviderIndices  = new int[rsmd.getColumnCount()];
+		
 		columnTypes = new int[rsmd.getColumnCount()];
 		for (int i=0; i < rsmd.getColumnCount(); i++) {
-			originalIndices[i] = i+1;
-			dataProviderIndices[i] = i+1;
 			columnTypes[i] = rsmd.getColumnType(i+1);
 		}
 		resultSet.next();
@@ -88,40 +77,20 @@ public class ResultSetDataProvider extends DataProvider {
 	 * @throws SQLException if there was an error in the result set calls
 	 */
 	public ResultSetDataProvider(ResultSet resultSet, int[] keyColumns, int[] excludeColumns) throws SQLException, DataException {
+		super(resultSet.getMetaData().getColumnCount(), keyColumns, excludeColumns);
 		this.resultSet = resultSet;
-		this.keyColumns = keyColumns;
+
 		ResultSetMetaData rsmd = resultSet.getMetaData();
 		
-		boolean[] columnExcluded = new boolean[rsmd.getColumnCount()];
-		for (int i=1; i <= rsmd.getColumnCount(); i++) {
-			columnExcluded[i-1] = false;
-		}
 		
-		int excludedCount = 0;
-		if (excludeColumns != null) {
-			for (int i=0; i < excludeColumns.length; i++) {
-				if (excludeColumns[i] > 0 && excludeColumns[i] <= rsmd.getColumnCount()) {
-					excludedCount++;
-					columnExcluded[excludeColumns[i]-1] = true;
-				}
-			}
+		// We need to get the SQL types for columns
+		columnTypes = new int[originalIndices.length];
+		for (int i=0; i < originalIndices.length; i++) {
+			columnTypes[i] = rsmd.getColumnType(originalIndices[i]);
 		}
-		
-		originalIndices = new int[rsmd.getColumnCount() - excludedCount];
-		dataProviderIndices  = new int[rsmd.getColumnCount()];
-		columnTypes = new int[rsmd.getColumnCount() - excludedCount];
-		for (int i=1, r=0; i <= rsmd.getColumnCount(); i++) {
-			if (columnExcluded[i-1]) {
-				dataProviderIndices[i-1] = -1;
-			} else {
-				dataProviderIndices[i-1] = r+1;
-				originalIndices[r] = i;
-				columnTypes[r] = rsmd.getColumnType(i);
-				r++;
-			}
-		}
+
 		if (resultSet.next()) {
-			nextRow = new DataProviderRow(columnTypes, resultSet, originalIndices, keyColumns);
+			nextRow = new DataProviderRow(columnTypes, resultSet, originalIndices, keyIndices);
 		} else {
 			nextRow = null;
 		}
@@ -140,7 +109,7 @@ public class ResultSetDataProvider extends DataProvider {
 				indexInDuplicates = 0;
 			}
 			if (currentRow != null && resultSet.next()) {
-				nextRow = new DataProviderRow(columnTypes, resultSet, originalIndices, keyColumns);
+				nextRow = new DataProviderRow(columnTypes, resultSet, originalIndices, keyIndices);
 				nextHasDuplicateKey = currentRow.compareTo(nextRow) == 0;
 			} else {
 				nextRow = null;

@@ -301,11 +301,11 @@ public class LigretoComparator {
 		return result;
 	}
 
-	public int compare(Field field1, Field field2) throws DataException {
+	public int compare(Field field1, Field field2) throws DataException, DataTypeMismatchException {
 		return compare(field1.getColumnType(), field1.getColumnValue(), field2.getColumnType(), field2.getColumnValue());
 	}
 
-	public int compare(int fieldType1, Object fieldValue1, int fieldType2, Object fieldValue2) throws DataException {
+	public int compare(int fieldType1, Object fieldValue1, int fieldType2, Object fieldValue2) throws DataException, DataTypeMismatchException {
 		int result = 0;
 		
 		// Take care of the null values first
@@ -317,11 +317,7 @@ public class LigretoComparator {
 
 		if (fieldType1 != fieldType2) {
 			if (ligretoParameters.getStrictTypes()) {
-				throw new DataException(
-					"Data types differ: "
-					+ DataProviderUtils.getJdbcTypeName(fieldType1) + "; "
-					+ DataProviderUtils.getJdbcTypeName(fieldType2)
-				);
+				throw new DataTypeMismatchException(fieldType1, fieldType2);
 			} else {
 				result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
 			}

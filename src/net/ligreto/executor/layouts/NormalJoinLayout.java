@@ -20,10 +20,10 @@ public class NormalJoinLayout extends JoinLayout {
 		targetBuilder.dumpCell(0, "# of Diffs", OutputStyle.TOP_HEADER);
 		targetBuilder.shiftPosition(1, 1);
 		
-		for (int i = 0; i < keyColumns.length; i++) {
-			targetBuilder.dumpCell(i, getOriginalColumnName(keyColumns[i]), OutputStyle.TOP_HEADER);
+		for (int i = 0; i < dp1.getKeyIndices().length; i++) {
+			targetBuilder.dumpCell(i, getKeyColumnName(i), OutputStyle.TOP_HEADER);
 		}
-		targetBuilder.shiftPosition(keyColumns.length);
+		targetBuilder.shiftPosition(dp1.getKeyIndices().length);
 		
 		for (int i = 0; i < comparedColumns.length; i++) {
 			targetBuilder.dumpCell(i, dp1.getColumnName(comparedColumns[i]) + " (" + dp1.getCaption() + ")", OutputStyle.TOP_HEADER);
@@ -50,12 +50,14 @@ public class NormalJoinLayout extends JoinLayout {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, rowDiffs, OutputFormat.DEFAULT, rowDiffs > 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT);
 		targetBuilder.shiftPosition(1);
+		int[] keyIndices;
 		switch (resultType) {
 		case LEFT:
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getOriginalObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+			keyIndices = dp1.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(keyIndices[i]), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.shiftPosition(keyColumns.length);
+			targetBuilder.shiftPosition(keyIndices.length);
 			
 			for (int i = 0; i < comparedColumns.length; i++) {
 				targetBuilder.dumpCell(i, dp1.getObject(comparedColumns[i]), OutputStyle.HIGHLIGHTED);
@@ -78,10 +80,11 @@ public class NormalJoinLayout extends JoinLayout {
 			break;
 			
 		case RIGHT:
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp2.getObject(keyColumns[i]), OutputStyle.HIGHLIGHTED);
+			keyIndices = dp1.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp2.getObject(keyIndices[i]), OutputStyle.HIGHLIGHTED);
 			}
-			targetBuilder.shiftPosition(keyColumns.length);
+			targetBuilder.shiftPosition(keyIndices.length);
 			
 			for (int i = 0; i < comparedColumns.length; i++) {
 				targetBuilder.dumpCell(i, ligretoParameters.getMissingString(), OutputStyle.HIGHLIGHTED);
@@ -104,10 +107,11 @@ public class NormalJoinLayout extends JoinLayout {
 			break;
 			
 		case INNER:
-			for (int i = 0; i < keyColumns.length; i++) {
-				targetBuilder.dumpCell(i, dp1.getObject(keyColumns[i]), OutputStyle.DEFAULT);
+			keyIndices = dp1.getKeyIndices();
+			for (int i = 0; i < keyIndices.length; i++) {
+				targetBuilder.dumpCell(i, dp1.getObject(keyIndices[i]), OutputStyle.DEFAULT);
 			}
-			targetBuilder.shiftPosition(keyColumns.length);
+			targetBuilder.shiftPosition(keyIndices.length);
 			
 			for (int i = 0; i < comparedColumns.length; i++) {
 				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;

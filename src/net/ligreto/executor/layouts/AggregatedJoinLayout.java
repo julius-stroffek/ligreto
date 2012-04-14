@@ -36,7 +36,6 @@ import net.ligreto.util.LigretoComparator;
 public class AggregatedJoinLayout extends JoinLayout {
 
 	protected HashMap<Row, AggregationResult> aggregationMap = new HashMap<Row, AggregationResult>(4096);
-	protected HashMap<Integer, Void> noResultColumns = new HashMap<Integer, Void>(256);
 
 	public AggregatedJoinLayout(TargetInterface targetBuilder, LigretoParameters ligretoParameters) {
 		super(targetBuilder, ligretoParameters);
@@ -65,9 +64,6 @@ public class AggregatedJoinLayout extends JoinLayout {
 	@Override
 	public void start() throws LigretoException {
 		super.start();
-		for (int i=0; i < keyColumns.length; i++) {
-			noResultColumns.put(keyColumns[i], null);
-		}
 		if (groupByColumns != null) {
 			for (int i=0; i < groupByColumns.length; i++) {
 				if (!noResultColumns.containsKey(groupByColumns[i])) {
