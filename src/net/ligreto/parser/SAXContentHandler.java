@@ -112,6 +112,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		String value = atts.getValue(name);
 		if (value != null) {
 			value = ligretoNode.substituteParams(value);
+			value = value.replaceAll("\\s+", " ");
 		}
 		return value;
 	}

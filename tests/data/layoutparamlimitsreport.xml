@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="ligreto.layoutLimit" value="30"/>
+	<param name="ligreto.layoutDifferenceLimit" value="15"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Param Limit Report" options="autoFilter,autoSize,headerStyle" type="excel.stream">
+		<output file="layoutparamlimitsreport.xlsx"/>
+		<data>
+ 			<join on="1">
+ 				<layout type="summary" join="full" limit="" target="summary"/>
+ 				<layout type="summary" join="full" limit="100" target="limit100!A1"/>
+ 				<layout type="aggregated" join="left" limit="50" target="limit50diffs!A1" diffs="true"/>
+ 				<layout type="interlaced" join="right" target="limit15diffs!A1" diffs="true"/>
+ 				<layout type="normal" join="complement" target="limit30!A1"/>
+				<layout type="key" join="left  complement" limit="0" target="limit0key!A1"/>
+				<layout type="summary" join="full" limit="0" target="limit0!A1"/>
+				<layout type="detailed" join="right		 	 complement" limit="" target="limitNone!A1"/>
+				<sql data-source="Source1">select * from aggregation_table1</sql>
+				<sql data-source="Source2">select * from aggregation_table2</sql>
+			</join>
+		</data>
+	</report>
+</ligreto>

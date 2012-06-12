@@ -80,6 +80,36 @@ public class OraCollatorTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
+	/**
+	 * Test the comparison that does not work for GENERIC_M collation.
+	 * 
+	 * @param sortingRule the sorting rule to use, e.g. BINARY, GENERIC_M, CZECH
+	 */
+	public void testComparator(String sortingRule) {
+		oracle.i18n.text.OraCollator collator = oracle.i18n.text.OraCollator.getInstance(sortingRule);
+		
+		int result1a = collator.compare("04.04.1973", "04041973/9999");
+		int result1b = collator.compare("04041973/9999", "04.04.1973");
+		Assert.assertTrue(result1a != 0 && result1b != 0);
+		Assert.assertTrue(result1a != result1b);
+		
+		int result2a = collator.compare("04041973", "04041973/9999");
+		int result2b = collator.compare("04041973/9999", "04041973");
+		Assert.assertTrue(result2a != 0 && result2b != 0);
+		Assert.assertTrue(result2a != result2b);
+		
+		int result3a = collator.compare("04.04.1973", "04041973");
+		int result3b = collator.compare("04041973", "04.04.1973");
+		Assert.assertTrue(result3a != 0 && result3b != 0);
+		Assert.assertTrue(result3a != result3b);
+	}
+	
+	@Test
+	public void testComparator() {
+		testComparator("BINARY");
+		testComparator("GENERIC_M");
+	}
+	
 	@Test
 	public void testOraCollator() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("oracollatorreport.xml");

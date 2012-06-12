@@ -24,5 +24,6 @@
 	<classpathentry kind="lib" path="lib/poi-ooxml-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/poi-scratchpad-3.8-beta4-20110826.jar"/>
+	<classpathentry kind="lib" path="lib/PasswordQueries.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

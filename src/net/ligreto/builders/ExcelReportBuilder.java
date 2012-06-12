@@ -222,7 +222,17 @@ public class ExcelReportBuilder extends ReportBuilder {
 	@Override
 	public  TargetInterface getTargetBuilder(String target, boolean append) throws TargetException {
 		ExcelReportTarget newTarget = null;
-		CellReference ref = new CellReference(target);
+		CellReference ref;
+		try {
+			ref = new CellReference(target);
+		} catch (IllegalArgumentException e1) {
+			String derivedTarget = target + "!A1";
+			try {
+				ref = new CellReference(derivedTarget);
+			} catch (IllegalArgumentException e2) {
+				throw new TargetException("Could not get the target reference: " + target);
+			}
+		}
 		Sheet sheet;
 		if (ref.getSheetName() != null) {
 			sheet = wb.getSheet(ref.getSheetName());

@@ -184,9 +184,6 @@ public abstract class JoinLayout {
 		rc1 = xmlToResult1[rc1-1];
 		rc2 = xmlToResult2[rc2-1];
 		
-		if (rc1 == -1 && rc2 == -1)
-			return -1;
-
 		if (rc1 != rc2) {
 			throw new LigretoException("Column index \"" + index + "\" does not matches the same columns in the result due to some columns being excluded.");
 		}
@@ -476,7 +473,9 @@ public abstract class JoinLayout {
 	 *         dumped in later processing.
 	 */
 	public boolean isOverLimit() {
-		return dumpedRawCountLimit != null && dumpedRawCount >= dumpedRawCountLimit;
+		return dumpedRawCountLimit != null
+			&& dumpedRawCountLimit > 0
+			&& dumpedRawCount >= dumpedRawCountLimit;
 	}
 	
 	/**
@@ -559,6 +558,15 @@ public abstract class JoinLayout {
 	public void setLayoutNode(LayoutNode layoutNode) {
 		this.layoutNode = layoutNode;
 		dumpedRawCountLimit = layoutNode.getLimit();
+		if (dumpedRawCountLimit == null) {
+			dumpedRawCountLimit = layoutNode.getLigretoNode().getLigretoParameters().getLayoutLimit();
+			if (layoutNode.getDiffs()) {
+				Integer newLimit = layoutNode.getLigretoNode().getLigretoParameters().getLayoutDifferenceLimit();
+				if (newLimit != null && newLimit > 0) {
+					dumpedRawCountLimit = newLimit;
+				}
+			}
+		}
 	}
 
 	/**

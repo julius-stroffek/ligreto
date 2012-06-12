@@ -312,10 +312,12 @@ public class LayoutNode extends Node {
 	 * @param limit the limit to set
 	 */
 	public void setLimit(String limit) {
-		if (limit != null) {
-			this.limit = Integer.parseInt(limit);
-		} else {
+		if (limit == null) {
 			this.limit = null;
+		} else if ("".equals(limit)) {
+			this.limit = 0;
+		} else {
+			this.limit = Integer.parseInt(limit);
 		}
 	}
 

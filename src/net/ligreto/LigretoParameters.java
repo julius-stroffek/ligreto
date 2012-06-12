@@ -40,6 +40,16 @@ public class LigretoParameters {
 	/** Indicates whether we should use strict type checking. */
 	protected boolean strictTypes = true;
 	
+	/** The number of rows to be used as layout limit if not otherwise specified for the layout. */
+	protected int layoutLimit = 0;
+	
+	/**
+	 * The number of rows to be used as layout limit if not otherwise specified for the layout.
+	 * This value applies only to layout with {@code diffs == true} and has a precedence
+	 * before the {@link layoutLimit}.
+	 */
+	protected int layoutDifferenceLimit = 32000;
+	
 	/** Specifies the format for integer numbers in excel spread sheet. */
 	protected String excelIntegerFormat = null;
 
@@ -147,6 +157,46 @@ public class LigretoParameters {
 
 	public String getStrictTypesAsString() {
 		return Boolean.toString(strictTypes);
+	}
+
+	public int getLayoutLimit() {
+		return layoutLimit;
+	}
+
+	public String getLayoutLimitAsString() {
+		return Integer.toString(layoutLimit);
+	}
+
+	public void setLayoutLimit(int layoutLimit) {
+		this.layoutLimit = layoutLimit;
+	}
+
+	public void setLayoutLimit(String layoutLimit) {
+		if (layoutLimit != null && !"".equals(layoutLimit.trim())) { 
+			this.layoutLimit = Integer.parseInt(layoutLimit);
+		} else {
+			this.layoutLimit = 0;
+		}
+	}
+
+	public int getLayoutDifferenceLimit() {
+		return layoutDifferenceLimit;
+	}
+
+	public String getLayoutDifferenceLimitAsString() {
+		return Integer.toString(layoutDifferenceLimit);
+	}
+
+	public void setLayoutDifferenceLimit(int layoutDifferenceLimit) {
+		this.layoutDifferenceLimit = layoutDifferenceLimit;
+	}
+
+	public void setLayoutDifferenceLimit(String layoutDifferenceLimit) {
+		if (layoutDifferenceLimit != null && !"".equals(layoutDifferenceLimit.trim())) { 
+			this.layoutDifferenceLimit = Integer.parseInt(layoutDifferenceLimit);
+		} else {
+			this.layoutDifferenceLimit = 0;
+		}
 	}
 
 	public String getExcelIntegerFormat() {

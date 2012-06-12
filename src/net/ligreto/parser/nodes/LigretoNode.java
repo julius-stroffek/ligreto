@@ -59,6 +59,9 @@ public class LigretoNode extends Node {
 				log.debug("Parameter value: \"" + value + "\"");
 				paramMap.put(name, value);
 			}
+		} else {
+			log.info("Skipping ligreto parameter assignment: \"" + name + "\"");
+			log.debug("Requested parameter value: \"" + value + "\"");
 		}
 	}
 	

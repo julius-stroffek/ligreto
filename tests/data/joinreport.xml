@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
+	<!--  Here we test that no collator will be used when collationName will not be specified. -->
+	<param name="ligreto.collatorClass" value="oracle.i18n.text.OraCollator"/>
+	<param name="ligreto.collationName" value=""/>
+
 	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
 	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
 	<data-sources>

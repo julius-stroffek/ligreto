@@ -12,6 +12,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	KeyLayoutTest.class,
 	NumericTypesTest.class,
 	SqlReportTest.class,
+	SortingTest.class,
 	StyleDedupTest.class
 })
 public class AllTests {

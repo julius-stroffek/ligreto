@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="sys_dt" value="2010-10-10"/>
+	<param name="enddt">2010-11-30</param>
+	<param name="production" value="true"/>
+	<queries>
+		<query name="query1">select * from test</query>
+		<query name="query2">select * from test2</query>
+	</queries>
+	<actions>
+		<email name="email">
+		</email>
+		<upload name="upload">
+		</upload>
+	</actions>
+	<xi:include href="queries.xml"/>
+	<xi:include href="databases.xml"/>
+	<queries>
+		<query name="query1">select * from test where sys_dt = %%sys_dt</query>
+		<query name="query2">select * from test2</query>
+	</queries>
+	
+	<datasets>
+		<dataset name="">
+			<sql data-source="" query=""/>
+		</dataset>
+	
+		<dataset name="">
+			<spreadsheet file="" type="xlsx"> <!-- xlsx|xls -->
+				<data name="" origin="Sheet1!A1" header="true" columns="" rows="">
+					<column name="" format="" type=""/>
+				</data>
+				<data name="" origin="Sheet1!A1" header="true" columns="" rows=""/>
+			</spreadsheet>
+		</dataset>
+		
+		<dataset name="">
+			<csv file="input.csv" type="" delimiter="&tab;" header="" head="2" tail="1">
+				<column name="" format="" type="" order=""/>
+				<column name="" format="" type="" order=""/>
+			</csv>
+		</dataset>
+	</datasets>
+	
+	<ptp>
+		<preprocess>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</preprocess>
+		<transfer>
+			<target data-source="Source2" table="telt_table" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from ptp_table</sql>
+		</transfer>
+		<postprocess>
+			<sql data-source="Source2">select * from telt_table</sql>
+		</postprocess>
+	</ptp>
+	<report name="Report Config" type="excel">
+		<template file="Blank.xls"/>
+		<output file="Report.xls"/>
+		<email template="">
+			<from></from>
+			<to></to>
+			<cc></cc>
+			<bcc></bcc>
+			<subject></subject>
+			<body></body>
+			<attach></attach>
+		</email>
+		<upload>
+			<protocol></protocol>
+			<user></user>
+			<password></password>
+			<path></path>
+			<file></file>
+		</upload>
+		</action>
+		<action when="rejected">
+			<email>
+				<from></from>
+				<to></to>
+				<cc></cc>
+				<bcc></bcc>
+				<subject></subject>
+				<body></body>
+				<attach></attach>
+			</email>
+			<upload>
+			</upload>
+		</action>
+		<data>
+			<dataset name="new data set" columns="1-5,4,name,7,del_flg" key="1,name"/>
+			<dataset name="another data set"/>
+			<sql target="Sheet1!C1">select * from test</sql>
+			<sql query="Query1" target="Sheet1!C1"/>
+			<join target="Sheet2!C3" on="1,2,3" type="full" diffs="true" interlaced="true" highlight="true" hl-color="#040506" >
+				<sql data-source="Test"></sql>
+				<sql data-source="Test2"></sql>
+			</join>
+			<join target="Sheet2!C3" on="1,2,3" type="full" interlaced="true" highlight="true" hl-color="#040506" exclude="last_cnhg_user,modified_date">
+				<sql data-source="Test"></sql>
+				<sql data-source="Test2"></sql>
+			</join>
+			<join type="full" on="1,2,3" exclude="last_cnhg_user,modified_date">
+				<layout target="Sheet2!C3" type="interlaced" highlight="true" hl-color="#040506">
+					<result enabled="${production}">
+						<row-limit abs-diff-count="10" rel-diff-count="0.3" rel-non-matched-count="0.2" abs-non-matched-count="120"/>
+						<limit columns="1,2" rel-diff-value="0.1" abs-diff-value="10000"/>
+						<limit columns="2,3" rel-diff-count="10%" abs-diff-count="1000"/>
+					</result>
+				</layout>
+				<sql data-source="Test"></sql>
+				<sql data-source="Test2"></sql>
+			</join>
+			<sql query="Query1" target="Sheet1!C10"/>
+		</data>
+	</report>
+</ligreto>

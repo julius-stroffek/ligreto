@@ -100,33 +100,38 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				if (localeName == null) {
 					localeName = joinNode.getReportNode().getLocale();
 				}
-				if (localeName != null) {
-					locale = new Locale(localeName);
-				} else {
-					locale = Locale.getDefault();
-				}
-				String collatorName = joinNode.getLigretoNode().getParam("ligreto.collatorClass");
-				if ("oracle.i18n.text.OraCollator".equals(collatorName)) {
-					Class<?> collatorClass = Class.forName(collatorName);
-					
-					Method method = collatorClass.getMethod("getInstance", String.class);
-					String collationName = joinNode.getLigretoNode().getParam("ligreto.collationName").trim();
+				String collatorClassName = joinNode.getLigretoNode().getLigretoParameters().getCollatorClass();
+				String collationName = joinNode.getLigretoNode().getLigretoParameters().getCollationName();
+
 				
-					if (collationName == null || "".equals(collationName)) {
-						throw new LigretoException("Parameter ligreto.collationName must be specified.");
+				// Use the specified collator class if no locale is specified
+				// and both collatorClass and collationName were specified
+				// and we are not doing internal sort
+				if (collatorClassName != null && !"".equals(collatorClassName)
+						&& (localeName == null || "".equals(localeName))
+						&& joinNode.getSortingStrategy() != JoinNode.SortingStrategy.INTERNAL)
+				{
+					if ("oracle.i18n.text.OraCollator".equals(collatorClassName)) {
+						Class<?> collatorClass = Class.forName(collatorClassName);
+						
+						Method method = collatorClass.getMethod("getInstance", String.class);
+											
+						/* The local variable below is only due to @SuppressWarnings annotation. */
+						@SuppressWarnings("unchecked")
+						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
+						this.comparator = comparator;
+						log.info("Using collator class: " + collatorClass + "; collation: " + collationName);
+					} else {
+						throw new LigretoException("Unsupported collator: " + collatorClassName);						
 					}
-					
-					/* The local variable below is only due to @SuppressWarnings annotation. */
-					@SuppressWarnings("unchecked")
-					Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
-					this.comparator = comparator;
-					log.info("Using collator class: " + collatorClass + "; collation: " + collationName);
-				} else if (collatorName == null) {
-					Collator collator = Collator.getInstance(locale);
+				} else if (localeName != null) {
+					Collator collator = Collator.getInstance(new Locale(localeName));
 					collator.setDecomposition(Collator.FULL_DECOMPOSITION);
 					comparator = collator;
 				} else {
-					throw new LigretoException("Unsupported collator: " + collatorName);
+					Collator collator = Collator.getInstance(Locale.getDefault());
+					collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+					comparator = collator;
 				}
 				result.merge(executeJoin(joinNode));
 			}
@@ -394,7 +399,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 				while (hasNext2 && dp2.hasDuplicateKey()) {
 					if (joinNode.getDuplicates() == DuplicatesStrategy.FAIL) {
-						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, dp1.getCaption(), firstTarget));
+						throw new DuplicateKeyValuesException(String.format(duplicateJoinColumnsError, dp2.getCaption(), firstTarget));
 					}
 					for (JoinLayout joinLayout : layouts) {
 						joinLayout.dumpDuplicate(1);

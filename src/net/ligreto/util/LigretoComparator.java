@@ -319,7 +319,7 @@ public class LigretoComparator {
 			if (ligretoParameters.getStrictTypes()) {
 				throw new DataTypeMismatchException(fieldType1, fieldType2);
 			} else {
-				result = compareAsDataSource(fieldValue1.toString(), fieldValue1.toString());
+				result = compare(fieldValue1.toString(), fieldValue1.toString());
 			}
 		} else {
 			switch (fieldType1) {

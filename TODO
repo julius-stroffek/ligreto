@@ -1,6 +1,11 @@
-* Strict types test.
-* Limits for total row count, equal and matched row counts.
-* Parallel query execution.
++ Strict types test.
++ Limits for total row count, equal and matched row counts.
++ Parallel query execution.
++ Internal sort to use java collation.
++ Allow to clear collator class.
+* Dummy report type.
+* Report distribution.
 * Result collector.
 * Chained row matching.
 * GUI/ligui.
+* Limits on simple queries.

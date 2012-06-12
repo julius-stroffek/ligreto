@@ -18,4 +18,9 @@ public class LayoutTest {
 	public void testLayoutLimits() throws SAXException, IOException, LigretoException {
 		TestUtil.testReport("layoutlimitsreport", true);
 	}
+
+	@Test
+	public void testLayoutParamLimits() throws SAXException, IOException, LigretoException {
+		TestUtil.testReport("layoutparamlimitsreport", true);
+	}
 }
