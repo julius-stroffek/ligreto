@@ -24,7 +24,7 @@ public class LimitNode extends Node {
 		String[] sValues = ligretoNode.substituteParams(columns).split(",");
 		int values[] = new int[sValues.length];
 		for (int i=0; i < values.length; i++) {
-			values[i] = Integer.parseInt(sValues[i]);
+			values[i] = Integer.parseInt(sValues[i].trim());
 		}
 		return values;
 	}

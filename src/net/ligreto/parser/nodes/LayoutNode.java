@@ -289,7 +289,7 @@ public class LayoutNode extends Node {
 		String[] sValues = ligretoNode.substituteParams(groupBy).split(",");
 		int values[] = new int[sValues.length];
 		for (int i=0; i < values.length; i++) {
-			values[i] = Integer.parseInt(sValues[i]);
+			values[i] = Integer.parseInt(sValues[i].trim());
 		}
 		return values;
 	}

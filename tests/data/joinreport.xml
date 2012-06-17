@@ -60,11 +60,11 @@
 				<sql data-source="Source1">select * from join_table1</sql>
 				<sql data-source="Source2">select * from join_table2</sql>
 			</join>
-			<join target="multicols!A1" on="1,2,3" type="full" header="true" diffs="true" highlight="true" result="true" layout="normal" hl-color="#2020d0">
+			<join target="multicols!A1" on=" 1, 2 ,3" type="full" header="true" diffs="true" highlight="true" result="true" layout="normal" hl-color="#2020d0">
 				<sql data-source="Source1">select id, 'ABC' aco, cast('ABCD' as char(6)) bco, first_name, last_name, age from join_table1</sql>
 				<sql data-source="Source2">select id, 'ABC' aco, 'ABCD' bco, first_name, last_name, age from join_table2</sql>
 			</join>
-			<join target="multicolsWithNulls!A1" on="1,2,3" type="full" diffs="true" layout="normal" result="true" hl-color="#2020d0">
+			<join target="multicolsWithNulls!A1" on="1,2 , 3" type="full" diffs="true" layout="normal" result="true" hl-color="#2020d0">
 				<sql data-source="Source1">select * from multi_join1</sql>
 				<sql data-source="Source2">select * from multi_join2</sql>
 			</join>

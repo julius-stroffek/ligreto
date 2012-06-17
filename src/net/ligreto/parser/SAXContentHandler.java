@@ -195,7 +195,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case PARAM:
 			try {
-				ligretoNode.addParam(paramName, paramValue.toString());
+				ligretoNode.addParam(paramName, paramValue.toString().trim());
 			} catch (LigretoException e) {
 				throw new SAXException("Error parsing input file.", e);
 			}

@@ -165,7 +165,7 @@ public class SqlNode extends Node {
 		String[] skey = ligretoNode.substituteParams(key).split(",");
 		int ikey[] = new int[skey.length];
 		for (int i=0; i < ikey.length; i++) {
-			ikey[i] = Integer.parseInt(skey[i]);
+			ikey[i] = Integer.parseInt(skey[i].trim());
 		}
 		return ikey;
 	}
@@ -179,7 +179,7 @@ public class SqlNode extends Node {
 		String[] scols = ligretoNode.substituteParams(columns).split(",");
 		int icols[] = new int[scols.length];
 		for (int i=0; i < icols.length; i++) {
-			icols[i] = Integer.parseInt(scols[i]);
+			icols[i] = Integer.parseInt(scols[i].trim());
 		}
 		return icols;
 	}

@@ -7,8 +7,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-import junit.framework.Assert;
-
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.junit.util.TestUtil;
 
