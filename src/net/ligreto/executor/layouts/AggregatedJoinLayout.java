@@ -103,7 +103,7 @@ public class AggregatedJoinLayout extends JoinLayout {
 	}
 	
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
+	public void dumpRow(int rowDiffs, boolean[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
 
 		// Get the value of group by columns first
 		Row row = new Row();

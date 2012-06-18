@@ -186,7 +186,7 @@ public class AnalyticalJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
+	public void dumpRow(int rowDiffs, boolean[] cmpArray, JoinResultType resultType) throws DataException, LigretoException, IOException {
 
 		AnalysisEntry entry = null;
 		

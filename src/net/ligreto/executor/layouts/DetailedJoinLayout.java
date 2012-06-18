@@ -108,7 +108,7 @@ public class DetailedJoinLayout extends JoinLayout {
 	}
 	
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws LigretoException, IOException {		
+	public void dumpRow(int rowDiffs, boolean[] cmpArray, JoinResultType resultType) throws LigretoException, IOException {		
 		// Loop through all the compared columns
 		for (int i = 0; i < comparedColumns.length; i++) {
 			switch (resultType) {
@@ -121,8 +121,8 @@ public class DetailedJoinLayout extends JoinLayout {
 				break;
 
 			case INNER:
-				if (!layoutNode.getDiffs() || cmpArray[i] != 0) {
-					dumpInner(comparedColumns[i], cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT);
+				if (!layoutNode.getDiffs() || !cmpArray[i]) {
+					dumpInner(comparedColumns[i], cmpArray[i] ? OutputStyle.DEFAULT : OutputStyle.HIGHLIGHTED);
 				}
 				break;
 				

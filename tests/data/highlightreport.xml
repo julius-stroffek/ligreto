@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="db1" desc="Derby">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:p360"/>
+			<param name="create" value="true"/>
+			<init>
+				<sql exceptions="ignore" type="call">drop table htable</sql>
+				<sql type="call">create table htable (id int, skip int, desctxt varchar(100), num int)</sql>
+				<sql type="call">insert into htable values (1, 2, 'Test description', 2)</sql>
+				<sql type="call">insert into htable values (2, 3, 'Test description', 3)</sql>
+				<sql type="call">insert into htable values (3, 4, 'Test description', 4)</sql>
+			</init>
+		</data-source>
+		<data-source name="db2" desc="Derby">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:p360"/>
+			<param name="create" value="true"/>
+			<init>
+				<sql exceptions="ignore" type="call">drop table htable2</sql>
+				<sql type="call">create table htable2 (id int, skip int, desctxt varchar(100), num int)</sql>
+				<sql type="call">insert into htable2 values (1, 2, 'Test description', 2)</sql>
+				<sql type="call">insert into htable2 values (2, 3, 'Test description', 3)</sql>
+				<sql type="call">insert into htable2 values (3, 4, 'Test description', 4)</sql>
+			</init>
+		</data-source>
+	</data-sources>
+	<report options="autoSize,autoFilter,headerStyle" type="excel">
+		<output file="highlightreport.xlsx"/>
+		<data>
+			<comparison key="1" columns="3,5,6,7,8" >
+				<layout target="summary!A1" type="summary"/>
+				<layout target="interlaced!A1"  join="inner" type="interlaced"/>
+				<layout target="normal!A1"  join="inner" type="normal"/>
+				<layout target="detailed!A1"  join="inner" type="detailed"/>
+				<layout target="aggregated!A1"  join="inner" type="aggregated"/>
+				<layout target="dsummary!A1" type="summary" diffs="true"/>
+				<layout target="dinterlaced!A1"  join="inner" type="interlaced"  diffs="true"/>
+				<layout target="dnormal!A1"  join="inner" type="normal"  diffs="true"/>
+				<layout target="ddetailed!A1"  join="inner" type="detailed"  diffs="true"/>
+				<layout target="daggregated!A1"  join="inner" type="aggregated"  diffs="true"/>
+				<sql data-source="db1">select id, skip, desctxt, num, 3, 9, 8, 7 from htable</sql>
+				<sql data-source="db2">select id, skip, desctxt, num, 4, 9, 8, 7 from htable2</sql>
+			</comparison>
+		</data>
+	</report>
+</ligreto>

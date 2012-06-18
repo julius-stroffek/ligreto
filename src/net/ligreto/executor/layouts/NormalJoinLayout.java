@@ -46,7 +46,7 @@ public class NormalJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws IOException, LigretoException {
+	public void dumpRow(int rowDiffs, boolean[] cmpArray, JoinResultType resultType) throws IOException, LigretoException {
 		targetBuilder.nextRow();
 		targetBuilder.dumpCell(0, rowDiffs, OutputFormat.DEFAULT, rowDiffs > 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT);
 		targetBuilder.shiftPosition(1);
@@ -114,13 +114,13 @@ public class NormalJoinLayout extends JoinLayout {
 			targetBuilder.shiftPosition(keyIndices.length);
 			
 			for (int i = 0; i < comparedColumns.length; i++) {
-				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+				OutputStyle style = cmpArray[i] ? OutputStyle.DEFAULT : OutputStyle.HIGHLIGHTED;;
 				targetBuilder.dumpCell(i, dp1.getObject(comparedColumns[i]), style);
 			}
 			targetBuilder.shiftPosition(comparedColumns.length);
 
 			for (int i = 0; i < comparedColumns.length; i++) {
-				OutputStyle style = cmpArray[i] != 0 ? OutputStyle.HIGHLIGHTED : OutputStyle.DEFAULT;
+				OutputStyle style = cmpArray[i] ? OutputStyle.DEFAULT : OutputStyle.HIGHLIGHTED;;
 				targetBuilder.dumpCell(i, dp2.getObject(comparedColumns[i]), style);
 			}
 			targetBuilder.shiftPosition(comparedColumns.length);

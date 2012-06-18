@@ -47,7 +47,7 @@ public class SummaryJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws LigretoException, IOException {
+	public void dumpRow(int rowDiffs, boolean[] highlightArray, JoinResultType resultType) throws LigretoException, IOException {
 		// We do nothing here
 	}
 

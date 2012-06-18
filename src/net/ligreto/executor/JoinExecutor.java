@@ -312,11 +312,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 			
 			// Create the arrays to be used to highlight
 			// differences for left, right, outer joins
-			int[] lowerArray = new int[dp1.getColumnCount() - key.length];
-			int[] higherArray = new int[lowerArray.length];
-			for (int i=0; i < lowerArray.length; i++) {
-				lowerArray[i] = 0;
-				higherArray[i] = 0;
+			boolean[] trueArray = new boolean[dp1.getColumnCount() - key.length];
+			for (int i=0; i < trueArray.length; i++) {
+				trueArray[i] = true;
 			}
 			for (int i=0; i < columns.length; i++) {
 				int index1 = columns[i];
@@ -325,8 +323,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						index1--;
 					}
 				}
-				lowerArray[index1-1] = -1;
-				higherArray[index1-1] = 1;
+				trueArray[index1-1] = false;
 			}
 			for (int i=0; i < columns.length; i++) {
 				if (MiscUtils.arrayContains(key, columns[i])) {
@@ -417,8 +414,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// the collation we are using here for processing
 				col1 = LigretoComparator.duplicate(dp1, dp1.getKeyIndices());
 				col2 = LigretoComparator.duplicate(dp2, dp2.getKeyIndices());
-				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
-				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
+				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1, true) : -1;
+				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2, true) : -1;
 
 				assert(dResult1 != 0);
 				assert(dResult2 != 0);
@@ -449,11 +446,11 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = rsComparator.compareAsDataSource(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices());
+				int cResult = rsComparator.compareKeysAsDataSource(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices());
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
-						joinLayout.processRow(otherColumnCount, lowerArray, JoinResultType.LEFT);
+						joinLayout.processRow(otherColumnCount, trueArray, JoinResultType.LEFT);
 					}
 					hasNext1 = dp1.next();
 					pCol1 = col1;
@@ -461,9 +458,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				case 0:
 					// We will break if we are supposed to produce only differences
 					// and there are no differences present.
-					int[] cmpArray = rsComparator.compareOthersAsDataSource(dp1, dp1.getKeyIndices(), columns, dp2, dp2.getKeyIndices(), columns);
+					boolean[] cmpArray = rsComparator.compareColumnsAsDataSource(dp1, columns, dp2, columns);
 					
-					int rowDiffs = MiscUtils.countNonZeros(cmpArray);
+					int rowDiffs = MiscUtils.countFalses(cmpArray);
 					for (JoinLayout joinLayout : layouts) {
 						joinLayout.processRow(rowDiffs, cmpArray, JoinResultType.INNER);
 					}
@@ -475,7 +472,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					break;
 				case 1:
 					for (JoinLayout joinLayout : layouts) {
-						joinLayout.processRow(otherColumnCount, higherArray, JoinResultType.RIGHT);
+						joinLayout.processRow(otherColumnCount, trueArray, JoinResultType.RIGHT);
 					}						
 					pCol2 = col2;
 					hasNext2 = dp2.next();
@@ -498,7 +495,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
 				col1 = LigretoComparator.duplicate(dp1, dp1.getKeyIndices());
-				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1) : -1;
+				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1, true) : -1;
 				assert(dResult1 != 0);
 
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
@@ -517,7 +514,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				pCol1 = col1;
 
 				for (JoinLayout joinLayout : layouts) {
-					joinLayout.processRow(otherColumnCount, lowerArray, JoinResultType.LEFT);
+					joinLayout.processRow(otherColumnCount, trueArray, JoinResultType.LEFT);
 				}
 				hasNext1 = dp1.next();
 				boolean stillProcessing = false;
@@ -538,7 +535,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
 				col2 = LigretoComparator.duplicate(dp2, dp2.getKeyIndices());
-				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2) : -1;
+				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2, true) : -1;
 				assert(dResult2 != 0);
 
 				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
@@ -557,7 +554,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				pCol2 = col2;
 				
 				for (JoinLayout joinLayout : layouts) {
-					joinLayout.processRow(otherColumnCount, higherArray, JoinResultType.RIGHT);
+					joinLayout.processRow(otherColumnCount, trueArray, JoinResultType.RIGHT);
 				}
 				hasNext2 = dp2.next();
 				boolean stillProcessing = false;

@@ -9,6 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	DataFormatTest.class,
+	HighlightTest.class,
 	KeyLayoutTest.class,
 	NumericTypesTest.class,
 	SqlReportTest.class,

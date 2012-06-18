@@ -192,4 +192,13 @@ public class MiscUtils {
 		}
 		return fileName;
 	}
+
+	public static int countFalses(boolean[] diffs) {
+		int retValue = 0;
+		for (int i=0; i < diffs.length; i++) {
+			if (!diffs[i])
+				retValue++;
+		}
+		return retValue;
+	}
 }

@@ -37,7 +37,7 @@ public class DuplicatesJoinLayout extends JoinLayout {
 	}
 
 	@Override
-	public void dumpRow(int rowDiffs, int[] cmpArray, JoinResultType resultType) throws DataException, IOException {
+	public void dumpRow(int rowDiffs, boolean[] cmpArray, JoinResultType resultType) throws DataException, IOException {
 	}
 	
 	@Override

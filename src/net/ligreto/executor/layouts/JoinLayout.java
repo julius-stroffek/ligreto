@@ -326,17 +326,17 @@ public abstract class JoinLayout {
 	 * call the ResultSet.next() method on the result sets where the row was processed.
 	 * The method will highlight some of the columns based on the array specified
 	 * 
-	 * @param rowDiffs   The number of differences encountered in the current row.
-	 * @param highlightArray Determines which columns should be highlighted.
-	 * @param resultType Determines whether to dump the row from the first,
-	 *                   second or both result sets.
+	 * @param rowDiffs		The number of differences encountered in the current row.
+	 * @param cmpArray		Determines which columns should be highlighted.
+	 * @param resultType	Determines whether to dump the row from the first,
+	 *                   	second or both result sets.
 	 * @throws SQLException 
 	 * @throws LigretoException 
 	 * @throws IOException
 	 * 
 	 * @return Whether the presented row was part of the join type (full, inner, etc.) in this layout
 	 */
-	public boolean processRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws LigretoException, IOException {
+	public boolean processRow(int rowDiffs, boolean[] cmpArray, JoinResultType resultType) throws LigretoException, IOException {
 		
 		// Check for proper initialization
 		assert(startCalled);
@@ -462,7 +462,7 @@ public abstract class JoinLayout {
 		// But we will not dump differences if they were not requested.
 		if (!layoutNode.getDiffs() || resultType != JoinResultType.INNER || rowDiffs > 0) {
 			dumpedRawCount++;
-			dumpRow(rowDiffs, highlightArray, resultType);
+			dumpRow(rowDiffs, cmpArray, resultType);
 		}
 		
 		return true;
@@ -498,15 +498,15 @@ public abstract class JoinLayout {
 	 * call the ResultSet.next() method on the result sets where the row was processed.
 	 * The method will highlight some of the columns based on the array specified
 	 * 
-	 * @param rowDiffs   The number of differences encountered in the current row.
-	 * @param highlightArray Determines which columns should be highlighted.
-	 * @param resultType Determines whether to dump the row from the first,
-	 *                   second or both result sets.
+	 * @param rowDiffs   		the number of differences encountered in the current row
+	 * @param highlightArray	determines which columns are equal and thus should not be highlighted
+	 * @param resultType		determines whether to dump the row from the first,
+	 *                   		second or both result sets
 	 * @throws SQLException 
 	 * @throws LigretoException 
 	 * @throws IOException 
 	 */
-	public abstract void dumpRow(int rowDiffs, int[] highlightArray, JoinResultType resultType) throws LigretoException, IOException;
+	public abstract void dumpRow(int rowDiffs, boolean[] highlightArray, JoinResultType resultType) throws LigretoException, IOException;
 	
 	/**
 	 * Will dump the row which was identified as having duplicate key.
