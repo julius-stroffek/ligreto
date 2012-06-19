@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.executor.ddl.DataTypeDialect;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.TargetNode;
@@ -39,6 +40,9 @@ public class PtpExecutor extends Executor {
 	
 	/** The connection to the target data source. */
 	protected Connection tgtCnn;
+	
+	/** The data type dialect to use for DDL statements. */
+	protected DataTypeDialect dataTypeDialect;
 	
 	@Override
 	public ResultStatus execute() throws LigretoException {
@@ -245,105 +249,7 @@ public class PtpExecutor extends Executor {
 		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 			sb.append(rsmd.getColumnName(i));
 			sb.append(" ");
-			switch (rsmd.getColumnType(i)) {
-			case Types.BIGINT:
-				sb.append("long");
-				break;
-			case Types.BOOLEAN:
-				sb.append("boolean");
-				break;
-			case Types.CHAR: 
-				sb.append("char(");
-				sb.append(rsmd.getPrecision(i));
-				sb.append(")");
-				break;
-			case Types.DATE:
-				sb.append("date");
-				break;
-			case Types.DECIMAL: 
-				sb.append("decimal(");
-				sb.append(rsmd.getPrecision(i) <= 31 ? rsmd.getPrecision(i) : 31);
-				if (rsmd.getScale(i) >= 0) {
-					sb.append(",");
-					sb.append(rsmd.getScale(i));
-				}
-				sb.append(")");
-				break;
-			case Types.DOUBLE: 
-				sb.append("double");
-				break;
-			case Types.FLOAT: 
-				sb.append("float");
-				break;
-			case Types.INTEGER: 
-				sb.append("int");
-				break;
-			case Types.LONGNVARCHAR: 
-				sb.append("longnvarchar(");
-				sb.append(rsmd.getPrecision(i));
-				sb.append(")");
-				break;
-			case Types.LONGVARCHAR: 
-				sb.append("longvarchar(");
-				sb.append(rsmd.getPrecision(i));
-				sb.append(")");
-				break;
-			case Types.NCHAR: 
-				sb.append("nchar(");
-				sb.append(rsmd.getPrecision(i));
-				sb.append(")");
-				break;
-			case Types.NUMERIC: 
-				sb.append("numeric(");
-				sb.append(rsmd.getPrecision(i) <= 31 ? rsmd.getPrecision(i) : 31);
-				if (rsmd.getScale(i) >= 0) {
-					sb.append(",");
-					sb.append(rsmd.getScale(i));
-				}
-				sb.append(")");
-				break;
-			case Types.NVARCHAR: 
-				sb.append("nvarchar(");
-				sb.append(rsmd.getPrecision(i));
-				sb.append(")");
-				break;
-			case Types.REAL:
-				sb.append("float");
-				break;
-			case Types.SMALLINT: 
-				sb.append("short");
-				break;
-			case Types.TIMESTAMP:
-				sb.append("timestamp");
-				break;
-			case Types.TINYINT:
-				sb.append("short");
-				break;
-			case Types.VARCHAR:
-				sb.append("varchar(");
-				sb.append(rsmd.getPrecision(i));
-				sb.append(")");
-				break;
-			case Types.ARRAY: 
-			case Types.BINARY: 
-			case Types.BIT: 
-			case Types.BLOB: 
-			case Types.CLOB: 
-			case Types.DATALINK:
-			case Types.DISTINCT: 
-			case Types.JAVA_OBJECT:
-			case Types.LONGVARBINARY: 
-			case Types.NCLOB: 
-			case Types.OTHER:
-			case Types.REF: 
-			case Types.ROWID: 
-			case Types.SQLXML: 
-			case Types.STRUCT: 
-			case Types.TIME: 
-			case Types.VARBINARY: 
-			default:
-				throw new LigretoException("Unsupported data type.");
-			}
+			sb.append(dataTypeDialect.getTypeDeclaration(rsmd, i));
 			sb.append(",");
 		}
 		sb.deleteCharAt(sb.length() - 1);
@@ -396,6 +302,7 @@ public class PtpExecutor extends Executor {
 			// Get the target connection
 			tgtCnn = Database.getInstance().getConnection(targetNode.getDataSource());
 			tgtCnn.setAutoCommit(true);
+			dataTypeDialect = DataTypeDialect.getInstance(tgtCnn);
 
 			boolean tableExists = true;
 			boolean createTable = targetNode.isCreate();
