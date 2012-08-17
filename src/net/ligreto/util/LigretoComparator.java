@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.LigretoParameters;
 import net.ligreto.data.Field;
@@ -31,11 +32,14 @@ import net.ligreto.exceptions.LigretoException;
  */
 public class LigretoComparator {
 	
+	/** The logger instance for the class. */
+	private Log log = LogFactory.getLog(LigretoComparator.class);
+	
 	/** Determines where the null values should be ordered. */
 	protected enum NullOrdering {Unspecified, OrderFirst, OrderLast};
 	
 	/** Determines the actual null ordering policy. */
-	protected NullOrdering nullOrdering = NullOrdering.Unspecified;
+	protected NullOrdering nullOrdering = NullOrdering.OrderFirst;
 	
 	/** The collator object used for comparisons. */
 	protected Comparator<Object> comparator;
@@ -133,8 +137,10 @@ public class LigretoComparator {
 			if (adjust) {
 				if (isNull1) {
 					nullOrdering = NullOrdering.OrderFirst;
+					log.info("Adjusting null ordering to order null values first.");
 				} else {
 					nullOrdering = NullOrdering.OrderLast;
+					log.info("Adjusting null ordering to order null values last.");
 				}
 			}
 			return -1;
@@ -206,12 +212,12 @@ public class LigretoComparator {
 		return comparator.compare(s1.trim(), s2.trim());
 	}
 	
-	public int compareKeysAsDataSource(DataProvider dp1, int[] columns1, DataProvider dp2, int[] columns2) throws DataException, DataTypeMismatchException {
+	public int compareKeysAsDataSource(DataProvider dp1, int[] columns1, DataProvider dp2, int[] columns2, boolean adjust) throws DataException, DataTypeMismatchException {
 		assert(columns1.length == columns2.length);
 		
 		int cResult;
 		for (int i=0; i < columns1.length; i++) {
-			cResult = compareAsDataSource(dp1, columns1[i], dp2, columns2[i], true);
+			cResult = compareAsDataSource(dp1, columns1[i], dp2, columns2[i], adjust);
 			if (cResult != 0)
 				return cResult;
 		}

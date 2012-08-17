@@ -94,22 +94,26 @@ public class LayoutNode extends Node {
 	 * @param joinType the joinType to set as string
 	 */
 	public void setJoinType(String joinType) {
-		if ("full".equals(joinType))
+		if ("full".equals(joinType)) {
 			this.joinType = JoinType.FULL;
-		else if ("left".equals(joinType))
+		} else if ("left".equals(joinType)) {
 			this.joinType = JoinType.LEFT;
-		else if ("right".equals(joinType))
-			this.joinType = JoinType.RIGHT;
-		else if ("inner".equals(joinType))
+		} else if ("right".equals(joinType)) {
+			this.joinType = JoinType.RIGHT; 
+		} else if ("inner".equals(joinType)) {
 			this.joinType = JoinType.INNER;
-		else if ("complement".equals(joinType))
+		} else if ("complement".equals(joinType)) {
 			this.joinType = JoinType.COMPLEMENT;
-		else if ("left complement".equals(joinType))
+			this.diffs = true;
+		} else if ("left complement".equals(joinType)) {
 			this.joinType = JoinType.LEFT_COMPLEMENT;
-		else if ("right complement".equals(joinType))
+			this.diffs = true;
+		} else if ("right complement".equals(joinType)) {
 			this.joinType = JoinType.RIGHT_COMPLEMENT;
-		else
+			this.diffs = true;
+		} else {
 			throw new IllegalArgumentException("The join type could not be \"" + joinType + "\"");
+		}
 	}
 
 	/**

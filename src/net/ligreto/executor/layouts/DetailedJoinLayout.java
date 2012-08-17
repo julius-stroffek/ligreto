@@ -30,8 +30,8 @@ public class DetailedJoinLayout extends JoinLayout {
 		}
 		targetBuilder.shiftPosition(dp1.getKeyIndices().length);
 		
-		targetBuilder.dumpCell(0, dp1.getCaption(), OutputStyle.TOP_HEADER);
-		targetBuilder.dumpCell(1, dp2.getCaption(), OutputStyle.TOP_HEADER);
+		targetBuilder.dumpCell(0, "Value in " + dp1.getCaption(), OutputStyle.TOP_HEADER);
+		targetBuilder.dumpCell(1, "Value in " + dp2.getCaption(), OutputStyle.TOP_HEADER);
 		
 		targetBuilder.dumpCell(2, "Difference", OutputStyle.TOP_HEADER);
 		targetBuilder.dumpCell(3, "Relative", OutputStyle.TOP_HEADER);

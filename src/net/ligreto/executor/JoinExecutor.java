@@ -177,8 +177,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				}
 				qry1.deleteCharAt(qry1.length() - 1);
 				qry2.deleteCharAt(qry2.length() - 1);
+				qry1.append(" nulls last ");
+				qry2.append(" nulls last ");
 			}
-			
 			exec1 = SqlExecutionThread.executeQuery(sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
 			exec2 = SqlExecutionThread.executeQuery(sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
 
@@ -446,7 +447,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = rsComparator.compareKeysAsDataSource(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices());
+				int cResult = rsComparator.compareKeysAsDataSource(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices(), false);
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
