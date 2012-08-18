@@ -415,8 +415,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// the collation we are using here for processing
 				col1 = LigretoComparator.duplicate(dp1, dp1.getKeyIndices());
 				col2 = LigretoComparator.duplicate(dp2, dp2.getKeyIndices());
-				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1, true) : -1;
-				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2, true) : -1;
+				int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
+				int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
 
 				assert(dResult1 != 0);
 				assert(dResult2 != 0);
@@ -447,7 +447,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					}
 				}
 				
-				int cResult = rsComparator.compareKeysAsDataSource(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices(), false);
+				int cResult = rsComparator.compareKeys(dp1, dp1.getKeyIndices(), dp2, dp2.getKeyIndices());
 				switch (cResult) {
 				case -1:
 					for (JoinLayout joinLayout : layouts) {
@@ -496,7 +496,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
 				col1 = LigretoComparator.duplicate(dp1, dp1.getKeyIndices());
-				int dResult1 = pCol1 != null ? rsComparator.compareAsDataSource(pCol1, col1, true) : -1;
+				int dResult1 = pCol1 != null ? rsComparator.compare(pCol1, col1) : -1;
 				assert(dResult1 != 0);
 
 				if (dResult1 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
@@ -536,7 +536,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				// Compare the subsequent rows in each result set and see whether they match
 				// the collation we are using here for processing
 				col2 = LigretoComparator.duplicate(dp2, dp2.getKeyIndices());
-				int dResult2 = pCol2 != null ? rsComparator.compareAsDataSource(pCol2, col2, true) : -1;
+				int dResult2 = pCol2 != null ? rsComparator.compare(pCol2, col2) : -1;
 				assert(dResult2 != 0);
 
 				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
