@@ -171,14 +171,12 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				qry2.append(" order by ");
 				for (int i = 0; i < key.length; i++) {
 					qry1.append(key[i]);
-					qry1.append(",");
+					qry1.append(" nulls first,");
 					qry2.append(key[i]);
-					qry2.append(",");
+					qry2.append(" nulls first,");
 				}
 				qry1.deleteCharAt(qry1.length() - 1);
 				qry2.deleteCharAt(qry2.length() - 1);
-				qry1.append(" nulls last ");
-				qry2.append(" nulls last ");
 			}
 			exec1 = SqlExecutionThread.executeQuery(sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
 			exec2 = SqlExecutionThread.executeQuery(sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
