@@ -23,6 +23,7 @@ public class JoinNode extends Node {
 	protected ReportNode reportNode;
 	protected Attitude collation = Attitude.FAIL;
 	protected DuplicatesStrategy duplicates = DuplicatesStrategy.FAIL;
+	protected int orderNumber;
 	
 	public JoinNode(LigretoNode ligretoNode) {
 		super(ligretoNode);
@@ -213,5 +214,19 @@ public class JoinNode extends Node {
 	
 	public List<LayoutNode> getLayouts() {
 		return layouts;
+	}
+
+	/**
+	 * @return the orderNumber
+	 */
+	public int getOrderNumber() {
+		return orderNumber;
+	}
+
+	/**
+	 * @param orderNumber the orderNumber to set
+	 */
+	public void setOrderNumber(int orderNumber) {
+		this.orderNumber = orderNumber;
 	}
 }

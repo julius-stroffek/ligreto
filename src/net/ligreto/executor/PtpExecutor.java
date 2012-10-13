@@ -20,6 +20,7 @@ import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.TargetNode;
 import net.ligreto.parser.nodes.TransferNode;
+import net.ligreto.util.DataProviderUtils;
 
 public class PtpExecutor extends Executor {
 
@@ -159,7 +160,8 @@ public class PtpExecutor extends Executor {
 	protected void transferRow(ResultSet rs) throws SQLException, LigretoException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=1; i <= rsmd.getColumnCount(); i++) {
-			switch (rsmd.getColumnType(i)) {
+			int columnType = rsmd.getColumnType(i);
+			switch (columnType) {
 			case Types.BIGINT:
 				insertStmt.setLong(i, rs.getLong(i));
 				break;
@@ -232,7 +234,7 @@ public class PtpExecutor extends Executor {
 			case Types.TIME: 
 			case Types.VARBINARY: 
 			default:
-				throw new LigretoException("Unsupported data type.");
+				throw new LigretoException("Unsupported data type: " + DataProviderUtils.getJdbcTypeName(columnType));
 			}
 		}
 		insertStmt.execute();

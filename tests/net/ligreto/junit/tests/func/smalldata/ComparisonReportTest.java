@@ -35,6 +35,11 @@ public class ComparisonReportTest {
 	}
 	
 	@Test
+	public void testSheetOrderReport() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		TestUtil.testReport("sheetorderreport", false);
+	}
+
+	@Test
 	public void testDuplicateKeyColumnsInComparison() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("duplicatejoincolumnsreport.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);

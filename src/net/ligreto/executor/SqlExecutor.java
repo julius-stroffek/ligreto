@@ -51,6 +51,13 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		if (sqlNode.getTarget() == null)
 			return false;
 		
+		/* Dump the information about target output. */
+		if (sqlNode.isAppend()) {
+			log.info("The output will be appended to target: \"" + sqlNode.getTarget() + "\"");
+		} else {
+			log.info("The output will be written to target: \"" + sqlNode.getTarget() + "\"");
+		}
+		
 		targetBuilder = reportBuilder.getTargetBuilder(sqlNode.getTarget(), sqlNode.isAppend());
 		if (sqlNode.getHeader()) {
 			targetBuilder.nextRow();
@@ -69,6 +76,83 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 		}
 	}
 
+	public ResultStatus execute(SqlNode sqlNode) throws LigretoException {
+		ResultStatus result = new ResultStatus();
+		try {
+			Connection cnn = null;
+			Statement stm = null;
+			CallableStatement cstm = null;
+			ResultSet rs = null;
+			try {
+				cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
+				String qry = sqlNode.getQuery().toString();
+				try {
+					switch (sqlNode.getQueryType()) {
+					case STATEMENT:
+						log.info("Executing the SQL statement on \"" + sqlNode.getDataSource() + "\" data source:");
+						log.info(qry);
+						stm = cnn.createStatement();
+						rs = stm.executeQuery(qry);
+						break;
+					case CALL:
+						log.info("Executing the SQL callable statement on \"" + sqlNode.getDataSource() + "\" data source:");
+						log.info(qry);
+						cstm = cnn.prepareCall(qry);
+						rs = cstm.executeQuery();
+						break;
+					default:
+						throw new LigretoException("Unknown query type.");
+					}
+					if (callBack != null && rs != null) {
+
+						// Prepare the list of excluded columns
+						String[] exclStr = sqlNode.getExcludeColumns();
+						if (exclStr != null && exclStr.length > 0) {
+							excl = new int[exclStr.length];
+							for (int i=0; i < exclStr.length; i++) {
+								excl[i] = MiscUtils.findColumnIndex(rs, exclStr[i]);
+								log.info("Excluding column \"" + exclStr[i] + "\" from sql query which has the index: " + excl[i]);
+							}
+						}
+						
+						// Create the data provider and process the result
+						DataProvider dp = new ResultSetDataProvider(rs, new int[0], excl);
+						if (callBack.prepareProcessing(sqlNode, dp)) {
+							while (dp.next()) {
+								result.addRow();
+								callBack.processResultSetRow(dp);
+							}
+							callBack.finalizeProcessing();
+						}
+					}
+				} catch (SQLException e) {
+					switch (sqlNode.getExceptions()) {
+					case IGNORE:
+						break;
+					case DUMP:
+						log.error("Exception while executing query", e);
+						break;
+					case FAIL:
+						throw e;
+					}
+				}
+			} finally {
+				Database.close(cnn, stm, cstm, rs);
+			}
+			result.info(log, "SQL");
+		} catch (SQLException e) {
+			String msg = "Database error on data source: " + sqlNode.getQuery().toString();
+			throw new LigretoException(msg, e);
+		} catch (ClassNotFoundException e) {
+			String msg = "Database driver not found for data source: " + sqlNode.getDataSource();
+			throw new LigretoException(msg, e);
+		} catch (Exception e) {
+			String msg = "Error processing SQL query: " + sqlNode.getQuery();
+			throw new LigretoException(msg, e);
+		}
+		return result;
+	}
+	
 	@Override
 	public ResultStatus execute() throws LigretoException {
 		ResultStatus result = new ResultStatus();
@@ -78,78 +162,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 			return result;
 		
 		for (SqlNode sqlNode : sqlNodes) {
-			try {
-				Connection cnn = null;
-				Statement stm = null;
-				CallableStatement cstm = null;
-				ResultSet rs = null;
-				try {
-					cnn = Database.getInstance().getConnection(sqlNode.getDataSource());
-					String qry = sqlNode.getQuery().toString();
-					try {
-						switch (sqlNode.getQueryType()) {
-						case STATEMENT:
-							log.info("Executing the SQL statement on \"" + sqlNode.getDataSource() + "\" data source:");
-							log.info(qry);
-							stm = cnn.createStatement();
-							rs = stm.executeQuery(qry);
-							break;
-						case CALL:
-							log.info("Executing the SQL callable statement on \"" + sqlNode.getDataSource() + "\" data source:");
-							log.info(qry);
-							cstm = cnn.prepareCall(qry);
-							rs = cstm.executeQuery();
-							break;
-						default:
-							throw new LigretoException("Unknown query type.");
-						}
-						if (callBack != null && rs != null) {
-
-							// Prepare the list of excluded columns
-							String[] exclStr = sqlNode.getExcludeColumns();
-							if (exclStr != null && exclStr.length > 0) {
-								excl = new int[exclStr.length];
-								for (int i=0; i < exclStr.length; i++) {
-									excl[i] = MiscUtils.findColumnIndex(rs, exclStr[i]);
-									log.info("Excluding column \"" + exclStr[i] + "\" from sql query which has the index: " + excl[i]);
-								}
-							}
-							
-							// Create the data provider and process the result
-							DataProvider dp = new ResultSetDataProvider(rs, new int[0], excl);
-							if (callBack.prepareProcessing(sqlNode, dp)) {
-								while (dp.next()) {
-									result.addRow();
-									callBack.processResultSetRow(dp);
-								}
-								callBack.finalizeProcessing();
-							}
-						}
-					} catch (SQLException e) {
-						switch (sqlNode.getExceptions()) {
-						case IGNORE:
-							break;
-						case DUMP:
-							log.error("Exception while executing query", e);
-							break;
-						case FAIL:
-							throw e;
-						}
-					}
-				} finally {
-					Database.close(cnn, stm, cstm, rs);
-				}
-				result.info(log, "SQL");
-			} catch (SQLException e) {
-				String msg = "Database error on data source: " + sqlNode.getQuery().toString();
-				throw new LigretoException(msg, e);
-			} catch (ClassNotFoundException e) {
-				String msg = "Database driver not found for data source: " + sqlNode.getDataSource();
-				throw new LigretoException(msg, e);
-			} catch (Exception e) {
-				String msg = "Error processing SQL query: " + sqlNode.getQuery();
-				throw new LigretoException(msg, e);
-			}
+			result.merge(execute(sqlNode));
 		}
 		return result;
 	}

@@ -297,6 +297,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 		case XSSF:
 			output = MiscUtils.fixFileExt(output, ".xlsx");
 			break;
+		default:
+			assert(true);
+			break;
 		}
 		out = new FileOutputStream(output);
 
@@ -313,6 +316,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 				template = MiscUtils.fixFileExt(template, ".xlsx");
 				wb = new XSSFWorkbook(new FileInputStream(template));
 				break;
+			default:
+				assert(true);
+				break;
 			}
 		} else {
 			log.info("Creating the empty workbook.");
@@ -323,6 +329,9 @@ public class ExcelReportBuilder extends ReportBuilder {
 				break;
 			case XSSF:
 				wb = new XSSFWorkbook();
+				break;
+			default:
+				assert(true);
 				break;
 			}
 		}

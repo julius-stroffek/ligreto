@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +17,7 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.ReportNode;
 import net.ligreto.parser.nodes.SqlNode;
@@ -83,21 +85,53 @@ public class LigretoExecutor extends Executor {
 			reportBuilder.setOutputFileName(reportNode.getOutput());
 			reportBuilder.setOptions(reportNode.getOptions());
 			reportBuilder.start();
-		
+
+			// Prepare the SQL executor
 			SqlExecutor sqlExecutor = new SqlExecutor();
 			sqlExecutor.setReportBuilder(reportBuilder);
-			sqlExecutor.setSqlNodes(reportNode.sqlQueries());
 			sqlExecutor.setCallBack(sqlExecutor);
-			ResultStatus sqlResult = sqlExecutor.execute();
-			result.merge(sqlResult);
 		
+			// Prepare the join / comparison / reconciliation executor
 			JoinExecutor joinExecutor = new JoinExecutor();
 			joinExecutor.setReportBuilder(reportBuilder);
-			joinExecutor.setJoinNodes(reportNode.joins());
 			joinExecutor.setCallBack(joinExecutor);
-			ResultStatus joinResult = joinExecutor.execute();
-			result.merge(joinResult);
+
+			// Prepare the iterators over sql and join nodes
+			Iterator<SqlNode> sqlIterator = reportNode.sqlQueries().iterator();
+			Iterator<JoinNode> joinIterator = reportNode.joins().iterator();
 			
+			// We will use merge algorithm to execute the processing
+			// of SQL and JOIN nodes in the order as they were defined
+			// in the configuration
+			SqlNode sqlNode = sqlIterator.hasNext() ? sqlIterator.next() : null;
+			JoinNode joinNode = joinIterator.hasNext() ? joinIterator.next() : null;
+			while (sqlNode != null || joinNode != null) {
+				boolean processJoin = false;
+				if (sqlNode == null) {
+					processJoin = true;
+				} else if (joinNode == null) {
+					processJoin = false;
+				} else {
+					assert(sqlNode.getOrderNumber() != joinNode.getOrderNumber());
+					if (joinNode.getOrderNumber() < sqlNode.getOrderNumber()) {
+						processJoin = true;
+					} else {
+						processJoin = false;
+					}
+				}
+				if (processJoin) {
+					ResultStatus joinResult = joinExecutor.execute(joinNode);
+					result.merge(joinResult);
+
+					joinNode = joinIterator.hasNext() ? joinIterator.next() : null;
+				} else {
+					ResultStatus sqlResult = sqlExecutor.execute(sqlNode);
+					result.merge(sqlResult);
+
+					sqlNode = sqlIterator.hasNext() ? sqlIterator.next() : null;
+				}
+			}
+						
 			reportBuilder.writeOutput();
 		} catch (Exception e) {
 			throw new LigretoException("Error creating the report: " + reportNode.getName(), e);

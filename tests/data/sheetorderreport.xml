@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<!--  Here we test that no collator will be used when collationName will not be specified. -->
+	<param name="ligreto.collatorClass" value="oracle.i18n.text.OraCollator"/>
+	<param name="ligreto.collationName" value=""/>
+
+	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
+	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db2"/>
+		</data-source>
+	</data-sources>
+	<report name="Comparison Report" type="excel.stream" options="autoFilter, autoSize,headerStyle" locale="en_US">
+		<output file="sheetorderreport.xls"/> <!-- Extension should be adjusted automatically -->
+		<data>
+ 			<join on="1" target="full!B2" type="full" header="true" result="true" highlight="true" layout="normal" locale="en">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</join>
+			<sql data-source="Source1" target="Source1!A1">select * from join_table1</sql>
+			<sql data-source="Source2" target="Source2!A1">select * from join_table2</sql>
+			<join on="1" target="left!B2" type="left" header="true" highlight="false" result="true" layout="normal" locale="en_GB">
+				<sql data-source="Source1">select * from join_table1</sql>
+				<sql data-source="Source2">select * from join_table2</sql>
+			</join>
+			<sql data-source="Source1" target="Source1_2!A1">select * from join_table1</sql>
+			<sql data-source="Source2" target="Source2!A1" append="true" header="false">select * from join_table2</sql>
+		</data>
+	</report>
+</ligreto>

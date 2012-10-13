@@ -55,8 +55,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	/** The logger instance for the class. */
 	private static Log log = LogFactory.getLog(JoinExecutor.class);
 
-	/** Iterable object holding the join nodes to be processed. */
-	protected Iterable<JoinNode> joinNodes;
+	/** List object holding the join nodes to be processed. */
+	protected List<JoinNode> joinNodes;
 	
 	/** The callback object which handles the processing of each row returned. */
 	protected JoinResultCallBack callBack;
@@ -91,52 +91,68 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 		throw new UnimplementedMethodException("Callback implementation is not done for join execution");
 	}
 
+	public ResultStatus execute(JoinNode joinNode) throws LigretoException {
+		ResultStatus result = null;
+		try {
+			String localeName = joinNode.getLocale();
+			if (localeName == null) {
+				localeName = joinNode.getReportNode().getLocale();
+			}
+			String collatorClassName = joinNode.getLigretoNode()
+					.getLigretoParameters().getCollatorClass();
+			String collationName = joinNode.getLigretoNode()
+					.getLigretoParameters().getCollationName();
+
+			// Use the specified collator class if no locale is specified
+			// and both collatorClass and collationName were specified
+			// and we are not doing internal sort
+			if (collatorClassName != null
+					&& !"".equals(collatorClassName)
+					&& (localeName == null || "".equals(localeName))
+					&& joinNode.getSortingStrategy() != JoinNode.SortingStrategy.INTERNAL) {
+				if ("oracle.i18n.text.OraCollator".equals(collatorClassName)) {
+					Class<?> collatorClass = Class.forName(collatorClassName);
+
+					Method method = collatorClass.getMethod("getInstance",
+							String.class);
+
+					/*
+					 * The local variable below is only due to @SuppressWarnings
+					 * annotation.
+					 */
+					@SuppressWarnings("unchecked")
+					Comparator<Object> comparator = (Comparator<Object>) method
+							.invoke(null, collationName);
+					this.comparator = comparator;
+					log.info("Using collator class: " + collatorClass
+							+ "; collation: " + collationName);
+				} else {
+					throw new LigretoException("Unsupported collator: "
+							+ collatorClassName);
+				}
+			} else if (localeName != null) {
+				Collator collator = Collator
+						.getInstance(new Locale(localeName));
+				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+				comparator = collator;
+			} else {
+				Collator collator = Collator.getInstance(Locale.getDefault());
+				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+				comparator = collator;
+			}
+			result = executeJoin(joinNode);
+		} catch (Exception e) {
+			throw new LigretoException("Could not process the join.", e);
+		}
+		
+		return result;
+	}
+	
 	@Override
 	public ResultStatus execute() throws LigretoException {
 		ResultStatus result = new ResultStatus();
-		try {
-			for (JoinNode joinNode : joinNodes) {
-				String localeName = joinNode.getLocale();
-				if (localeName == null) {
-					localeName = joinNode.getReportNode().getLocale();
-				}
-				String collatorClassName = joinNode.getLigretoNode().getLigretoParameters().getCollatorClass();
-				String collationName = joinNode.getLigretoNode().getLigretoParameters().getCollationName();
-
-				
-				// Use the specified collator class if no locale is specified
-				// and both collatorClass and collationName were specified
-				// and we are not doing internal sort
-				if (collatorClassName != null && !"".equals(collatorClassName)
-						&& (localeName == null || "".equals(localeName))
-						&& joinNode.getSortingStrategy() != JoinNode.SortingStrategy.INTERNAL)
-				{
-					if ("oracle.i18n.text.OraCollator".equals(collatorClassName)) {
-						Class<?> collatorClass = Class.forName(collatorClassName);
-						
-						Method method = collatorClass.getMethod("getInstance", String.class);
-											
-						/* The local variable below is only due to @SuppressWarnings annotation. */
-						@SuppressWarnings("unchecked")
-						Comparator<Object> comparator = (Comparator<Object>)method.invoke(null, collationName);
-						this.comparator = comparator;
-						log.info("Using collator class: " + collatorClass + "; collation: " + collationName);
-					} else {
-						throw new LigretoException("Unsupported collator: " + collatorClassName);						
-					}
-				} else if (localeName != null) {
-					Collator collator = Collator.getInstance(new Locale(localeName));
-					collator.setDecomposition(Collator.FULL_DECOMPOSITION);
-					comparator = collator;
-				} else {
-					Collator collator = Collator.getInstance(Locale.getDefault());
-					collator.setDecomposition(Collator.FULL_DECOMPOSITION);
-					comparator = collator;
-				}
-				result.merge(executeJoin(joinNode));
-			}
-		} catch (Exception e) {
-			throw new LigretoException("Could not process the join.", e);
+		for (JoinNode joinNode : joinNodes) {
+			result.merge(execute(joinNode));
 		}
 		return result;
 	}
@@ -429,6 +445,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						break;
 					case FAIL:
 						throw e;
+					default:
+						assert(false);
+						break;
 					}
 				}
 				if (dResult2 > 0 && joinNode.getCollation() != Attitude.IGNORE) {
@@ -442,6 +461,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						break;
 					case FAIL:
 						throw e;
+					default:
+						assert(false);
+						break;
 					}
 				}
 				
@@ -508,6 +530,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						break;
 					case FAIL:
 						throw e;
+					default:
+						assert(false);
+						break;
 					}
 				}
 				pCol1 = col1;
@@ -548,6 +573,9 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 						break;
 					case FAIL:
 						throw e;
+					default:
+						assert(false);
+						break;
 					}
 				}
 				pCol2 = col2;
@@ -597,7 +625,7 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 	/**
 	 * @param joinNodes the joinNodes to set
 	 */
-	public void setJoinNodes(Iterable<JoinNode> joinNodes) {
+	public void setJoinNodes(List<JoinNode> joinNodes) {
 		this.joinNodes = joinNodes;
 	}
 

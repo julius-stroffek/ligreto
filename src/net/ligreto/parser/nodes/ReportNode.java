@@ -26,6 +26,7 @@ public class ReportNode extends Node {
 	
 	public ReportNode(LigretoNode ligretoNode, String reportName, String reportType) throws ReportException {
 		super(ligretoNode);
+		
 		name = reportName;
 		if ("excel".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.EXCEL;
@@ -90,11 +91,11 @@ public class ReportNode extends Node {
 		this.reportType = reportType;
 	}
 
-	public Iterable<SqlNode> sqlQueries() {
+	public List<SqlNode> sqlQueries() {
 		return sqlQueries;
 	}
 
-	public Iterable<JoinNode> joins() {
+	public List<JoinNode> joins() {
 		return joins;
 	}
 
@@ -106,7 +107,7 @@ public class ReportNode extends Node {
 		this.output = output;
 	}
 	
-	public Iterable<String> getOptions() {
+	public List<String> getOptions() {
 		return options;
 	}
 	

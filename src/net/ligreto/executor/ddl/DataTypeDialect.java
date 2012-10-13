@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.util.DataProviderUtils;
 
 /**
  * 
@@ -150,7 +151,8 @@ public class DataTypeDialect {
 	 * @throws SQLException 
 	 */
 	public String getTypeDeclaration(ResultSetMetaData metaData, int columnIndex) throws LigretoException, SQLException {
-		switch (metaData.getColumnType(columnIndex)) {
+		int columnType = metaData.getColumnType(columnIndex);
+		switch (columnType) {
 		case Types.BIGINT:
 			return getLongDeclaration(metaData, columnIndex);
 		case Types.BOOLEAN:
@@ -205,7 +207,7 @@ public class DataTypeDialect {
 		case Types.TIME: 
 		case Types.VARBINARY: 
 		default:
-			throw new LigretoException("Unsupported data type.");
+			throw new LigretoException("Unsupported data type: " + DataProviderUtils.getJdbcTypeName(columnType));
 		}
 	}
 }

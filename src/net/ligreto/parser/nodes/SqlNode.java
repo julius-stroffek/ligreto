@@ -24,6 +24,7 @@ public class SqlNode extends Node {
 	protected String exclude;
 	protected Attitude exceptions = Attitude.FAIL;
 	protected QueryType queryType = QueryType.STATEMENT;
+	protected int orderNumber;
 	
 	/** The type of the query which determines the way it is executed. */
 	public enum QueryType {STATEMENT, CALL};
@@ -254,5 +255,19 @@ public class SqlNode extends Node {
 		} else {
 			throw new IllegalArgumentException("Wrong value specified as query type: " + queryType);
 		}
+	}
+
+	/**
+	 * @return the orderNumber
+	 */
+	public int getOrderNumber() {
+		return orderNumber;
+	}
+
+	/**
+	 * @param orderNumber the orderNumber to set
+	 */
+	public void setOrderNumber(int orderNumber) {
+		this.orderNumber = orderNumber;
 	}
 }

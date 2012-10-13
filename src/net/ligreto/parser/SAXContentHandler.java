@@ -102,6 +102,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	/** The value of the parameter being parsed. */
 	protected StringBuilder paramValue;
+	
+	/** The order of <comparison>/<sql> nodes within <data> node. */
+	protected int dataOrderNumber;
 
 	/** Constructs the report configuration content handler. */
 	public SAXContentHandler(LigretoNode ligretoNode) {
@@ -138,6 +141,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case PARAM:
 			paramValue.append(chars, start, length);
+			break;
+		default:
 			break;
 		}
 	}
@@ -199,6 +204,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			} catch (LigretoException e) {
 				throw new SAXException("Error parsing input file.", e);
 			}
+			break;
+		default:
 			break;
 		}
 	}
@@ -313,6 +320,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					reportNode.setOutput(getAttributeValue(atts, "file"));
 				} else if ("data".equals(localName)) {
 					objectStack.push(ObjectType.DATA);
+					dataOrderNumber = 0;
 				} else {
 					objectStack.push(ObjectType.NONE);
 				}
@@ -321,6 +329,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				if ("sql".equals(localName)) {
 					objectStack.push(ObjectType.SQL);
 					sql = new SqlNode(ligretoNode);
+					sql.setOrderNumber(dataOrderNumber++);
 					if (getAttributeValue(atts, "data-source") != null) {
 						sql.setDataSource(getAttributeValue(atts, "data-source"));
 					}
@@ -349,6 +358,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("comparison".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
+					join.setOrderNumber(dataOrderNumber++);
 					if (getAttributeValue(atts, "key") != null) {
 						join.setKey(getAttributeValue(atts, "key"));
 					}
@@ -373,6 +383,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					log.warn("Please use <comparison> node instead.");
 					objectStack.push(ObjectType.JOIN);
 					join = new JoinNode(ligretoNode);
+					join.setOrderNumber(dataOrderNumber++);
 					if (getAttributeValue(atts, "on") != null) {
 						join.setKey(getAttributeValue(atts, "on"));
 					}
