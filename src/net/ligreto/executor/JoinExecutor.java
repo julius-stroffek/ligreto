@@ -136,9 +136,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
 				comparator = collator;
 			} else {
-				Collator collator = Collator.getInstance(Locale.getDefault());
-				collator.setDecomposition(Collator.FULL_DECOMPOSITION);
-				comparator = collator;
+				// We will use String.compareTo method
+				comparator = null;
 			}
 			result = executeJoin(joinNode);
 		} catch (Exception e) {
@@ -194,9 +193,14 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				qry1.deleteCharAt(qry1.length() - 1);
 				qry2.deleteCharAt(qry2.length() - 1);
 			}
-			exec1 = SqlExecutionThread.executeQuery(sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
-			exec2 = SqlExecutionThread.executeQuery(sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
-
+			int fetchSize = joinNode.getLigretoNode().getLigretoParameters().getFetchSize();
+			exec1 = SqlExecutionThread.getInstance(sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
+			exec1.setFetchSize(fetchSize);
+			exec1.start();
+			exec2 = SqlExecutionThread.getInstance(sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
+			exec2.setFetchSize(fetchSize);
+			exec2.start();
+			
 			try {
 				exec1.join();
 				exec2.join();
@@ -498,6 +502,8 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 					pCol2 = col2;
 					hasNext2 = dp2.next();
 					break;
+				default:
+					throw new RuntimeException("Unexpected error occurred!");
 				}
 				boolean stillProcessing = false;
 				for (JoinLayout joinLayout : layouts) {

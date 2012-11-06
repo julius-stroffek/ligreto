@@ -37,6 +37,9 @@ public class LigretoParameters {
 	/** Indicates whether the null values should be collated first. Otherwise they are collated last. */
 	protected boolean nullsFirst = true;
 	
+	/** The number of rows to fetch at once from the server in the result set. */
+	protected int fetchSize = 1000;
+	
 	/** Indicates whether we should use strict type checking. */
 	protected boolean strictTypes = true;
 	
@@ -145,6 +148,22 @@ public class LigretoParameters {
 
 	public void setNullsFirst(String nullsFirst) {
 		this.nullsFirst = Boolean.parseBoolean(nullsFirst);
+	}
+
+	public int getFetchSize() {
+		return fetchSize;
+	}
+
+	public String getFetchSizeAsString() {
+		return Integer.toString(fetchSize);
+	}
+
+	public void setFetchSize(int fetchSize) {
+		this.fetchSize = fetchSize;
+	}
+
+	public void setFetchSize(String fetchSize) {
+		this.fetchSize = Integer.parseInt(fetchSize);
 	}
 
 	public void setStrictTypes(String strictTypes) {

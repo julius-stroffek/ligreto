@@ -5,6 +5,7 @@
 	<param name="ligreto.collatorClass" value="oracle.i18n.text.OraCollator"/>
 	<param name="ligreto.collationName" value=""/>
 
+	<param name="ligreto.fetchSize" value="100"/>
 	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
 	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
 	<data-sources>

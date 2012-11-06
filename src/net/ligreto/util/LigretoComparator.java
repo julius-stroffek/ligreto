@@ -3,7 +3,6 @@ package net.ligreto.util;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.Collator;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Map;
@@ -48,7 +47,6 @@ public class LigretoComparator {
 	
 	/** Only static method could create instances. */
 	private LigretoComparator() {
-		comparator = Collator.getInstance();
 	}
 	
 	/**
@@ -147,7 +145,18 @@ public class LigretoComparator {
 		if (isNull1 && isNull2)
 			return 0;	
 		
-		return comparator.compare(s1.trim(), s2.trim());
+		if (comparator != null) {
+			return comparator.compare(s1.trim(), s2.trim());			
+		} else {
+			int rValue = s1.trim().compareTo(s2.trim());
+			if (rValue > 0) {
+				return 1;
+			} else if (rValue < 0) {
+				return -1;
+			} else {
+				return 0;
+			}
+		}
 	}
 	
 	public int compareKeys(DataProvider dp1, int[] columns1, DataProvider dp2, int[] columns2) throws DataException, DataTypeMismatchException {
@@ -234,8 +243,14 @@ public class LigretoComparator {
 			case Types.NUMERIC:
 				result = compare((BigDecimal) fieldValue1, (BigDecimal) fieldValue2);
 				break;
-			default:
+			case Types.CHAR:
+			case Types.VARCHAR:
+			case Types.NCHAR:
+			case Types.NVARCHAR:
 				result = compare((String) fieldValue1, (String) fieldValue2);
+				break;
+			default:
+				result = compare(fieldValue1.toString(), fieldValue2.toString());
 				break;
 			}
 		}

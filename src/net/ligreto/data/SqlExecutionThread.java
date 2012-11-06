@@ -56,6 +56,9 @@ public class SqlExecutionThread extends Thread {
 	/** The type of the query to be executed. */
 	protected SqlNode.QueryType queryType = null;
 	
+	/** The number of rows to fetch at once from the server in the result set object. */
+	protected int fetchSize = 1000;
+	
 	/** The throwable object that was caught during the thread execution. */
 	protected Throwable throwable = null;
 	
@@ -72,20 +75,18 @@ public class SqlExecutionThread extends Thread {
 	}
 	
 	/**
-	 * Executes the specified query in the separate execution thread. The created thread is started
-	 * and returned as return value.
+	 * Creates the instance with the specified query to be executed the separate execution thread. The created thread is not started.
 	 * 
 	 * @param dataSource the data source name where the query should be executed
 	 * @param query the query string to be executed
 	 * @param queryType the type of the query
 	 * @return the created SqlExecutionThread object
 	 */
-	public static SqlExecutionThread executeQuery(String dataSource, String query, SqlNode.QueryType queryType) {
+	public static SqlExecutionThread getInstance(String dataSource, String query, SqlNode.QueryType queryType) {
 		SqlExecutionThread instance = new SqlExecutionThread();
 		instance.dataSource = dataSource;
 		instance.query = query;
 		instance.queryType = queryType;
-		instance.start();
 		return instance;
 	}
 
@@ -101,12 +102,14 @@ public class SqlExecutionThread extends Thread {
 				log.info("Executing the SQL statement on \"" + dataSource + "\" data source:");
 				log.info(query);
 				stm = cnn.createStatement();
+				stm.setFetchSize(fetchSize);
 				resultSet = stm.executeQuery(query);
 				break;
 			case CALL:
 				log.info("Executing the SQL callable statement on \"" + dataSource + "\" data source:");
 				log.info(query);
 				cstm = cnn.prepareCall(query);
+				cstm.setFetchSize(fetchSize);
 				resultSet = cstm.executeQuery();
 				break;
 			default:
@@ -117,6 +120,20 @@ public class SqlExecutionThread extends Thread {
 		}
 	}
 	
+	/**
+	 * @return the fetchSize
+	 */
+	public int getFetchSize() {
+		return fetchSize;
+	}
+
+	/**
+	 * @param fetchSize the fetchSize to set
+	 */
+	public void setFetchSize(int fetchSize) {
+		this.fetchSize = fetchSize;
+	}
+
 	/**
 	 * Provides the access to the throwable object that was thrown during the thread execution.
 	 * 
