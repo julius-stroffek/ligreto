@@ -39,3 +39,6 @@ syntax: regexp
 
 syntax: regexp
 ^TEST-.*AllTests.txt
+
+syntax: regexp
+^.DS_Store$

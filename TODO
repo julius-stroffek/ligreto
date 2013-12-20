@@ -3,6 +3,7 @@
 + Parallel query execution.
 + Internal sort to use java collation.
 + Allow to clear collator class.
+* Set the fetch size on PTP jobs as well.
 * Dummy report type.
 * Report distribution.
 * Result collector.

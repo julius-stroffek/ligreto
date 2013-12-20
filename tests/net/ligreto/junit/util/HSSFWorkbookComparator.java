@@ -22,6 +22,7 @@ public class HSSFWorkbookComparator extends WorkbookComparator {
 	 * 
 	 * @return true if the excel spreadsheets will match
 	 */
+	@Override
 	public boolean areSame() {
 		return super.areSame();
 	}

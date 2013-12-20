@@ -37,6 +37,7 @@ public class Field implements Comparable<Object> {
 	/**
 	 * Function required for effective hashing.
 	 */
+	@Override
 	public int hashCode() {
 		return columnValue != null ? columnValue.hashCode() : 0;
 	}
@@ -44,6 +45,7 @@ public class Field implements Comparable<Object> {
 	/**
 	 * Function required for effective hashing.
 	 */
+	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Field) {
 			Field f = (Field) o;

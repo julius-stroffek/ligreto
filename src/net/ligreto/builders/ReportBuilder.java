@@ -80,7 +80,7 @@ public abstract class ReportBuilder implements BuilderInterface {
 
 	@Override
 	public void setTemplate(String template) {
-		if (template != null) {
+		if (template != null && ligretoNode != null) {
 			this.template = ligretoNode.substituteParams(template);
 		} else {
 			this.template = null;
@@ -89,7 +89,11 @@ public abstract class ReportBuilder implements BuilderInterface {
 	
 	@Override
 	public void setOutputFileName(String output) {
-		this.output = ligretoNode.substituteParams(output);
+		if (ligretoNode != null) {
+			this.output = ligretoNode.substituteParams(output);
+		} else {
+			this.output = output;			
+		}
 	}
 
 	@Override

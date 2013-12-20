@@ -99,6 +99,7 @@ public class DataSourceNode extends Node {
 	/**
 	 * @return The string showing the basic attributes of the connection.
 	 */	 
+	@Override
 	public String toString() {
 		return "Data Source: name=\"" + name + "\"; driver=\"" + driverClass + "\"; uri=\"" + uri + "\"";
 	}

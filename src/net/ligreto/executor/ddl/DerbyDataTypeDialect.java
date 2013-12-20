@@ -26,14 +26,17 @@ public class DerbyDataTypeDialect extends DataTypeDialect {
 	public DerbyDataTypeDialect() {
 	}
 
+	@Override
 	protected String getLongNVarCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
 		return "longvarchar(" + metaData.getPrecision(columnIndex) + ")";
 	}
 	
+	@Override
 	protected String getNCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
 		return "char(" + metaData.getPrecision(columnIndex) + ")";
 	}	
 	
+	@Override
 	protected String getNVarCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
 		return "varchar(" + metaData.getPrecision(columnIndex) + ")";
 	}
