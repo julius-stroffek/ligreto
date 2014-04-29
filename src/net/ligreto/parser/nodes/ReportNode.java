@@ -22,6 +22,7 @@ public class ReportNode extends Node {
 	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<JoinNode> joins = new ArrayList<JoinNode>();
 	protected List<String> options = new ArrayList<String>();
+	protected List<EmailNode> emails = new ArrayList<EmailNode>();
 	protected boolean result;
 	
 	public ReportNode(LigretoNode ligretoNode, String reportName, String reportType) throws ReportException {
@@ -141,5 +142,13 @@ public class ReportNode extends Node {
 		} else {
 			this.result = false;
 		}
+	}
+	
+	public void addEmail(EmailNode emailNode) {
+		emails.add(emailNode);
+	}
+	
+	public List<EmailNode> emails() {
+		return emails;
 	}
 }

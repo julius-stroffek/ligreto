@@ -1,5 +1,6 @@
 package net.ligreto.builders;
 
+import java.io.File;
 import java.io.IOException;
 
 import net.ligreto.LigretoParameters;
@@ -107,4 +108,11 @@ public interface BuilderInterface {
 	 * @see LigretoParameters
 	 */
 	public void setLigretoParameters(LigretoParameters ligretoParameters);
+
+	/**
+	 * Provides access to the generated output file.
+	 * 
+	 * @return generated output file
+	 */
+	public abstract File getOutputFile();
 }

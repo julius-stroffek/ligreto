@@ -1,5 +1,7 @@
 package net.ligreto.builders;
 
+import java.io.File;
+
 import org.apache.poi.ss.usermodel.Sheet;
 
 import net.ligreto.LigretoParameters;
@@ -99,5 +101,10 @@ public abstract class ReportBuilder implements BuilderInterface {
 	@Override
 	public void setLigretoParameters(LigretoParameters ligretoParameters) {
 		this.ligretoParameters = ligretoParameters;
+	}
+
+	@Override
+	public File getOutputFile() {
+		return new File(output);
 	}
 }

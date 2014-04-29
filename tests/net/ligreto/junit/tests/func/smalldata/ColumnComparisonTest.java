@@ -23,7 +23,7 @@ public class ColumnComparisonTest {
 	public void testColumnComparisonFailure() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("columnscomparisonfailure.xml");
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
-		
+
 		boolean exceptionThrown = false;
 		try {
 			executor.execute();

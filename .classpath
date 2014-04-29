@@ -25,5 +25,8 @@
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/poi-scratchpad-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/PasswordQueries.jar"/>
+	<classpathentry kind="lib" path="lib/javax.mail-1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/javax.mail-api-1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/ojdbc6.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -201,4 +201,12 @@ public class MiscUtils {
 		}
 		return retValue;
 	}
+	
+	public static boolean isEmpty(String value) {
+		return value == null || "".equals(value.trim());
+	}
+
+	public static boolean isNotEmpty(String value) {
+		return value != null && !"".equals(value.trim());
+	}
 }

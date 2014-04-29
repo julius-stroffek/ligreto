@@ -4,6 +4,7 @@
 package net.ligreto;
 
 import java.io.IOException;
+import java.util.Set;
 
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
@@ -125,6 +126,15 @@ public class Ligreto {
 		String[] params = cmd.getOptionValues("D");
 		try {
 			LigretoNode ligretoNode = new LigretoNode();
+
+			// Get the system proeprties and store them as parameters
+			for (Object property : System.getProperties().keySet()) {
+				String name = property.toString();
+				String value = System.getProperty(name);
+				ligretoNode.addLockedParam("system." + name, value);
+			}
+
+			// Parse the command line arguments as parameters
 			if (params != null) {
 				for (int j=0; j < params.length; j++) {
 					if (params[j].indexOf('=') >=0) {

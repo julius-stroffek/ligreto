@@ -3,6 +3,11 @@
 <ligreto>
 	<param name="ligreto.nullString" value="&lt;&lt;null&gt;&gt;"/>
 	<param name="ligreto.missingString" value="&lt;&lt;missing&gt;&gt;"/>
+	<param name="ligreto.smtpHost" value="${system.SMTP_HOST}"/>
+	<param name="ligreto.smtpPort" value="${system.SMTP_PORT}"/>
+	<param name="ligreto.smtpSsl" value="${system.SMTP_SSL}"/>
+	<param name="ligreto.smtpUser" value="${system.SMTP_USER}"/>
+	<param name="ligreto.smtpPasswd" value="${system.SMTP_PASSWORD}"/>
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
@@ -49,5 +54,15 @@
 				<sql data-source="Source2">select * from join_table2</sql>
 			</comparison>
 		</data>
+		<actions>
+			<email attach="true">
+				<from>${system.EMAIL_FROM}</from>
+				<to>${system.EMAIL_TO}</to>
+				<cc>${system.EMAIL_CC}</cc>
+				<bcc>${system.EMAIL_BCC}</bcc>
+				<subject>Ligreto E-mail Test</subject>
+				<body><![CDATA[<h1>Test Title</h1><p>This is the message body</p>]]></body>
+			</email>
+		</actions>
 	</report>
 </ligreto>

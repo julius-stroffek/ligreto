@@ -73,6 +73,21 @@ public class LigretoParameters {
 	
 	/** Specifies the format for string type in excel spread sheet. */
 	protected String excelStringFormat = null;
+	
+	/** SMTP host name to send outgoing e-mails. */
+	protected String smtpHost;
+	
+	/** SMTP port to be used to send outgoing e-mails. */
+	protected String smtpPort;
+	
+	/** SMTP user name for outgoing e-mails authentication. */
+	protected String smtpUser;
+	
+	/** SMTP password for outgoing e-mails authentication. */
+	protected String smtpPasswd;
+	
+	/** Indicates whether to use SSL in SMTP. */
+	protected String smtpSsl;
 
 	public String getNullString() {
 		return nullString;
@@ -300,6 +315,66 @@ public class LigretoParameters {
 
 	public void setExcelStringFormatAsString(String excelStringFormat) {
 		this.excelStringFormat = excelStringFormat;
+	}
+
+	public String getSmtpHost() {
+		return smtpHost;
+	}
+
+	public void setSmtpHost(String smtpHost) {
+		this.smtpHost = smtpHost;
+	}
+
+	public void setSmtpHostAsString(String smtpHost) {
+		this.smtpHost = smtpHost;
+	}
+
+	public String getSmtpPort() {
+		return smtpPort;
+	}
+
+	public void setSmtpPort(String smtpPort) {
+		this.smtpPort = smtpPort;
+	}
+
+	public void setSmtpPortAsString(String smtpPort) {
+		this.smtpPort = smtpPort;
+	}
+
+	public String getSmtpUser() {
+		return smtpUser;
+	}
+
+	public void setSmtpUser(String smtpUser) {
+		this.smtpUser = smtpUser;
+	}
+
+	public void setSmtpUserAsString(String smtpUser) {
+		this.smtpUser = smtpUser;
+	}
+
+	public String getSmtpPasswd() {
+		return smtpPasswd;
+	}
+
+	public void setSmtpPasswd(String smtpPasswd) {
+		this.smtpPasswd = smtpPasswd;
+	}
+
+	public void setSmtpPasswdAsString(String smtpPasswd) {
+		this.smtpPasswd = smtpPasswd;
+	}
+
+	public String getSmtpSsl() {
+		return smtpSsl;
+	}
+
+	public void setSmtpSsl(String smtpSsl) {
+		this.smtpSsl = smtpSsl;
+	}
+
+	public void setSmtpSslAsString(String smtpSsl) {
+		this.smtpSsl = smtpSsl;
 	}
 
 	/**

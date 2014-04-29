@@ -70,6 +70,14 @@ public class TestUtil {
 	 */
 	public static ResultStatus generateReport(String reportName) throws SAXException, IOException, LigretoException {
 		LigretoNode ligreto = Parser.parse(reportName + ".xml");
+
+		// Get the system properties and store them as parameters
+		for (Object property : System.getProperties().keySet()) {
+			String name = property.toString();
+			String value = System.getProperty(name);
+			ligreto.addLockedParam("system." + name, value);
+		}
+
 		LigretoExecutor executor = new LigretoExecutor(ligreto);
 		ResultStatus resultStatus = executor.execute();
 		
@@ -109,7 +117,7 @@ public class TestUtil {
 			result = new XSSFWorkbookComparator(
 					new XSSFWorkbook(new FileInputStream(generatedReportFile)),
 					new XSSFWorkbook(new FileInputStream(desiredReportFile))
-				).areSame();						
+				).areSame();
 		}
 		if (result) {
 			log.info("Files match.");

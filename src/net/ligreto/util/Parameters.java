@@ -5,6 +5,9 @@ import java.util.Properties;
 
 public class Parameters {
 	public static String substituteParams(Map<String, String> parametersMap, String string) {
+		if (string == null) {
+			return null;
+		}
 		String oResult;
 		String result = new String(string);
 		do {

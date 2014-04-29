@@ -3,6 +3,7 @@
  */
 package net.ligreto.executor;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import net.ligreto.ResultStatus;
 import net.ligreto.builders.BuilderInterface;
 import net.ligreto.builders.ReportBuilder;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.parser.nodes.EmailNode;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.ReportNode;
@@ -131,11 +133,17 @@ public class LigretoExecutor extends Executor {
 
 					sqlNode = sqlIterator.hasNext() ? sqlIterator.next() : null;
 				}
-			}
-						
+			}		
 			reportBuilder.writeOutput();
+			
+			// Here we will process the post build actions
+			for (EmailNode email : reportNode.emails()) {
+				File reportFile = reportBuilder.getOutputFile();
+				EmailExecutor emailExecutor = new EmailExecutor();
+				emailExecutor.execute(email, result, reportFile);
+			}
 		} catch (Exception e) {
-			throw new LigretoException("Error creating the report: " + reportNode.getName(), e);
+			throw new LigretoException("Error processing the report: " + reportNode.getName(), e);
 		}
 		result.info(log, "REPORT");
 		return result;

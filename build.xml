@@ -1,4 +1,8 @@
 <project default="dist" basedir=".">
+	<!-- Load the build properties. -->
+        <property file="${user.home}/Ligreto.properties" />
+
+	<!-- Setup other build properties. -->
 	<property name="lib" location="${basedir}/lib"/>
 	<property name="src" location="${basedir}/src"/>
 	<property name="resources" location="${basedir}/src/resources"/>
@@ -89,6 +93,15 @@
 	<target name="test.func" depends="test.prepare">
 		<junit fork="true" dir="${testing}" printsummary="yes" haltonfailure="false" haltonerror="true">
 			<jvmarg value="-Xmx512m"/>
+			<jvmarg value="-DSMTP_HOST=${SMTP_HOST}"/>
+			<jvmarg value="-DSMTP_PORT=${SMTP_PORT}"/>
+			<jvmarg value="-DSMTP_SSL=${SMTP_SSL}"/>
+			<jvmarg value="-DSMTP_USER=${SMTP_USER}"/>
+			<jvmarg value="-DSMTP_PASSWORD=${SMTP_PASSWORD}"/>
+			<jvmarg value="-DEMAIL_FROM=${EMAIL_FROM}"/>
+			<jvmarg value="-DEMAIL_TO=${EMAIL_TO}"/>
+			<jvmarg value="-DEMAIL_CC=${EMAIL_CC}"/>
+			<jvmarg value="-DEMAIL_BCC=${EMAIL_BCC}"/>
 			<test name="net.ligreto.junit.tests.func.AllTests"/>
 			<classpath refid="test.classpath"/>
 			<formatter type="plain" usefile="true"/>

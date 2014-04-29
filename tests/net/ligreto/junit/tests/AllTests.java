@@ -3,6 +3,8 @@ package net.ligreto.junit.tests;
 import net.ligreto.junit.util.TestUtil;
 import net.ligreto.util.AssertionUtil;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -23,6 +25,9 @@ public class AllTests {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		AssertionUtil.enableAssertions();
+		if ("true".equals(System.getProperty("debug", "false"))) {
+			Logger.getRootLogger().setLevel(Level.DEBUG);					
+		}
 		TestUtil.createDBs();
 	}
 	

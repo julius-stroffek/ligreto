@@ -10,8 +10,8 @@ import net.ligreto.exceptions.InvalidValueException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.exceptions.ParserException;
 import net.ligreto.exceptions.ReportException;
-
 import net.ligreto.parser.nodes.DataSourceNode;
+import net.ligreto.parser.nodes.EmailNode;
 import net.ligreto.parser.nodes.JoinNode;
 import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
@@ -40,7 +40,36 @@ import org.xml.sax.SAXParseException;
 
 /** Object types being parsed by the parser. */
 enum ObjectType {
-	NONE, LIGRETO, DATA_SOURCE, INIT, INIT_SQL, QUERY, REPORT, DATA, TEMPLATE, SQL, JOIN, LAYOUT, RESULT, JOIN_SQL, PARAM, PTP, PTP_PREPROCESS, PTP_PREPROCESS_SQL, PTP_TRANSFER, PTP_TRANSFER_SQL, PTP_POSTPROCESS, PTP_POSTPROCESS_SQL
+	NONE,
+	LIGRETO,
+	DATA_SOURCE,
+	INIT,
+	INIT_SQL,
+	QUERY,
+	REPORT,
+	DATA,
+	TEMPLATE,
+	SQL,
+	JOIN,
+	LAYOUT,
+	RESULT,
+	JOIN_SQL,
+	PARAM,
+	PTP,
+	PTP_PREPROCESS,
+	PTP_PREPROCESS_SQL,
+	PTP_TRANSFER,
+	PTP_TRANSFER_SQL,
+	PTP_POSTPROCESS,
+	PTP_POSTPROCESS_SQL,
+	ACTIONS,
+	EMAIL,
+	EMAIL_FROM,
+	EMAIL_TO,
+	EMAIL_CC,
+	EMAIL_BCC,
+	EMAIL_SUBJECT,
+	EMAIL_BODY
 };
 
 /**
@@ -96,12 +125,18 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 
 	/** The Transfer of PTP transfer */
 	protected TransferNode ptpTransfer;
+	
+	/** The email node included in the report. */
+	protected EmailNode email;
 
 	/** The name of the parameter being parsed. */
 	protected String paramName;
 
 	/** The value of the parameter being parsed. */
 	protected StringBuilder paramValue;
+	
+	/** The characters present in the node parsed. */
+	protected StringBuilder characters;
 	
 	/** The order of <comparison>/<sql> nodes within <data> node. */
 	protected int dataOrderNumber;
@@ -141,6 +176,14 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case PARAM:
 			paramValue.append(chars, start, length);
+			break;
+		case EMAIL_FROM:
+		case EMAIL_TO:
+		case EMAIL_CC:
+		case EMAIL_BCC:
+		case EMAIL_SUBJECT:
+		case EMAIL_BODY:
+			characters.append(chars, start, length);
 			break;
 		default:
 			break;
@@ -204,6 +247,28 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			} catch (LigretoException e) {
 				throw new SAXException("Error parsing input file.", e);
 			}
+			break;
+		case EMAIL:
+			reportNode.addEmail(email);
+			email = null;
+			break;
+		case EMAIL_FROM:
+			email.setFrom(characters.toString());
+			break;
+		case EMAIL_TO:
+			email.setTo(characters.toString());
+			break;
+		case EMAIL_CC:
+			email.setCc(characters.toString());
+			break;
+		case EMAIL_BCC:
+			email.setBcc(characters.toString());
+			break;
+		case EMAIL_SUBJECT:
+			email.setSubject(characters.toString());
+			break;
+		case EMAIL_BODY:
+			email.setBody(characters.toString());
 			break;
 		default:
 			break;
@@ -321,6 +386,8 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("data".equals(localName)) {
 					objectStack.push(ObjectType.DATA);
 					dataOrderNumber = 0;
+				} else if ("actions".equals(localName)) {
+					objectStack.push(ObjectType.ACTIONS);
 				} else {
 					objectStack.push(ObjectType.NONE);
 				}
@@ -581,6 +648,31 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 						limit.setAbsoluteCount(getAttributeValue(atts, "abs-diff-count"));
 					}
 					result.addLimitNode(limit);
+				}
+				break;
+			case ACTIONS:
+				if ("email".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL);
+					email = new EmailNode(ligretoNode);
+					email.setEnabled(getAttributeValue(atts, "enabled"));
+					email.setSendCondition(getAttributeValue(atts, "when"));
+					email.setAttach(getAttributeValue(atts, "attach"));
+				}
+				break;
+			case EMAIL:
+				characters = new StringBuilder();
+				if ("from".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL_FROM);
+				} else if ("to".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL_TO);
+				} else if ("cc".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL_CC);
+				} else if ("bcc".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL_BCC);
+				} else if ("subject".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL_SUBJECT);
+				} else if ("body".equals(localName)) {
+					objectStack.push(ObjectType.EMAIL_BODY);
 				}
 				break;
 			case PTP:
