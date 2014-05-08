@@ -63,11 +63,17 @@ public class EmailExecutor extends Executor {
 		case always:
 			send = true;
 			break;
-		case success:
+		case accepted:
 			send = result.isAccepted();
 			break;
-		case failure:
+		case rejected:
 			send = !result.isAccepted();
+			break;
+		case empty:
+			send = result.getTotalRowCount() == 0;
+			break;
+		case nonempty:
+			send = result.getTotalRowCount() > 0;
 			break;
 		}
 		if (!send) {
@@ -151,7 +157,7 @@ public class EmailExecutor extends Executor {
 				if (MiscUtils.isEmpty(smtpPort)) {
 					smtpPort = "587";
 				}
-				props.put("mail.smtp.starttls.enable", "true");			
+				props.put("mail.smtp.starttls.enable", "true");
 			} else if ("ssl".equalsIgnoreCase(smtpSsl)) {
 				if (MiscUtils.isEmpty(smtpPort)) {
 					smtpPort = "465";

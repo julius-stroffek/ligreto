@@ -137,9 +137,9 @@ public class LigretoExecutor extends Executor {
 			reportBuilder.writeOutput();
 			
 			// Here we will process the post build actions
+			EmailExecutor emailExecutor = new EmailExecutor();
 			for (EmailNode email : reportNode.emails()) {
 				File reportFile = reportBuilder.getOutputFile();
-				EmailExecutor emailExecutor = new EmailExecutor();
 				emailExecutor.execute(email, result, reportFile);
 			}
 		} catch (Exception e) {

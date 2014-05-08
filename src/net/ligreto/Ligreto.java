@@ -4,7 +4,6 @@
 package net.ligreto;
 
 import java.io.IOException;
-import java.util.Set;
 
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
@@ -31,7 +30,7 @@ import org.xml.sax.SAXException;
 public class Ligreto {
 
 	/** The version string identifying the current version. */
-	public static final String version = "2012.10";
+	public static final String version = "2014.1";
 	
 	/** The maximal exit status returned as result of ligreto operations. */
 	public static final int MAX_RESULT_EXIT_STATUS = 250;

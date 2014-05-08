@@ -14,8 +14,10 @@ public class EmailNode extends Node {
 
 	public static enum SendCondition {
 		always,
-		success,
-		failure
+		accepted,
+		rejected,
+		empty,
+		nonempty
 	}
 	
 	private String from;
