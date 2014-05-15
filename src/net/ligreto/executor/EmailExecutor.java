@@ -28,6 +28,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Executes the email send operation on the specified report node.
  * 
@@ -36,6 +39,9 @@ import javax.mail.internet.MimeMultipart;
  */
 public class EmailExecutor extends Executor {
 
+	/** The logger instance for the class. */
+	private static Log log = LogFactory.getLog(EmailExecutor.class);
+	
 	/**
 	 * Default constructor.
 	 */
@@ -77,13 +83,19 @@ public class EmailExecutor extends Executor {
 			break;
 		}
 		if (!send) {
+			log.info(String.format("Skipping sending the email message '%2$s' to '%1$s'.", email.getTo(), email.getSubject()));
 			return;
 		}
-		
+
+		log.info(String.format("Sending the email message '%2$s' to '%1$s'.", email.getTo(), email.getSubject()));
 		try {
 			Session smtpSession = createSmtpSession(email.getLigretoNode());
-			Message message = new MimeMessage(smtpSession);			
-			message.setFrom(new InternetAddress(email.getLigretoNode().substituteParams(email.getFrom())));
+			MimeMessage message = new MimeMessage(smtpSession);
+			String emailFrom = email.getLigretoNode().substituteParams(email.getFrom());
+			if (MiscUtils.isEmpty(emailFrom)) {
+				emailFrom = email.getLigretoNode().getLigretoParameters().getSmtpEmailFrom();
+			}
+			message.setFrom(new InternetAddress(emailFrom));
 			
 			// Setup all the TO recipients
 			String toString = email.getLigretoNode().substituteParams(email.getTo());
@@ -113,7 +125,7 @@ public class EmailExecutor extends Executor {
 			}
 			
 			// Set the message content
-			message.setSubject(email.getLigretoNode().substituteParams(email.getSubject()));
+			message.setSubject(email.getLigretoNode().substituteParams(email.getSubject()), "utf-8");
 
 			// Setup the message with text
 			Multipart multipart = new MimeMultipart();

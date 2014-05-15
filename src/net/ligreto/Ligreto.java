@@ -4,6 +4,9 @@
 package net.ligreto;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
@@ -30,7 +33,7 @@ import org.xml.sax.SAXException;
 public class Ligreto {
 
 	/** The version string identifying the current version. */
-	public static final String version = "2014.1";
+	public static final String version = "2014.2";
 	
 	/** The maximal exit status returned as result of ligreto operations. */
 	public static final int MAX_RESULT_EXIT_STATUS = 250;
@@ -143,9 +146,40 @@ public class Ligreto {
 					}
 				}
 			}
+			
+			// Parse the specified input files
 			for (int i=0; i < files.length; i++) {
 				Parser.parse(files[i], ligretoNode);
 			}
+
+			// Add additional defined parameters
+			Calendar now = Calendar.getInstance();
+			
+			// Store the value of timeStamp
+			String timeStampFormat = ligretoNode.getParam("ligreto.timestampFormat");
+			if (MiscUtils.isNotEmpty(timeStampFormat)) {
+				ligretoNode.addParam("ligreto.timestamp", new SimpleDateFormat(timeStampFormat).format(now.getTime()));				
+			} else {
+				ligretoNode.addParam("ligreto.timestamp", DateFormat.getDateTimeInstance().format(now.getTime()));
+			}
+			
+			// Store the value of time
+			String timeFormat = ligretoNode.getParam("ligreto.timeFormat");
+			if (MiscUtils.isNotEmpty(timeFormat)) {
+				ligretoNode.addParam("ligreto.time", new SimpleDateFormat(timeFormat).format(now.getTime()));				
+			} else {
+				ligretoNode.addParam("ligreto.time", DateFormat.getTimeInstance().format(now.getTime()));
+			}
+			
+			// Store the value of date
+			String dateFormat = ligretoNode.getParam("ligreto.dateFormat");
+			if (MiscUtils.isNotEmpty(dateFormat)) {
+				ligretoNode.addParam("ligreto.date", new SimpleDateFormat(dateFormat).format(now.getTime()));				
+			} else {
+				ligretoNode.addParam("ligreto.date", DateFormat.getDateInstance().format(now.getTime()));
+			}
+			
+			// Run the execution
 			LigretoExecutor executor = new LigretoExecutor(ligretoNode);
 			resultStatus = executor.execute();
 			resultCount = resultStatus.getDifferentRowCount();

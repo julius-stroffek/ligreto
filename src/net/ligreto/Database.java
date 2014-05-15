@@ -63,7 +63,8 @@ public class Database {
 		}
 
 		String sourceDecription = node.getDescription() + " (" + node.getName() + ")";
-		log.info("Connecting to \"" + sourceDecription + "\" data source with uri: " + node.getUri());
+		String uri = ligretoNode.substituteParams(node.getUri());
+		log.info("Connecting to \"" + sourceDecription + "\" data source with uri: " + uri);
 		
 		Class.forName(ligretoNode.substituteParams(node.getDriverClass()));
 		
@@ -71,7 +72,7 @@ public class Database {
 		Connection cnn;
 		try {
 			Properties params = ligretoNode.substitueParams(node.getParameters());
-			cnn = DriverManager.getConnection(ligretoNode.substituteParams(node.getUri()), params);
+			cnn = DriverManager.getConnection(uri, params);
 		} catch (SQLException e) {
 			throw new DataSourceException("Could not connect to data source: " + sourceDecription, e);
 		}

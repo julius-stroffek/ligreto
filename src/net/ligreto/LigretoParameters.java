@@ -74,6 +74,9 @@ public class LigretoParameters {
 	/** Specifies the format for string type in excel spread sheet. */
 	protected String excelStringFormat = null;
 	
+	/** E-mail address of the sender of outgoing e-mail. */
+	protected String smtpEmailFrom;
+	
 	/** SMTP host name to send outgoing e-mails. */
 	protected String smtpHost;
 	
@@ -89,6 +92,24 @@ public class LigretoParameters {
 	/** Indicates whether to use SSL in SMTP. */
 	protected String smtpSsl;
 
+	/** Timestamp format for the ligreto.timestamp parameter. */
+	protected String timestampFormat;
+	
+	/** Time format for the ligreto.time parameter. */
+	protected String timeFormat;
+	
+	/** Date format for the ligreto.date parameter. */
+	protected String dateFormat;
+	
+	/** Always contains actual timestamp. */
+	protected String timestamp;
+	
+	/** Always contains actual time. */
+	protected String time;
+	
+	/** Always contains actual date. */
+	protected String date;
+	
 	public String getNullString() {
 		return nullString;
 	}
@@ -317,6 +338,18 @@ public class LigretoParameters {
 		this.excelStringFormat = excelStringFormat;
 	}
 
+	public String getSmtpEmailFrom() {
+		return smtpEmailFrom;
+	}
+
+	public void setSmtpEmailFrom(String smtpEmailFrom) {
+		this.smtpEmailFrom = smtpEmailFrom;
+	}
+
+	public void setSmtpEmailFromAsString(String smtpEmailFrom) {
+		this.smtpEmailFrom = smtpEmailFrom;
+	}
+
 	public String getSmtpHost() {
 		return smtpHost;
 	}
@@ -375,6 +408,54 @@ public class LigretoParameters {
 
 	public void setSmtpSslAsString(String smtpSsl) {
 		this.smtpSsl = smtpSsl;
+	}
+
+	public String getTimestampFormatAsString() {
+		return timestampFormat;
+	}
+
+	public void setTimestampFormat(String timestampFormat) {
+		this.timestampFormat = timestampFormat;
+	}
+
+	public String getTimeFormatAsString() {
+		return timeFormat;
+	}
+
+	public void setTimeFormat(String timeFormat) {
+		this.timeFormat = timeFormat;
+	}
+
+	public String getDateFormatAsString() {
+		return dateFormat;
+	}
+
+	public void setDateFormat(String dateFormat) {
+		this.dateFormat = dateFormat;
+	}
+
+	public String getTimestampAsString() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public String getTimeAsString() {
+		return time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	public String getDateAsString() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
 	}
 
 	/**

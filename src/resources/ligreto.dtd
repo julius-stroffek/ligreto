@@ -116,7 +116,7 @@
 <!ATTLIST row-limit abs-matched-count CDATA #IMPLIED>
 
 <!ELEMENT actions (email)+>
-<!ELEMENT email (from,to,cc?,bcc?,subject,body)>
+<!ELEMENT email (from?,to,cc?,bcc?,subject,body)>
 <!ATTLIST email enabled CDATA "true">		<!-- (true|false) -->
 <!ATTLIST email when CDATA "always">		<!-- always|accepted|rejected|empty|nonempty -->
 <!ATTLIST email attach CDATA "true">
