@@ -11,6 +11,10 @@
 <!ELEMENT param (#PCDATA)>
 <!ATTLIST param name CDATA #REQUIRED>
 <!ATTLIST param value CDATA #IMPLIED>
+<!ATTLIST param data-source CDATA #IMPLIED>
+<!ATTLIST param query CDATA #IMPLIED>
+<!ATTLIST param type CDATA "statement">		<!--(statement|call)-->
+<!ATTLIST param exceptions CDATA "fail">	<!--(ignore|dump|fail)-->
 
 <!ELEMENT report (template?,output,data,actions?)>
 <!ATTLIST report name CDATA #IMPLIED>

@@ -33,10 +33,12 @@ public class ResultStatus {
 	 * @param other The result of the other operation to be merged.
 	 */
 	public void merge(ResultStatus other) {
-		differentRowCount += other.differentRowCount;
-		totalRowCount += other.totalRowCount;
-		duplicateKeyCount += other.duplicateKeyCount;
-		accepted &= other.accepted;
+		if (other != null) {
+			differentRowCount += other.differentRowCount;
+			totalRowCount += other.totalRowCount;
+			duplicateKeyCount += other.duplicateKeyCount;
+			accepted &= other.accepted;
+		}
 	}
 	
 

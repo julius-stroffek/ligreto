@@ -17,6 +17,7 @@ import net.ligreto.parser.nodes.LayoutNode;
 import net.ligreto.parser.nodes.LayoutNode.LayoutType;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.LimitNode;
+import net.ligreto.parser.nodes.ParamNode;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.PostprocessNode;
 import net.ligreto.parser.nodes.PreprocessNode;
@@ -113,6 +114,9 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	
 	/** The limit for the result. */
 	protected LimitNode limit;
+	
+	/** The parameter node. */
+	protected ParamNode param;
 
 	/** The Pre-Process/Transfer/Post-Process node - PTP */
 	protected PtpNode ptpNode;
@@ -175,7 +179,11 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			sql.getQueryBuilder().append(chars, start, length);
 			break;
 		case PARAM:
-			paramValue.append(chars, start, length);
+			if (param != null) {
+				param.getQueryBuilder().append(chars, start, length);
+			} else {
+				paramValue.append(chars, start, length);				
+			}
 			break;
 		case EMAIL_FROM:
 		case EMAIL_TO:
@@ -243,7 +251,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case PARAM:
 			try {
-				ligretoNode.addParam(paramName, paramValue.toString().trim());
+				if (param != null) {
+					ligretoNode.addParam(param);
+					param = null;
+				} else {
+					ligretoNode.addParam(paramName, paramValue.toString().trim());
+				}
 			} catch (LigretoException e) {
 				throw new SAXException("Error parsing input file.", e);
 			}
@@ -315,6 +328,20 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					objectStack.push(ObjectType.PARAM);
 					paramValue = new StringBuilder();
 					paramName = getAttributeValue(atts, "name");
+					if (getAttributeValue(atts, "data-source") != null) {
+						param = new ParamNode(ligretoNode);
+						param.setParamName(paramName);
+						param.setDataSource(getAttributeValue(atts, "data-source"));
+						if (getAttributeValue(atts, "query") != null) {
+							param.setQueryName(getAttributeValue(atts, "query"));
+						}
+						if (getAttributeValue(atts, "exceptions") != null) {
+							param.setExceptions(getAttributeValue(atts, "exceptions"));
+						}
+						if (getAttributeValue(atts, "type") != null) {
+							param.setQueryType(getAttributeValue(atts, "type"));
+						}
+					}
 					if (getAttributeValueWithParams(atts, "value") != null) {
 						paramValue.append(getAttributeValueWithParams(atts, "value"));
 					}

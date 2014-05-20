@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
+	<queries>
+		<query name="StartDateQuery">select '2010-10-31' as startdt from ${refdummy}</query>
+	</queries>
 	<param name="startdt" value="2010-10-31"/>
-	<param name="enddt">2010-11-30</param>
+	<param name="enddt" data-source="Source1" type="call">select '2010-11-30' as enddt from ${refdummy}</param>
 	<param name="dummy" value="sysibm.sysdummy1"/>
 	<param name="refdummy" value="${dummy}"/> 
 	<param name="createParam" value="true"/>
+	<param name="startdt" data-source="Source1" query="StartDateQuery"/>
 	<data-sources>
 		<data-source name="Source1">
 			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>

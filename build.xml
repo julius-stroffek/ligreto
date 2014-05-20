@@ -36,10 +36,10 @@
 	</target>
 	<target name="compile">
 		<mkdir dir="${build}"/>
-		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" debug="yes">
+		<javac srcdir="${src}" destdir="${build}" includeantruntime="false" debug="yes" source="1.6" target="1.6">
 			<classpath refid="build.classpath"/>
 		</javac>
-		<javac srcdir="${tests}" destdir="${build}" includeantruntime="false" debug="yes">
+		<javac srcdir="${tests}" destdir="${build}" includeantruntime="false" debug="yes" source="1.6" target="1.6">
 			<classpath refid="build.classpath"/>
 		</javac>
 		<copy todir="${build}" includeEmptyDirs="true">

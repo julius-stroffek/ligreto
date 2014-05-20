@@ -4,10 +4,6 @@
 package net.ligreto.executor;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
@@ -39,30 +35,21 @@ public class LigretoExecutor extends Executor {
 		ligretoNode = aLigretoNode;
 	}
 	
-	protected void executeSqlNodes(Iterable<SqlNode> sqls) throws ClassNotFoundException, SQLException, LigretoException {
-		for (SqlNode sqlQuery : sqls) {
-			Connection cnn = null;
-			Statement stm = null;
-			ResultSet rs = null;
-			try {
-				cnn = Database.getInstance().getConnection(sqlQuery.getDataSource());
-				String qry = sqlQuery.getQuery().toString();
-				stm = cnn.createStatement();
-				rs = stm.executeQuery(qry);
-			} finally {
-				Database.close(cnn, stm, rs);
-			}
-		}
-	}
-	
 	@Override
 	public ResultStatus execute() throws LigretoException {
 		ResultStatus result = new ResultStatus();
 		Database.getInstance(ligretoNode);
+		result.merge(executeParams());
 		result.merge(executePTPs());
 		result.merge(executeReports());
 		result.info(log, "LIGRETO");
 		return result;
+	}
+	
+	public ResultStatus executeParams() throws LigretoException {
+		ParamExecutor paramExecutor = new ParamExecutor();
+		paramExecutor.setParamNodes(ligretoNode.params());
+		return paramExecutor.execute();
 	}
 	
 	public ResultStatus executePTPs() throws LigretoException {

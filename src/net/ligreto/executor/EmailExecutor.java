@@ -82,12 +82,15 @@ public class EmailExecutor extends Executor {
 			send = result.getTotalRowCount() > 0;
 			break;
 		}
+		
+		String emailSubject = email.getLigretoNode().substituteParams(email.getSubject());
+		String toString = email.getLigretoNode().substituteParams(email.getTo());
 		if (!send) {
-			log.info(String.format("Skipping sending the email message '%2$s' to '%1$s'.", email.getTo(), email.getSubject()));
+			log.info(String.format("Skipping sending the email message '%2$s' to '%1$s'.", toString, emailSubject));
 			return;
 		}
 
-		log.info(String.format("Sending the email message '%2$s' to '%1$s'.", email.getTo(), email.getSubject()));
+		log.info(String.format("Sending the email message '%2$s' to '%1$s'.", toString, emailSubject));
 		try {
 			Session smtpSession = createSmtpSession(email.getLigretoNode());
 			MimeMessage message = new MimeMessage(smtpSession);
@@ -98,7 +101,6 @@ public class EmailExecutor extends Executor {
 			message.setFrom(new InternetAddress(emailFrom));
 			
 			// Setup all the TO recipients
-			String toString = email.getLigretoNode().substituteParams(email.getTo());
 			if (MiscUtils.isNotEmpty(toString)) {
 				String toAddresses[] = toString.split(";");
 				for (String toAddress: toAddresses) {
@@ -125,7 +127,7 @@ public class EmailExecutor extends Executor {
 			}
 			
 			// Set the message content
-			message.setSubject(email.getLigretoNode().substituteParams(email.getSubject()), "utf-8");
+			message.setSubject(emailSubject, "utf-8");
 
 			// Setup the message with text
 			Multipart multipart = new MimeMultipart();
@@ -183,24 +185,26 @@ public class EmailExecutor extends Executor {
 			}
 
 		}
-		if (MiscUtils.isEmpty(smtpPort)) {
-			smtpPort = "25";
+		if (MiscUtils.isNotEmpty(smtpPort)) {
+			props.put("mail.smtp.port", smtpPort);
 		}
-		props.put("mail.smtp.host", ligretoNode.substituteParams(ligretoNode.getLigretoParameters().getSmtpHost()));
-		props.put("mail.smtp.port", smtpPort);
+		String smtpHost = ligretoNode.substituteParams(ligretoNode.getLigretoParameters().getSmtpHost());
+		if (MiscUtils.isNotEmpty(smtpHost)) {
+			props.put("mail.smtp.host", smtpHost);
+		}
 
 		Session session = null;
-		
 		if (MiscUtils.isNotEmpty(username)) {
+			props.put("mail.smtp.auth", "true");
 			session = Session.getInstance(props,
 					new javax.mail.Authenticator() {
 						@Override
 						protected PasswordAuthentication getPasswordAuthentication() {
-							return new PasswordAuthentication(username,
-									password);
+							return new PasswordAuthentication(username, password);
 						}
 					});
 		} else {
+			props.put("mail.smtp.auth", "false");
 			session = Session.getInstance(props);
 		}
 

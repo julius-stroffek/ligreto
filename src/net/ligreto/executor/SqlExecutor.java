@@ -141,7 +141,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 			}
 			result.info(log, "SQL");
 		} catch (SQLException e) {
-			String msg = "Database error on data source: " + sqlNode.getQuery().toString();
+			String msg = "Database error on data source: " + sqlNode.getDataSource();
 			throw new LigretoException(msg, e);
 		} catch (ClassNotFoundException e) {
 			String msg = "Database driver not found for data source: " + sqlNode.getDataSource();

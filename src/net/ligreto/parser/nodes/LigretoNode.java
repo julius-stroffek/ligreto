@@ -31,6 +31,7 @@ public class LigretoNode extends Node {
 	protected Map<String, String> queryMap = new HashMap<String, String>(128);
 	protected Map<String, String> paramMap = new HashMap<String, String>(256);
 	protected Map<String, Void> lockedParams = new HashMap<String, Void>(256);
+	protected List<ParamNode> paramNodes = new LinkedList<ParamNode>();
 	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
 	protected List<PtpNode> ptpNodes = new LinkedList<PtpNode>();
 	protected LigretoParameters ligretoParameters = new LigretoParameters();
@@ -47,6 +48,10 @@ public class LigretoNode extends Node {
 		queryMap.put(name, query);
 	}
 
+	public void addParam(ParamNode paramNode) {
+		paramNodes.add(paramNode);
+	}
+	
 	public void addParam(String name, String value) throws LigretoException {
 		if (!lockedParams.containsKey(name)) {
 			if (name.startsWith("ligreto.")) {
@@ -102,6 +107,10 @@ public class LigretoNode extends Node {
 		return Parameters.substituteParams(paramMap, properties);
 	}
 	
+	public Iterable<ParamNode> params() {
+		return paramNodes;
+	}
+
 	public Iterable<ReportNode> reports() {
 		return reportNodes;
 	}
