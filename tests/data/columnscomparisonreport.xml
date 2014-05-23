@@ -55,13 +55,21 @@
 			</comparison>
 		</data>
 		<actions>
+			<email attach="false">
+				<from>${system.EMAIL_FROM}</from>
+				<to>${system.EMAIL_TO}</to>
+				<cc>${system.EMAIL_CC}</cc>
+				<bcc>${system.EMAIL_BCC}</bcc>
+				<subject>Ligreto E-mail Test</subject>
+				<body><![CDATA[<h1>Test Title</h1><p>This is the message body without attachment.</p>]]></body>
+			</email>
 			<email attach="true">
 				<from>${system.EMAIL_FROM}</from>
 				<to>${system.EMAIL_TO}</to>
 				<cc>${system.EMAIL_CC}</cc>
 				<bcc>${system.EMAIL_BCC}</bcc>
 				<subject>Ligreto E-mail Test</subject>
-				<body><![CDATA[<h1>Test Title</h1><p>This is the message body</p>]]></body>
+				<body><![CDATA[<h1>Test Title</h1><p>This is the message body.</p>]]></body>
 			</email>
 		</actions>
 	</report>

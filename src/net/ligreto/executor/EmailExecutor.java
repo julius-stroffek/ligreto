@@ -102,7 +102,7 @@ public class EmailExecutor extends Executor {
 			
 			// Setup all the TO recipients
 			if (MiscUtils.isNotEmpty(toString)) {
-				String toAddresses[] = toString.split(";");
+				String toAddresses[] = toString.split("[;,:]");
 				for (String toAddress: toAddresses) {
 					message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress));
 				}
@@ -111,7 +111,7 @@ public class EmailExecutor extends Executor {
 			// Setup all the CC recipients
 			String ccString = email.getLigretoNode().substituteParams(email.getCc());
 			if (MiscUtils.isNotEmpty(ccString)) {
-				String ccAddresses[] = ccString.split(";");
+				String ccAddresses[] = ccString.split("[;,:]");
 				for (String ccAddress: ccAddresses) {
 					message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccAddress));
 				}
@@ -120,7 +120,7 @@ public class EmailExecutor extends Executor {
 			// Setup all the BCC recipients
 			String bccString = email.getLigretoNode().substituteParams(email.getBcc());
 			if (MiscUtils.isNotEmpty(bccString)) {
-				String bccAddresses[] = bccString.split(";");
+				String bccAddresses[] = bccString.split("[;,:]");
 				for (String bccAddress: bccAddresses) {
 					message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(bccAddress));
 				}
@@ -142,8 +142,8 @@ public class EmailExecutor extends Executor {
 		        messageBodyPart.setDataHandler(new DataHandler(source));
 		        messageBodyPart.setFileName(reportFile.getName());
 		        multipart.addBodyPart(messageBodyPart);
-		        message.setContent(multipart);
 			}
+	        message.setContent(multipart);
 			
 			// Sent the email out
 			Transport.send(message);
