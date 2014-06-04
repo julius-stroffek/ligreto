@@ -406,10 +406,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			case REPORT:
 				if ("template".equals(localName)) {
 					objectStack.push(ObjectType.NONE);
-					reportNode.setTemplate(getAttributeValue(atts, "file"));
+					reportNode.setTemplate(getAttributeValueWithParams(atts, "file"));
 				} else if ("output".equals(localName)) {
 					objectStack.push(ObjectType.NONE);
-					reportNode.setOutput(getAttributeValue(atts, "file"));
+					reportNode.setOutput(getAttributeValueWithParams(atts, "file"));
 				} else if ("data".equals(localName)) {
 					objectStack.push(ObjectType.DATA);
 					dataOrderNumber = 0;

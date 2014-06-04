@@ -71,8 +71,8 @@ public class LigretoExecutor extends Executor {
 		try {
 			BuilderInterface reportBuilder = ReportBuilder.createInstance(ligretoNode, reportNode.getReportType());
 			reportBuilder.setLigretoParameters(reportNode.getLigretoNode().getLigretoParameters());
-			reportBuilder.setTemplate(reportNode.getTemplate());
-			reportBuilder.setOutputFileName(reportNode.getOutput());
+			reportBuilder.setTemplate(ligretoNode.substituteParams(reportNode.getTemplate()));
+			reportBuilder.setOutputFileName(ligretoNode.substituteParams(reportNode.getOutput()));
 			reportBuilder.setOptions(reportNode.getOptions());
 			reportBuilder.start();
 
