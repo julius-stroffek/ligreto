@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
 <ligreto>
-	<param name="ligreto.xlsJdbcDateFormat" value="dd.mm.yyyy" />
+	<param name="ligreto.xlsxJdbcDateFormat" value="dd.mm.yyyy" />
 
 	<data-sources>
 		<data-source name="Source1">

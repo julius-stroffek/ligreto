@@ -70,7 +70,7 @@ public class PtpExecutor extends Executor {
 	 * @param ligretoNode
 	 */
 	public PtpExecutor(LigretoNode ligretoNode) {
-		excelDateFormat = new SimpleDateFormat(ligretoNode.getLigretoParameters().getXlsJdbcDateFormat());
+		excelDateFormat = new SimpleDateFormat(ligretoNode.getLigretoParameters().getXlsxJdbcDateFormat());
 	}
 	
 	/**

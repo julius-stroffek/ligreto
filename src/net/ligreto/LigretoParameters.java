@@ -75,7 +75,7 @@ public class LigretoParameters {
 	protected String excelStringFormat = null;
 	
 	/** Specifies the format for date type for xlsx jdbc driver (using sqlsheet project). */
-	protected String xlsJdbcDateFormat = "mm/dd/yyyy";
+	protected String xlsxJdbcDateFormat = "mm/dd/yyyy";
 	
 	/** E-mail address of the sender of outgoing e-mail. */
 	protected String smtpEmailFrom;
@@ -341,16 +341,16 @@ public class LigretoParameters {
 		this.excelStringFormat = excelStringFormat;
 	}
 
-	public String getXlsJdbcDateFormat() {
-		return xlsJdbcDateFormat;
+	public String getXlsxJdbcDateFormat() {
+		return xlsxJdbcDateFormat;
 	}
 
-	public void setXlsJdbcDateFormat(String xlsJdbcDateFormat) {
-		this.xlsJdbcDateFormat = xlsJdbcDateFormat;
+	public void setXlsxJdbcDateFormat(String xlsxJdbcDateFormat) {
+		this.xlsxJdbcDateFormat = xlsxJdbcDateFormat;
 	}
 
-	public void setXlsJdbcDateFormatAsString(String xlsJdbcDateFormat) {
-		this.xlsJdbcDateFormat = xlsJdbcDateFormat;
+	public void setXlsxJdbcDateFormatAsString(String xlsxJdbcDateFormat) {
+		this.xlsxJdbcDateFormat = xlsxJdbcDateFormat;
 	}
 
 	public String getSmtpEmailFrom() {
