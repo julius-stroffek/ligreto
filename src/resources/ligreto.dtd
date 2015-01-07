@@ -140,7 +140,8 @@
 <!ELEMENT postprocess (sql+)>
 
 <!ELEMENT transfer (target,sql)>
-<!ATTLIST transfer result CDATA "true">		<!--(true|false)-->
+<!ATTLIST transfer quote_column_names CDATA "true">	<!--(true|false)-->
+<!ATTLIST transfer result CDATA "true">				<!--(true|false)-->
 
 <!ELEMENT target EMPTY>
 <!ATTLIST target data-source CDATA #IMPLIED>

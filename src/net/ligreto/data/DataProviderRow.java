@@ -11,6 +11,7 @@ import java.sql.Types;
 import net.ligreto.exceptions.DataException;
 import net.ligreto.exceptions.DataTypeMismatchException;
 import net.ligreto.util.LigretoComparator;
+import net.pcal.sqlsheet.XlsResultSet;
 
 /**
  * This is the row of the data provider.
@@ -172,11 +173,15 @@ public class DataProviderRow implements Comparable<DataProviderRow> {
 			columnValue = rs.getDouble(index);
 			break;
 		case Types.DATE:
-			Date date = rs.getDate(index);
-			if (date != null) {
-				columnValue = new Date(date.getTime());
+			if (rs instanceof XlsResultSet) {
+				columnValue = rs.getString(index);
 			} else {
-				columnValue = null;
+				Date date = rs.getDate(index);
+				if (date != null) {
+					columnValue = new Date(date.getTime());
+				} else {
+					columnValue = null;
+				}
 			}
 			break;
 		case Types.TIMESTAMP:
@@ -213,7 +218,9 @@ public class DataProviderRow implements Comparable<DataProviderRow> {
 				columnValue = null;
 			break;
 		}
-		if (rs.wasNull()) {
+		if (rs instanceof XlsResultSet) {
+			// The call of wasNull is not yet implemented in SQLSheet XLS driver
+		} else if (rs.wasNull()) {
 			columnValue = null;
 		}
 		return columnValue;

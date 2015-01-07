@@ -710,6 +710,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 				} else if ("transfer".equals(localName)) {
 					objectStack.push(ObjectType.PTP_TRANSFER);
 					ptpTransfer = new TransferNode(ligretoNode);
+					ptpTransfer.setQuoteColumnNames(getAttributeValue(atts, "quote_column_names"));
 					ptpTransfer.setResult(getAttributeValue(atts, "result"));
 					ptpNode.addTransferNode(ptpTransfer);
 				} else if ("postprocess".equals(localName)) {
@@ -739,7 +740,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			case PTP_TRANSFER:
 				if ("target".equals(localName)) {
 					objectStack.push(ObjectType.NONE);
-					TargetNode ptpTarget = new TargetNode(ligretoNode);
+					TargetNode ptpTarget = new TargetNode(ligretoNode, ptpTransfer);
 					if (getAttributeValue(atts, "table") != null) {
 						ptpTarget.setTable(getAttributeValue(atts, "table"));
 					}

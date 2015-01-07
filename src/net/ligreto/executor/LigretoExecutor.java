@@ -53,7 +53,7 @@ public class LigretoExecutor extends Executor {
 	}
 	
 	public ResultStatus executePTPs() throws LigretoException {
-		PtpExecutor ptpExecutor = new PtpExecutor();
+		PtpExecutor ptpExecutor = new PtpExecutor(ligretoNode);
 		ptpExecutor.setPtpNodes(ligretoNode.ptps());
 		return ptpExecutor.execute();
 	}

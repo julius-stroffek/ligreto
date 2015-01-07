@@ -119,7 +119,12 @@ public class DataTypeDialect {
 	}
 	
 	protected String getNVarCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
-		return "nvarchar(" + metaData.getPrecision(columnIndex) + ")";
+		int precision = metaData.getPrecision(columnIndex);
+		if (precision > 0) {
+			return "nvarchar(" + metaData.getPrecision(columnIndex) + ")";			
+		} else {
+			return "nvarchar(8192)";
+		}
 	}
 	
 	protected String getRealDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
@@ -139,7 +144,12 @@ public class DataTypeDialect {
 	}
 	
 	protected String getVarCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
-		return "varchar(" + metaData.getPrecision(columnIndex) + ")";
+		int precision = metaData.getPrecision(columnIndex);
+		if (precision > 0) {
+			return "varchar(" + metaData.getPrecision(columnIndex) + ")";			
+		} else {
+			return "varchar(8192)";
+		}
 	}
 	
 	/**

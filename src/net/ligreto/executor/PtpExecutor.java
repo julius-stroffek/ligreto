@@ -2,12 +2,16 @@ package net.ligreto.executor;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,11 +20,14 @@ import net.ligreto.Database;
 import net.ligreto.ResultStatus;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.ddl.DataTypeDialect;
+import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.PtpNode;
 import net.ligreto.parser.nodes.SqlNode;
 import net.ligreto.parser.nodes.TargetNode;
 import net.ligreto.parser.nodes.TransferNode;
 import net.ligreto.util.DataProviderUtils;
+import net.ligreto.util.MiscUtils;
+import net.pcal.sqlsheet.XlsResultSet;
 
 public class PtpExecutor extends Executor {
 
@@ -45,6 +52,9 @@ public class PtpExecutor extends Executor {
 	/** The data type dialect to use for DDL statements. */
 	protected DataTypeDialect dataTypeDialect;
 	
+	/** The excel date format. */
+	protected final DateFormat excelDateFormat;
+	
 	@Override
 	public ResultStatus execute() throws LigretoException {
 		ResultStatus result = new ResultStatus();
@@ -54,6 +64,15 @@ public class PtpExecutor extends Executor {
 		return result;
 	}
 
+	/**
+	 * The constructor used to construct the executor instance.
+	 * 
+	 * @param ligretoNode
+	 */
+	public PtpExecutor(LigretoNode ligretoNode) {
+		excelDateFormat = new SimpleDateFormat(ligretoNode.getLigretoParameters().getXlsJdbcDateFormat());
+	}
+	
 	/**
 	 * Executes the Pre-process/Transfer/Post-process for the specified PTP node.
 	 * 
@@ -90,7 +109,7 @@ public class PtpExecutor extends Executor {
 		return result;
 	}
 
-	protected ResultStatus transferData(TransferNode transferNode) throws LigretoException {
+	protected ResultStatus transferData(TransferNode transferNode) throws LigretoException, ParseException {
 		ResultStatus result = new ResultStatus();
 		SqlNode sqlNode = transferNode.getSqlNode();
 		TargetNode targetNode = transferNode.getTargetNode();
@@ -157,7 +176,7 @@ public class PtpExecutor extends Executor {
 		return result;
 	}
 
-	protected void transferRow(ResultSet rs) throws SQLException, LigretoException {
+	protected void transferRow(ResultSet rs) throws SQLException, LigretoException, ParseException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		for (int i=1; i <= rsmd.getColumnCount(); i++) {
 			int columnType = rsmd.getColumnType(i);
@@ -172,7 +191,17 @@ public class PtpExecutor extends Executor {
 				insertStmt.setString(i, rs.getString(i));
 				break;
 			case Types.DATE:
-				insertStmt.setDate(i, rs.getDate(i));
+				if (rs instanceof XlsResultSet) {
+					String dateString = rs.getString(i);
+					if (MiscUtils.isNotEmpty(dateString)) {
+						Date dateValue = new Date(excelDateFormat.parse(dateString).getTime());
+						insertStmt.setDate(i, dateValue);
+					} else {
+						insertStmt.setDate(i, null);						
+					}
+				} else {
+					insertStmt.setDate(i, rs.getDate(i));
+				}
 				break;
 			case Types.DECIMAL: 
 				insertStmt.setBigDecimal(i, rs.getBigDecimal(i));
@@ -249,7 +278,13 @@ public class PtpExecutor extends Executor {
 		sb.append(targetNode.getTable());
 		sb.append(" (");
 		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-			sb.append(rsmd.getColumnName(i));
+			if (targetNode.getTransferNode().isQuoteColumnNames()) {
+				sb.append('"');
+				sb.append(rsmd.getColumnName(i));
+				sb.append('"');
+			} else {
+				sb.append(rsmd.getColumnName(i));
+			}
 			sb.append(" ");
 			sb.append(dataTypeDialect.getTypeDeclaration(rsmd, i));
 			sb.append(",");
@@ -286,7 +321,13 @@ public class PtpExecutor extends Executor {
 			sb.append(targetNode.getTable());
 			sb.append(" (");
 			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-				sb.append(rsmd.getColumnName(i));
+				if (targetNode.getTransferNode().isQuoteColumnNames()) {
+					sb.append('"');
+					sb.append(rsmd.getColumnName(i));					
+					sb.append('"');
+				} else {
+					sb.append(rsmd.getColumnName(i));
+				}
 				sb.append(",");
 			}
 			sb.deleteCharAt(sb.length() - 1);
@@ -353,5 +394,4 @@ public class PtpExecutor extends Executor {
 	public void setPtpNodes(Iterable<PtpNode> ptpNodes) {
 		this.ptpNodes = ptpNodes;
 	}
-
 }

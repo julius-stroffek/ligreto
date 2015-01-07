@@ -14,7 +14,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	NumericTypesTest.class,
 	SqlReportTest.class,
 	SortingTest.class,
-	StyleDedupTest.class
+	StyleDedupTest.class,
+	XlsxJdbcTest.class
 })
 public class AllTests {
 	/**

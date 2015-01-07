@@ -5,6 +5,7 @@ import net.ligreto.util.MiscUtils;
 
 public class TargetNode extends Node {
 
+	protected final TransferNode transferNode;
 	protected String table;
 	protected String dataSource;
 	protected boolean create = false;
@@ -12,8 +13,16 @@ public class TargetNode extends Node {
 	protected boolean truncate = false;
 	protected int commitInterval = 1;
 	
-	public TargetNode(LigretoNode aLigretoNode) {
+	public TargetNode(LigretoNode aLigretoNode, TransferNode aTransferNode) {
 		super(aLigretoNode);
+		transferNode = aTransferNode;
+	}
+
+	/**
+	 * @return the transferNode
+	 */
+	public TransferNode getTransferNode() {
+		return transferNode;
 	}
 
 	/**

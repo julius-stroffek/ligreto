@@ -10,6 +10,7 @@ import java.sql.Types;
 import java.sql.Date;
 
 import net.ligreto.exceptions.DataException;
+import net.pcal.sqlsheet.XlsResultSet;
 
 /**
  * The data provider class encapsulating the {@link java.sql.ResultSet} object into {@code DataProvider}.
@@ -260,11 +261,15 @@ public class ResultSetDataProvider extends DataProvider {
 			columnValue = getDouble(index);
 			break;
 		case Types.DATE:
-			Date date = getDate(index);
-			if (date != null) {
-				columnValue = new Date(date.getTime());
+			if (resultSet instanceof XlsResultSet) {
+				columnValue = getString(index);				
 			} else {
-				columnValue = null;
+				Date date = getDate(index);
+				if (date != null) {
+					columnValue = new Date(date.getTime());
+				} else {
+					columnValue = null;
+				}
 			}
 			break;
 		case Types.TIMESTAMP:

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<param name="ligreto.xlsJdbcDateFormat" value="dd.mm.yyyy" />
+
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="com.googlecode.sqlsheet.Driver"/>
+			<uri value="jdbc:xls:file:cp_kolateral.xlsx"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db4ptp"/>
+			<param name="create" value="true"/>
+		</data-source>
+	</data-sources>
+	<ptp>
+		<transfer quote_column_names="true">
+			<target data-source="Source2" table="cp_kolateral" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from CP_KOLATERAL.xlsx</sql>
+		</transfer>
+	</ptp>
+	<report name="XLSJDBCPTP Report" options="headerStyle,autoSize">
+		<output file="xlsxjdbcptp.xlsx"/>
+		<data>
+			<sql target="ptp!A1" data-source="Source2">select * from cp_kolateral</sql>
+		</data>
+	</report>
+</ligreto>

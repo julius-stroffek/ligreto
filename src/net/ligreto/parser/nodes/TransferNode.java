@@ -7,6 +7,7 @@ public class TransferNode extends Node {
 
 	protected TargetNode targetNode;
 	protected SqlNode sqlNode;
+	protected boolean quoteColumnNames;
 	protected boolean result;
 	
 	public TransferNode(LigretoNode aLigretoNode) {
@@ -64,6 +65,32 @@ public class TransferNode extends Node {
 			this.result = MiscUtils.parseBoolean(result);
 		} else {
 			this.result = false;
+		}
+	}
+
+	/**
+	 * @return the quoteColumnNames
+	 */
+	public boolean isQuoteColumnNames() {
+		return quoteColumnNames;
+	}
+
+	/**
+	 * @param quoteColumnNames the quoteColumnNames to set
+	 */
+	public void setQuoteColumnNames(boolean quoteColumnNames) {
+		this.quoteColumnNames = quoteColumnNames;
+	}
+	
+	/**
+	 * @param quoteColumnNames the quoteColumnNames to set parsed to boolean
+	 * @throws InvalidValueException 
+	 */
+	public void setQuoteColumnNames(String quoteColumnNames) throws InvalidValueException {
+		if (quoteColumnNames != null) {
+			this.quoteColumnNames = MiscUtils.parseBoolean(quoteColumnNames);
+		} else {
+			this.quoteColumnNames = false;
 		}
 	}
 }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="com.googlecode.sqlsheet.Driver"/>
+			<uri value="jdbc:xls:file:cp_kolateral.xlsx"/>
+		</data-source>
+		<data-source name="Source2">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db4ptp"/>
+			<param name="create" value="true"/>
+		</data-source>
+	</data-sources>
+	<!-- 
+	<ptp>
+		<preprocess>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</preprocess>
+		<transfer>
+			<target data-source="Source2" table="telt_table" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+		<postprocess>
+			<sql data-source="Source2">select * from telt_table</sql>
+		</postprocess>
+	</ptp>
+	<ptp>
+		<transfer>
+			<target data-source="Source2" table="double_table" commitInterval="2" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="double_table" truncate="false" create="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single_table" truncate="true" create="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single_table" truncate="true" create="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single2_table" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+		<transfer>
+			<target data-source="Source2" table="single2_table" truncate="false" recreate="true"/>
+			<sql data-source="Source1">select * from join_table1</sql>
+		</transfer>
+	</ptp>
+	-->
+	<report name="XLSJDBX Report" options="headerStyle,autoSize">
+		<output file="xlsxjdbc.xlsx"/>
+		<data>
+			<sql target="source!A1" data-source="Source1">select * from CP_KOLATERAL.xlsx</sql>
+		</data>
+	</report>
+</ligreto>
