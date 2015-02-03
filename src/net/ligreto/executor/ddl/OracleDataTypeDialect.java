@@ -49,4 +49,28 @@ public class OracleDataTypeDialect extends DataTypeDialect {
 			return "number";
 		}
 	}
+	
+	protected String getDoubleDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
+		return "double precision";
+	}
+	
+	@Override
+	protected String getNVarCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
+		int precision = metaData.getPrecision(columnIndex);
+		if (precision > 0) {
+			return "nvarchar2(" + metaData.getPrecision(columnIndex) + ")";			
+		} else {
+			return "nvarchar2(3980)";
+		}
+	}	
+
+	@Override
+	protected String getVarCharDeclaration(ResultSetMetaData metaData, int columnIndex) throws SQLException {
+		int precision = metaData.getPrecision(columnIndex);
+		if (precision > 0) {
+			return "varchar2(" + metaData.getPrecision(columnIndex) + ")";			
+		} else {
+			return "varchar2(3980)";
+		}
+	}	
 }

@@ -33,7 +33,7 @@ public class DataTypeDialect {
 	 * @return the data
 	 */
 	public static DataTypeDialect getInstance(Connection cnn) {
-		if (cnn.getClass().getName().startsWith("com.oracle")) {
+		if (cnn.getClass().getName().startsWith("oracle.jdbc")) {
 			return OracleDataTypeDialect.getInstance();
 		} else if (cnn.getClass().getName().startsWith("org.apache.derby")) {
 			return DerbyDataTypeDialect.getInstance();

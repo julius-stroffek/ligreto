@@ -4,6 +4,9 @@
 package net.ligreto.executor;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import net.ligreto.ResultStatus;
@@ -100,30 +103,39 @@ public class EmailExecutor extends Executor {
 			}
 			message.setFrom(new InternetAddress(emailFrom));
 			
+			// Declare common variables for setting up the email addresses
+			InternetAddress[] empty = {};
+			List<InternetAddress> internetAddresses = new LinkedList<InternetAddress>();
+
 			// Setup all the TO recipients
 			if (MiscUtils.isNotEmpty(toString)) {
 				String toAddresses[] = toString.split("[;,:]");
 				for (String toAddress: toAddresses) {
-					message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress));
+					internetAddresses.addAll(Arrays.asList(InternetAddress.parse(toAddress)));
 				}
+				message.setRecipients(Message.RecipientType.TO, internetAddresses.toArray(empty));
 			}
 			
 			// Setup all the CC recipients
 			String ccString = email.getLigretoNode().substituteParams(email.getCc());
 			if (MiscUtils.isNotEmpty(ccString)) {
+				internetAddresses.clear();
 				String ccAddresses[] = ccString.split("[;,:]");
 				for (String ccAddress: ccAddresses) {
-					message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(ccAddress));
+					internetAddresses.addAll(Arrays.asList(InternetAddress.parse(ccAddress)));
 				}
+				message.setRecipients(Message.RecipientType.CC, internetAddresses.toArray(empty));
 			}
 			
 			// Setup all the BCC recipients
 			String bccString = email.getLigretoNode().substituteParams(email.getBcc());
 			if (MiscUtils.isNotEmpty(bccString)) {
+				internetAddresses.clear();
 				String bccAddresses[] = bccString.split("[;,:]");
 				for (String bccAddress: bccAddresses) {
-					message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(bccAddress));
+					internetAddresses.addAll(Arrays.asList(InternetAddress.parse(bccAddress)));
 				}
+				message.setRecipients(Message.RecipientType.BCC, internetAddresses.toArray(empty));
 			}
 			
 			// Set the message content
