@@ -18,7 +18,12 @@ public class ColumnComparisonTest {
 	public void testColumnComparison() throws SAXException, IOException, LigretoException {
 		TestUtil.testReport("columnscomparisonreport", true);
 	}
-	
+
+	@Test
+	public void testColumnComparisonHtml() throws SAXException, IOException, LigretoException {
+		TestUtil.testHtmlReport("columnscomparisonhtmlreport", true);
+	}
+
 	@Test
 	public void testColumnComparisonFailure() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
 		LigretoNode ligreto = Parser.parse("columnscomparisonfailure.xml");

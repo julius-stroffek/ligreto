@@ -12,7 +12,7 @@ import net.ligreto.util.MiscUtils;
  *
  */
 public class ReportNode extends Node {
-	public enum ReportType {EXCEL, EXCELSTREAM, TEX, XML};
+	public enum ReportType {EXCEL, EXCELSTREAM, HTML, TEX, XML};
 	
 	protected String name;
 	protected String template;
@@ -33,6 +33,8 @@ public class ReportNode extends Node {
 			this.reportType = ReportType.EXCEL;
 		} else if ("excel.stream".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.EXCELSTREAM;
+		} else if ("html".equalsIgnoreCase(reportType)) {
+			this.reportType = ReportType.HTML;
 		} else if ("tex".equalsIgnoreCase(reportType)) {
 			this.reportType = ReportType.TEX;
 		} else if ("xml".equalsIgnoreCase(reportType)) {

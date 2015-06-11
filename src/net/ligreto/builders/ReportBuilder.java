@@ -2,8 +2,6 @@ package net.ligreto.builders;
 
 import java.io.File;
 
-import org.apache.poi.ss.usermodel.Sheet;
-
 import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.UnimplementedMethodException;
 import net.ligreto.parser.nodes.LigretoNode;
@@ -57,6 +55,9 @@ public abstract class ReportBuilder implements BuilderInterface {
 		case EXCELSTREAM:
 			builder = new ExcelStreamReportBuilder();
 			break;
+		case HTML:
+			builder = new HtmlReportBuilder();
+			break;
 		case TEX:
 			throw new UnimplementedMethodException();
 		case XML:
@@ -69,17 +70,6 @@ public abstract class ReportBuilder implements BuilderInterface {
 		return builder;
 	}	
 	
-	/**
-	 * Creates the target instance of the right super-type based on the parameters specified.
-	 * 
-	 * @param sheet
-	 * @param baseRow
-	 * @param baseCol
-	 * @return The newly created target object of a corresponding super-class based
-	 *         on report builder implementation.
-	 */
-	protected abstract TargetInterface createTarget(Sheet sheet, int baseRow, int baseCol);
-
 	@Override
 	public void setTemplate(String template) {
 		if (template != null && ligretoNode != null) {

@@ -206,7 +206,6 @@ public class ExcelReportBuilder extends ReportBuilder {
 	 * @param baseCol
 	 * @return The newly create target object.
 	 */
-	@Override
 	protected ExcelReportTarget createTarget(Sheet sheet, int baseRow, int baseCol) {
 		ExcelReportTarget newTarget = new ExcelReportTarget(this, sheet, baseRow, baseCol);
 		newTarget.setAutoFilter(isAutoFilter());

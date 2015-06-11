@@ -1,5 +1,6 @@
 package net.ligreto.junit.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import net.ligreto.parser.Parser;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.util.Assert;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -132,6 +134,38 @@ public class TestUtil {
 	}
 	
 	/**
+	 * This file will compare the generated report with the same file in the 'desired' report directory.
+	 * 
+	 * @param reportName
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public static void compareHtmlReport(String reportName, String desiredReportName) throws FileNotFoundException, IOException {
+		String generatedReportFile;
+		String desiredReportFile;
+		
+		generatedReportFile = reportName + ".html";
+		desiredReportFile = "desired/" + desiredReportName + ".html";
+		
+		log.info("Comparing reports... ");
+		log.info("Generated report file: " + generatedReportFile);
+		log.info("Desired report file: " + desiredReportFile);
+
+		boolean result = FileUtils.contentEquals(new File(generatedReportFile), new File(desiredReportFile));
+		
+		if (result) {
+			log.info("Files match.");
+			log.info("Generated report file: " + generatedReportFile);
+			log.info("Desired report file: " + desiredReportFile);
+		} else {
+			log.error("Files differ!");
+			log.error("Generated report file: " + generatedReportFile);
+			log.error("Desired report file: " + desiredReportFile);
+			Assert.assertTrue(false, "Report differs: " + reportName);
+		}
+	}
+	
+	/**
 	 * This method will generate a report file based on the testing convention. It will check the acceptance
 	 * in the result status structure. It will finally compare the generated file with the file in
 	 * the 'desired' report directory.
@@ -165,5 +199,19 @@ public class TestUtil {
 	 */
 	public static void testReport(String reportName) throws SAXException, IOException, LigretoException {
 		testReport(reportName, true);
+	}
+	
+	public static void testHtmlReport(String reportName, String desiredReportName, boolean accepted) throws SAXException, IOException, LigretoException {
+		ResultStatus resultStatus = generateReport(reportName);
+		Assert.assertTrue(resultStatus.isAccepted() == accepted);
+		compareHtmlReport(reportName, desiredReportName);
+	}
+
+	public static void testHtmlReport(String reportName, boolean accepted) throws SAXException, IOException, LigretoException {
+		testHtmlReport(reportName, reportName, accepted);
+	}
+
+	public static void testHtmlReport(String reportName) throws SAXException, IOException, LigretoException {
+		testHtmlReport(reportName, true);
 	}
 }

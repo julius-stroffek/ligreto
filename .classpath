@@ -30,5 +30,6 @@
 	<classpathentry kind="lib" path="lib/PasswordQueries.jar"/>
 	<classpathentry kind="lib" path="lib/jsqlparser-0.9.1.jar" sourcepath="/Users/julo/Downloads/JSqlParser-jsqlparser-0.9.1/src/main/java"/>
 	<classpathentry kind="lib" path="lib/sqlsheet-6.6-SNAPSHOT.jar" sourcepath="/Users/julo/workspace/sqlsheet-read-only/trunk/sqlsheet/src/main/java"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
