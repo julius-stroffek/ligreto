@@ -3,6 +3,7 @@
  */
 package net.ligreto.parser.nodes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ public class LigretoNode extends Node {
 	protected Map<String, String> paramMap = new HashMap<String, String>(256);
 	protected Map<String, Void> lockedParams = new HashMap<String, Void>(256);
 	protected List<ParamNode> paramNodes = new LinkedList<ParamNode>();
+	protected List<SqlNode> sqlQueries = new ArrayList<SqlNode>();
 	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
 	protected List<PtpNode> ptpNodes = new LinkedList<PtpNode>();
 	protected LigretoParameters ligretoParameters = new LigretoParameters();
@@ -133,5 +135,13 @@ public class LigretoNode extends Node {
 
 	public LigretoParameters getLigretoParameters() {
 		return ligretoParameters;
+	}
+
+	public void addSql(SqlNode sql) {
+		sqlQueries.add(sql);
+	}
+	
+	public List<SqlNode> sqlQueries() {
+		return sqlQueries;
 	}
 }

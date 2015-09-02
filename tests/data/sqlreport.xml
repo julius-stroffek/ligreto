@@ -25,10 +25,10 @@
 			<uri value="jdbc:derby:tmp_db"/>
 			<param name="create" value="${createParam}"/>
 			<init>
-				<sql exceptions="ignore">create table new_table (id varchar(10), name varchar(64))</sql>
-				<sql>delete from new_table</sql>
-				<sql>insert into new_table values ('1', 'Mickey Mouse')</sql>
-				<sql>insert into new_table values ('2', 'Duck Donald')</sql>
+				<sql exceptions="ignore" type="statement">create table new_table (id varchar(10), name varchar(64))</sql>
+				<sql type="statement">delete from new_table</sql>
+				<sql type="statement">insert into new_table values ('1', 'Mickey Mouse')</sql>
+				<sql type="statement">insert into new_table values ('2', 'Duck Donald')</sql>
 			</init>
 		</data-source>
 	</data-sources>

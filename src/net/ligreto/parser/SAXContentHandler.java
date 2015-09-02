@@ -70,7 +70,8 @@ enum ObjectType {
 	EMAIL_CC,
 	EMAIL_BCC,
 	EMAIL_SUBJECT,
-	EMAIL_BODY
+	EMAIL_BODY,
+	LIGRETO_SQL
 };
 
 /**
@@ -173,6 +174,7 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 		case SQL:
 		case JOIN_SQL:
 		case INIT_SQL:
+		case LIGRETO_SQL:
 		case PTP_TRANSFER_SQL:
 		case PTP_PREPROCESS_SQL:
 		case PTP_POSTPROCESS_SQL:
@@ -226,6 +228,10 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 			break;
 		case INIT_SQL:
 			dataSource.addSql(sql);
+			sql = null;
+			break;
+		case LIGRETO_SQL:
+			ligretoNode.addSql(sql);
 			sql = null;
 			break;
 		case PTP_PREPROCESS_SQL:
@@ -365,6 +371,21 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					objectStack.push(ObjectType.PTP);
 				} else if ("ligreto".equals(localName)) {
 					objectStack.push(ObjectType.LIGRETO);
+				} else if ("sql".equals(localName)) {
+					sql = new SqlNode(ligretoNode);
+					if (getAttributeValue(atts, "data-source") != null) {
+						sql.setDataSource(getAttributeValue(atts, "data-source"));
+					}
+					if (getAttributeValue(atts, "query") != null) {
+						sql.setQueryName(getAttributeValue(atts, "query"));
+					}
+					if (getAttributeValue(atts, "exceptions") != null) {
+						sql.setExceptions(getAttributeValue(atts, "exceptions"));
+					}
+					if (getAttributeValue(atts, "type") != null) {
+						sql.setQueryType(getAttributeValue(atts, "type"));
+					}
+					objectStack.push(ObjectType.LIGRETO_SQL);
 				} else {
 					objectStack.push(ObjectType.NONE);
 				}
@@ -876,5 +897,4 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 	@Override
 	public void unparsedEntityDecl(String arg0, String arg1, String arg2, String arg3) throws SAXException {
 	}
-
 }

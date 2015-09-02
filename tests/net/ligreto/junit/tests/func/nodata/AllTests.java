@@ -9,7 +9,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	ParserTest.class,
-	InitFailureTest.class
+	InitFailureTest.class,
+	SqlQueryTest.class
 })
 public class AllTests {
 	/**

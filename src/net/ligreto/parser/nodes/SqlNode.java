@@ -27,7 +27,7 @@ public class SqlNode extends Node {
 	protected int orderNumber;
 	
 	/** The type of the query which determines the way it is executed. */
-	public enum QueryType {STATEMENT, CALL};
+	public enum QueryType {STATEMENT, CALL, QUERY};
 	
 	/** Constructs SQL node. */
 	public SqlNode(LigretoNode ligretoNode) {
@@ -250,6 +250,8 @@ public class SqlNode extends Node {
 	public void setQueryType(String queryType) {
 		if ("statement".equals(queryType)) {
 			this.queryType = QueryType.STATEMENT;			
+		} else if ("query".equals(queryType)) {
+			this.queryType = QueryType.QUERY;
 		} else if ("call".equals(queryType)) {
 			this.queryType = QueryType.CALL;
 		} else {

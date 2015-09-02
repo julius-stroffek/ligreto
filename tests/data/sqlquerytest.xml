@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1" desc="1st Source">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+			<param name="create" value="true"/>
+		</data-source>
+	</data-sources>
+	<sql data-source="Source1" type="statement" exceptions="ignore">drop table sql_query_test</sql>
+	<sql data-source="Source1" type="statement">create table sql_query_test (Id int, first_name varchar(32), last_name varchar(32), age int)</sql>
+	<sql data-source="Source1" type="statement" exceptions="fail">drop table sql_query_test</sql>
+	<sql data-source="Source1" type="statement">create table sql_query_test (Id int, first_name varchar(32), last_name varchar(32), age int)</sql>
+	<sql data-source="Source1" type="statement">insert into sql_query_test values (1, '1Martin1', '1Velky1', 11)</sql>
+	<sql data-source="Source1" type="statement">insert into sql_query_test values (2, 'test', 'nic', 22)</sql>
+	<report name="SQL Query Test" options="autoFilter, autoSize,headerStyle" locale="en_US">
+		<output file="sqlquerytest.xlsx"/>
+		<data>
+			<sql data-source="Source1" target="A1">select * from sql_query_test</sql>
+		</data>
+	</report>
+</ligreto>

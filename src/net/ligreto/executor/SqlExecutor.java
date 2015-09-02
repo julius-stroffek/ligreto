@@ -92,6 +92,12 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 						log.info("Executing the SQL statement on \"" + sqlNode.getDataSource() + "\" data source:");
 						log.info(qry);
 						stm = cnn.createStatement();
+						stm.execute(qry);
+						break;
+					case QUERY:
+						log.info("Executing the SQL query on \"" + sqlNode.getDataSource() + "\" data source:");
+						log.info(qry);
+						stm = cnn.createStatement();
 						rs = stm.executeQuery(qry);
 						break;
 					case CALL:

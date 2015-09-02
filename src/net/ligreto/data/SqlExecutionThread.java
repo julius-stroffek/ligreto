@@ -98,8 +98,9 @@ public class SqlExecutionThread extends Thread {
 		try {
 			cnn = Database.getInstance().getConnection(dataSource);
 			switch (queryType) {
+			case QUERY:
 			case STATEMENT:
-				log.info("Executing the SQL statement on \"" + dataSource + "\" data source:");
+				log.info("Executing the SQL query/statement on \"" + dataSource + "\" data source:");
 				log.info(query);
 				stm = cnn.createStatement();
 				stm.setFetchSize(fetchSize);
@@ -160,6 +161,7 @@ public class SqlExecutionThread extends Thread {
 	 */
 	public void cleanup() throws SQLException, LigretoException {
 		switch (queryType) {
+		case QUERY:
 		case STATEMENT:
 			Database.close(cnn, stm, resultSet);
 			break;

@@ -1,4 +1,4 @@
-<!ELEMENT ligreto ((xi:include|param|queries|data-sources)*,(ptp|report|xi:include)*)>
+<!ELEMENT ligreto ((xi:include|param|queries|data-sources)*,(sql|ptp|report|xi:include)*)>
 <!ATTLIST ligreto xmlns:xi CDATA #FIXED "http://www.w3.org/2001/XInclude">
 
 <!ELEMENT xi:include EMPTY>
@@ -39,7 +39,7 @@
 <!ATTLIST sql target CDATA #IMPLIED>
 <!ATTLIST sql header CDATA "true">			<!--(true|false)-->
 <!ATTLIST sql append CDATA "false">			<!--(true|false)-->
-<!ATTLIST sql type CDATA "statement">		<!--(statement|call)-->
+<!ATTLIST sql type CDATA "query">		<!--(statement|query|call)-->
 <!ATTLIST sql exceptions CDATA "fail">		<!--(ignore|dump|fail)-->
 <!ATTLIST sql exclude CDATA #IMPLIED>
 <!ATTLIST sql empty CDATA "false">			<!--(true|false)-->
@@ -48,7 +48,7 @@
 <!ELEMENT comparison (layout*,sql,layout*,sql+,layout*)>
 <!ATTLIST comparison key CDATA #IMPLIED>
 <!ATTLIST comparison columns CDATA #IMPLIED>	<!-- comma separated list of columns to be compared -->
-<!ATTLIST comparison exclude CDATA #IMPLIED>	<!-- comma separated list of columns to be exceluded -->
+<!ATTLIST comparison exclude CDATA #IMPLIED>	<!-- comma separated list of columns to be excluded -->
 <!ATTLIST comparison locale CDATA #IMPLIED>
 <!ATTLIST comparison collation CDATA "fail">	<!--(ignore|dump|fail)-->
 <!ATTLIST comparison sort CDATA "external">		<!--(external|internal)-->
@@ -62,7 +62,7 @@
 <!ATTLIST join locale CDATA #IMPLIED>
 <!ATTLIST join collation CDATA "fail">		<!--(ignore|dump|fail)-->
 <!ATTLIST join sort CDATA "external">		<!--(external|internal)-->
-<!ATTLIST join duplicates CDATA "fail">	<!--(fail|process)-->
+<!ATTLIST join duplicates CDATA "fail">		<!--(fail|process)-->
 
 <!-- 
 	These are deprecated attributes only for compatibility.

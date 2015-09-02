@@ -40,6 +40,7 @@ public class LigretoExecutor extends Executor {
 		ResultStatus result = new ResultStatus();
 		Database.getInstance(ligretoNode);
 		result.merge(executeParams());
+		result.merge(executeSQLs());
 		result.merge(executePTPs());
 		result.merge(executeReports());
 		result.info(log, "LIGRETO");
@@ -56,6 +57,12 @@ public class LigretoExecutor extends Executor {
 		PtpExecutor ptpExecutor = new PtpExecutor(ligretoNode);
 		ptpExecutor.setPtpNodes(ligretoNode.ptps());
 		return ptpExecutor.execute();
+	}
+	
+	public ResultStatus executeSQLs() throws LigretoException {
+		SqlExecutor sqlExecutor = new SqlExecutor();
+		sqlExecutor.setSqlNodes(ligretoNode.sqlQueries());
+		return sqlExecutor.execute();
 	}
 	
 	public ResultStatus executeReports() throws LigretoException {

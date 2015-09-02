@@ -90,6 +90,12 @@ public class Database {
 						stm = cnn.createStatement();
 						stm.execute(sqlNode.getQuery());
 						break;
+					case QUERY:
+						log.info("Executing the SQL query on \"" + sourceDecription + "\" data source:");
+						log.info(sqlNode.getQuery());
+						stm = cnn.createStatement();
+						stm.executeQuery(sqlNode.getQuery());
+						break;
 					case CALL:
 						log.info("Executing the SQL callable statement on \"" + sourceDecription + "\" data source:");
 						log.info(sqlNode.getQuery());

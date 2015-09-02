@@ -124,8 +124,8 @@ public class PtpExecutor extends Executor {
 				stm = cnn.createStatement();
 				
 				switch (sqlNode.getQueryType()) {
-				case STATEMENT:
-					log.info("Executing the SQL statement on \"" + sqlNode.getDataSource() + "\" data source:");
+				case QUERY:
+					log.info("Executing the SQL query on \"" + sqlNode.getDataSource() + "\" data source:");
 					log.info(qry);
 					stm = cnn.createStatement();
 					rs = stm.executeQuery(qry);
@@ -137,7 +137,7 @@ public class PtpExecutor extends Executor {
 					rs = cstm.executeQuery();
 					break;
 				default:
-					throw new LigretoException("Unknown query type.");
+					throw new LigretoException("Unsupported query type on \"" + sqlNode.getDataSource() + "\" data source:" + sqlNode.getQueryType().toString().toLowerCase());
 				}
 				
 				prepareTarget(targetNode, rs);
