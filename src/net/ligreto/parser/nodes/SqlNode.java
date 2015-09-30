@@ -25,6 +25,8 @@ public class SqlNode extends Node {
 	protected Attitude exceptions = Attitude.FAIL;
 	protected QueryType queryType = QueryType.STATEMENT;
 	protected int orderNumber;
+	protected boolean empty = false;
+	protected boolean nonEmpty = false;
 	
 	/** The type of the query which determines the way it is executed. */
 	public enum QueryType {STATEMENT, CALL, QUERY};
@@ -271,5 +273,49 @@ public class SqlNode extends Node {
 	 */
 	public void setOrderNumber(int orderNumber) {
 		this.orderNumber = orderNumber;
+	}
+
+	/**
+	 * @return the empty
+	 */
+	public boolean isEmpty() {
+		return empty;
+	}
+
+	/**
+	 * @param empty the empty to set
+	 */
+	public void setEmpty(boolean empty) {
+		this.empty = empty;
+	}
+
+	/**
+	 * @return the nonEmpty
+	 */
+	public boolean isNonEmpty() {
+		return nonEmpty;
+	}
+
+	/**
+	 * @param nonEmpty the nonEmpty to set
+	 */
+	public void setNonEmpty(boolean nonEmpty) {
+		this.nonEmpty = nonEmpty;
+	}
+
+	/**
+	 * 
+	 * @param empty
+	 */
+	public void setEmpty(String empty) {
+		this.empty = Boolean.parseBoolean(empty);
+	}
+
+	/**
+	 * 
+	 * @param nonEmpty
+	 */
+	public void setNonEmpty(String nonEmpty) {
+		this.nonEmpty = Boolean.parseBoolean(nonEmpty);
 	}
 }

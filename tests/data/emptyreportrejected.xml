@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+	<data-sources>
+		<data-source name="Source1">
+			<driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+			<uri value="jdbc:derby:db1"/>
+		</data-source>
+	</data-sources>
+	<report options="autoFilter,autoSize ,headerStyle">
+		<template file="blank.xlsx"/>
+		<output file="emptyreportrejected.xlsx"/>
+		<data>
+			<sql target="A1" data-source="Source1" header="true" empty="true"><![CDATA[ select * from test_table where id < 10]]></sql>		</data>
+	</report>
+</ligreto>

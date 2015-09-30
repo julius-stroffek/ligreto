@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 public class Ligreto {
 
 	/** The version string identifying the current version. */
-	public static final String version = "2015.1";
+	public static final String version = "2015.2";
 	
 	/** The maximal exit status returned as result of ligreto operations. */
 	public static final int MAX_RESULT_EXIT_STATUS = 250;

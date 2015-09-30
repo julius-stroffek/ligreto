@@ -50,4 +50,16 @@ public class SqlReportTest {
 	public void testRandomStreamTarget() throws Exception {
 		TestUtil.testReport("randomtargetstreamreport");
 	}
+
+	@Test
+	public void testEmptyReport() throws Exception {
+		TestUtil.testReport("emptyreportaccepted", true);
+		TestUtil.testReport("emptyreportrejected", false);
+	}
+
+	@Test
+	public void testNonEmptyReport() throws Exception {
+		TestUtil.testReport("nonemptyreportaccepted", true);
+		TestUtil.testReport("nonemptyreportrejected", false);
+	}
 }

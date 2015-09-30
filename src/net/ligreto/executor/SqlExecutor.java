@@ -78,6 +78,12 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 
 	public ResultStatus execute(SqlNode sqlNode) throws LigretoException {
 		ResultStatus result = new ResultStatus();
+		if (sqlNode.isEmpty()) {
+			result.setAccepted(false);
+		}
+		if (sqlNode.isNonEmpty()) {
+			result.setAccepted(false);
+		}
 		try {
 			Connection cnn = null;
 			Statement stm = null;
@@ -110,7 +116,6 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 						throw new LigretoException("Unknown query type.");
 					}
 					if (callBack != null && rs != null) {
-
 						// Prepare the list of excluded columns
 						String[] exclStr = sqlNode.getExcludeColumns();
 						if (exclStr != null && exclStr.length > 0) {
@@ -122,14 +127,24 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 						}
 						
 						// Create the data provider and process the result
+						boolean empty = true;
 						DataProvider dp = new ResultSetDataProvider(rs, new int[0], excl);
 						if (callBack.prepareProcessing(sqlNode, dp)) {
 							while (dp.next()) {
+								empty = false;
 								result.addRow();
 								callBack.processResultSetRow(dp);
 							}
 							callBack.finalizeProcessing();
 						}
+						if (!empty && sqlNode.isNonEmpty()) {
+							result.setAccepted(true);
+						}
+						if (empty && sqlNode.isEmpty()) {
+							result.setAccepted(true);
+						}
+					} else if (rs == null && sqlNode.isEmpty()) {
+						result.setAccepted(true);
 					}
 				} catch (SQLException e) {
 					switch (sqlNode.getExceptions()) {
@@ -145,6 +160,7 @@ public class SqlExecutor extends Executor implements SqlResultCallBack {
 			} finally {
 				Database.close(cnn, stm, cstm, rs);
 			}
+			//if (sqlNode.)
 			result.info(log, "SQL");
 		} catch (SQLException e) {
 			String msg = "Database error on data source: " + sqlNode.getDataSource();

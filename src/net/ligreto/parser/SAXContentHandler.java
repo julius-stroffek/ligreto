@@ -469,6 +469,12 @@ public class SAXContentHandler implements ContentHandler, DTDHandler, ErrorHandl
 					if (getAttributeValue(atts, "type") != null) {
 						sql.setQueryType(getAttributeValue(atts, "type"));
 					}
+					if (getAttributeValue(atts, "empty") != null) {
+						sql.setEmpty(getAttributeValue(atts, "empty"));
+					}
+					if (getAttributeValue(atts, "non-empty") != null) {
+						sql.setNonEmpty(getAttributeValue(atts, "non-empty"));
+					}
 					sql.setResult(getAttributeValue(atts, "result"));
 				} else if ("comparison".equals(localName)) {
 					objectStack.push(ObjectType.JOIN);
