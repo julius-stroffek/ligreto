@@ -3,7 +3,11 @@
  */
 package net.ligreto.builders;
 
+import net.ligreto.exceptions.LigretoException;
+
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -14,6 +18,9 @@ import org.apache.poi.ss.usermodel.Workbook;
  *
  */
 public class PoiUtils {
+
+	/** The Apache POI data formatter. */
+	private static DataFormatter dataFormatter = new DataFormatter();
 
 	/**
 	 * No instances are allowed.
@@ -151,5 +158,29 @@ public class PoiUtils {
 		if (s1.getWrapText() != s2.getWrapText())
 			return false;
 		return true;
+	}
+	
+	public static String getCellValue(Cell cell) throws LigretoException {
+		// Take care of no cell
+		if (cell == null) {
+			return null;
+		}
+
+		// Check the cell type
+		switch (cell.getCellType()) {
+		case Cell.CELL_TYPE_STRING:
+			break;
+		case Cell.CELL_TYPE_NUMERIC:
+			break;
+		case Cell.CELL_TYPE_BLANK:
+			return null;
+		case Cell.CELL_TYPE_FORMULA:
+		case Cell.CELL_TYPE_BOOLEAN:
+		case Cell.CELL_TYPE_ERROR:
+			throw new LigretoException("Only string and numeric/date cell formats are supported; please, mark change the cell data types.");
+		}
+		
+		String cellValue = dataFormatter .formatCellValue(cell);
+		return cellValue;
 	}
 }
