@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+  <queries>
+    <query name="product_orders">
+        select
+          po.person_id,
+          p.name as person,
+          po.product_id,
+          pr.name as product,
+          po.pieces
+        from
+          product_order po
+          left outer join person p
+            on p.id = po.person_id
+          left outer join product pr
+            on pr.id = po.product_id
+    </query>
+  </queries>
+  <report options="autoFilter,autoSize,headerStyle">
+    <output file="reconcile.xlsx"/>
+    <data>
+      <comparison key="1,3" columns="2,4,5">
+        <sql data-source="Source1" query="product_orders"/>
+        <sql data-source="Source2" query="product_orders"/>
+        <layout target="summary" type="summary"/>
+        <layout target="normal" type="normal"/>
+        <layout target="interlaced" type="interlaced"/>
+        <layout target="detailed" type="detailed"/>
+        <layout target="aggregated" type="aggregated"/>
+        <layout target="key" type="key"/>
+        <layout target="analytical" type="analytical"/>
+      </comparison>
+    </data>
+  </report>
+</ligreto>
+

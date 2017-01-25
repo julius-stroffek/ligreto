@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="WINDOWS-1250"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+  <data-sources>
+    <data-source name="Source1">
+      <driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+      <uri value="jdbc:derby:db1"/>
+      <param name="create" value="true"/>
+    </data-source>
+  </data-sources>
+</ligreto>
+

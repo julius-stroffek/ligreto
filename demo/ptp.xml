@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+  <ptp>
+    <transfer>
+      <target data-source="Source2" table="person" create="true" truncate="true"/>
+      <sql data-source="Source1">select * from person</sql>
+    </transfer>
+  </ptp>
+  <ptp>
+    <transfer>
+      <target data-source="Source2" table="product" create="true" truncate="true"/>
+      <sql data-source="Source1">select * from product</sql>
+    </transfer>
+  </ptp>
+  <ptp>
+    <transfer>
+      <target data-source="Source2" table="product_order" create="true" truncate="true"/>
+      <sql data-source="Source1">select * from product_order</sql>
+    </transfer>
+    <postprocess>
+      <sql data-source="Source2" type="statement">delete from product_order where mod(id, 3) = 0</sql>
+    </postprocess>
+  </ptp>
+</ligreto>
+

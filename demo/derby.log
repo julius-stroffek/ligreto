@@ -1,0 +1,20 @@
+----------------------------------------------------------------
+----------------------------------------------------------------
+Thu Dec 22 15:00:23 CET 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.1.2 - (1095077): instance 601a400f-0159-26d5-30be-00000052b540 
+on database directory C:\HG\ligreto\demo\db2  with class loader sun.misc.Launcher$AppClassLoader@647e05 
+Loaded from file:/C:/HG/ligreto/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_11-b12
+user.dir=C:\HG\ligreto\demo
+Thu Dec 22 15:00:23 CET 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.1.2 - (1095077): instance a816c00e-0159-26d5-30be-00000052b540 
+on database directory C:\HG\ligreto\demo\db1  with class loader sun.misc.Launcher$AppClassLoader@647e05 
+Loaded from file:/C:/HG/ligreto/lib/derby.jar
+derby.system.home=null
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_11-b12
+user.dir=C:\HG\ligreto\demo
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+Database Class Loader started - derby.database.classpath=''

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+  <queries>
+    <query name="dump">select * from </query>
+    <query name="dump_person">select * from person</query>
+  </queries>
+  <report options="autoFilter,autoSize,headerStyle">
+    <output file="dump.xlsx"/>
+    <data>
+      <sql target="person!A1" data-source="Source1" query="dump_person"/>
+      <sql target="product!A1" data-source="Source1" query="dump">product</sql>
+      <sql target="product_order!A1" data-source="Source1" query="dump">product_order</sql>
+      <sql target="order_details!A1" data-source="Source1">
+        select
+          p.name as person,
+          pr.name as product,
+          po.pieces
+        from
+          product_order po
+          left outer join person p
+            on p.id = po.person_id
+          left outer join product pr
+            on pr.id = po.product_id
+      </sql>
+    </data>
+  </report>
+</ligreto>
+

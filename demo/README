@@ -1,0 +1,18 @@
+Ligreto Demo
+============
+
+This directory contains the demo files showcasing the basic features of ligreto tool.
+
+1.) Preparation of testing data
+	* ligreto.sh dbs.xml data.xml
+
+2.) Excel report - data dump
+	* ligreto.sh db1.xml dump.xml
+
+3.) Data transfer
+	* ligreto.sh dbs.xml ptp.xml
+
+4.) Reconciliation (testing data a data transfer are required before)
+	* ligreto.sh dbs.xml reconcile.xml
+
+On Windows use ligreto.bat instead ligreto.sh.

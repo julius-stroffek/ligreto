@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="WINDOWS-1250"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+  <sql data-source="Source1" type="statement">
+    create table person (Id integer, Name varchar(32), Age int, Sex char(1))
+  </sql>
+  <sql data-source="Source1" type="statement">
+    create table product (Id integer, Name varchar(32))
+  </sql>
+  <sql data-source="Source1" type="statement">
+    create table product_order (Id integer, Person_Id integer, Product_Id integer, Pieces integer)    
+  </sql>
+  <sql data-source="Source2">
+    select 1 as dummy from sysibm.sysdummy1    
+  </sql>
+  
+  <sql data-source="Source1" type="statement">
+    insert into person values (1, 'Jan Novotny', 62, 'M')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into person values (2, 'Martina Kocábová', 19, 'F')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into person values (3, 'Zuzana Petru', 26, 'F')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into person values (4, 'Gabriel Lenárt', 46, 'M')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into person values (5, 'Jana Navrátilová', 74, 'F')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into person values (6, 'George Bush', 84, 'M')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into person values (7, 'Ronald Regan', 95, 'M')
+  </sql>
+  
+  <sql data-source="Source1" type="statement">  
+    insert into product values (1, 'Donut')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product values (2, 'Bread')
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product values (3, 'Roll') 
+  </sql>
+  
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (1, 1, 1, 3)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (2, 2, 2, 3)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (3, 1, 3, 3)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (4, 2, 3, 4)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (5, 3, 1, 5)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (6, 4, 2, 6)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (7, 5, 3, 7)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (8, 6, 1, 8)
+  </sql>
+  <sql data-source="Source1" type="statement">
+    insert into product_order values (9, 6, 2, 9)
+  </sql>
+</ligreto>
+

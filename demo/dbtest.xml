@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ligreto PUBLIC "ligreto.dtd" "ligreto.dtd">
+<ligreto>
+  <queries>
+    <query name="StartDateQuery">select '2010-10-31' as startdt from ${dummy}</query>
+  </queries>
+  <param name="dummy" value="sysibm.sysdummy1"/>
+  <param name="startdt" data-source="Source1" query="StartDateQuery"/>
+  <data-sources>
+    <data-source name="Source1">
+      <driver value="org.apache.derby.jdbc.EmbeddedDriver"/>
+      <uri value="jdbc:derby:db1"/>
+      <param name="create" value="true"/>
+    </data-source>
+  </data-sources>
+  <report options="autoFilter,autoSize ,headerStyle">
+    <output file="sqlreport.xlsx"/>
+    <data>
+      <sql target="A1" data-source="Source1" header="false" query="StartDateQuery"/>
+      <sql target="C3" data-source="Source1" header="true">select '${startdt}' startdt from ${dummy}</sql>
+    </data>
+  </report>
+</ligreto>
+
