@@ -33,7 +33,13 @@ LIGRETO_LOG="${LIGRETO_HOME}/log";
 LIGRETO_LIB="${LIGRETO_HOME}/lib";
 LIGRETO_DIST="${LIGRETO_HOME}/dist";
 
-CLASSPATH=$(find "${LIGRETO_LIB}" -type f -name '*.jar' | tr '\n' ':');
-CLASSPATH="${CLASSPATH}:$(find "${LIGRETO_DIST}" -type f -name '*.jar' | tr '\n' ':')";
-
-"${JAVA}" -cp "${CLASSPATH}" net.ligreto.Ligreto "$@";
+OS=`uname -o`;
+if [[ "$OS" -eq "Cygwin" ]]; then
+	LIGRETO_HOME="$(cygpath -w "${LIGRETO_HOME}")";
+	LIGRETO_LOG="$(cygpath -w "${LIGRETO_LOG}")";
+	LIGRETO_LIB="$(cygpath -w "${LIGRETO_LIB}")";
+	LIGRETO_DIST="$(cygpath -w "${LIGRETO_DIST}")";
+	java -cp "${LIGRETO_DIST}/ligreto.jar;${LIGRETO_LIB}/*" net.ligreto.Ligreto
+else
+	java -cp "${LIGRETO_DIST}/ligreto.jar:${LIGRETO_LIB}/*" net.ligreto.Ligreto
+fi

@@ -92,20 +92,21 @@ public class Ligreto {
 		}
 		String[] files = cmd.getArgs();
 		
+		Level logLevel = Level.INFO;
 		if (cmd.hasOption("debug") || cmd.hasOption("trace")) {
 			// Get the proper log level
-			Level logLevel = Level.DEBUG;
+			logLevel = Level.DEBUG;
 			if (cmd.hasOption("trace")) {
 				logLevel = Level.TRACE;
 			}
 			
 			// Enable java assertions
 			AssertionUtil.enableAssertions();
-			
-			// Increase the log severity
-			Logger.getRootLogger().setLevel(logLevel);
-			log.setLevel(logLevel);
 		}
+		// Set the log severity
+		Logger.getRootLogger().setLevel(logLevel);
+		log.setLevel(logLevel);
+
 		if (cmd.hasOption("help") || files.length == 0) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp(
