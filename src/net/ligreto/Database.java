@@ -27,10 +27,38 @@ import net.ligreto.parser.nodes.SqlNode;
  *
  */
 public class Database {
+	
+	/**
+	 * The class allowing the ad-hoc resolution of connections for the database.
+	 * 
+	 * @author Julius Stroffek
+	 *
+	 */
+	public static interface ConnectionResolver {
+		/**
+		 * Returns the connection of a given name.
+		 * 
+		 * @param name the name of the connection to be returned
+		 * @return
+		 * @throws DataSourceException
+		 * @throws ClassNotFoundException
+		 * @throws SQLException
+		 */
+		public Connection getConnection(String name) throws DataSourceException, ClassNotFoundException, SQLException;
+		
+		/**
+		 * Provides access to the description of the datasource.
+		 * 
+		 * @param name the data source name
+		 * @return
+		 * @throws DataSourceNotDefinedException
+		 */
+		public DataSourceNode getDataSourceNode(String name) throws DataSourceNotDefinedException;
+	}
+	
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(Database.class);
 
-	
 	protected static Hashtable<Long, Database> instanceMap = new Hashtable<Long, Database>();
 	
 	public static Database getInstance() {
@@ -77,7 +105,18 @@ public class Database {
 	}
 	
 	public DataSourceNode getDataSourceNode(String name) throws DataSourceNotDefinedException {
-		DataSourceNode node = ligretoNode.getDataSourceNode(name);
+		DataSourceNode node = null;
+		if (ligretoNode != null && ligretoNode.getConnectionResolver() != null) {
+			try {
+				node = ligretoNode.getConnectionResolver().getDataSourceNode(name);
+				if (node != null) {
+					return node;
+				}
+			} catch (DataSourceNotDefinedException e) {
+				// Just ignore it
+			}
+		}
+		node = ligretoNode.getDataSourceNode(name);
 		if (node == null) {
 			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
 		}
@@ -85,24 +124,37 @@ public class Database {
 	}
 	
 	public Connection getConnection(String name) throws DataSourceException, ClassNotFoundException, SQLException {
-		DataSourceNode node = ligretoNode.getDataSourceNode(name);
-		if (node == null) {
-			throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
+		DataSourceNode node = null;
+		Connection cnn = null;
+		String sourceDecription = null;
+		if (ligretoNode != null && ligretoNode.getConnectionResolver() != null) {
+			try {
+				node = ligretoNode.getConnectionResolver().getDataSourceNode(name);
+				cnn = ligretoNode.getConnectionResolver().getConnection(name);
+				sourceDecription = node.getDescription() + " (" + node.getName() + ")";
+			} catch (DataSourceNotDefinedException e) {
+				// Just ignore it as we will try more options
+			}
 		}
-
-		String sourceDecription = node.getDescription() + " (" + node.getName() + ")";
-		String uri = ligretoNode.substituteParams(node.getUri());
-		log.info("Connecting to \"" + sourceDecription + "\" data source with uri: " + uri);
 		
-		Class.forName(ligretoNode.substituteParams(node.getDriverClass()));
-		
-		// Create the connection
-		Connection cnn;
-		try {
-			Properties params = ligretoNode.substitueParams(node.getParameters());
-			cnn = DriverManager.getConnection(uri, params);
-		} catch (SQLException e) {
-			throw new DataSourceException("Could not connect to data source: " + sourceDecription, e);
+		if (cnn == null || node == null) {
+			node = ligretoNode.getDataSourceNode(name);
+			if (node == null) {
+				throw new DataSourceNotDefinedException("Data source \"" + name + "\" was not defined.");
+			}
+	
+			sourceDecription = node.getDescription() + " (" + node.getName() + ")";
+			String uri = ligretoNode.substituteParams(node.getUri());
+			log.info("Connecting to \"" + sourceDecription + "\" data source with uri: " + uri);
+			
+			Class.forName(ligretoNode.substituteParams(node.getDriverClass()));
+			
+			try {
+				Properties params = ligretoNode.substitueParams(node.getParameters());
+				cnn = DriverManager.getConnection(uri, params);
+			} catch (SQLException e) {
+				throw new DataSourceException("Could not connect to data source: " + sourceDecription, e);
+			}
 		}
 		
 		// Initialize the connection with the given SQL queries

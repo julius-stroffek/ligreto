@@ -13,6 +13,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import net.ligreto.Database.ConnectionResolver;
 import net.ligreto.LigretoParameters;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.util.Parameters;
@@ -37,9 +38,18 @@ public class LigretoNode extends Node {
 	protected List<ReportNode> reportNodes = new LinkedList<ReportNode>();
 	protected List<PtpNode> ptpNodes = new LinkedList<PtpNode>();
 	protected LigretoParameters ligretoParameters = new LigretoParameters();
+	protected ConnectionResolver connectionResolver = null;
 
 	public LigretoNode() {
 		super(null);
+	}
+
+	public ConnectionResolver getConnectionResolver() {
+		return connectionResolver;
+	}
+
+	public void setConnectionResolver(ConnectionResolver connectionResolver) {
+		this.connectionResolver = connectionResolver;
 	}
 
 	public void addDataSource(DataSourceNode dataSource) {
