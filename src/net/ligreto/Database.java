@@ -161,45 +161,47 @@ public class Database {
 		try {
 			Statement stm = null;
 			CallableStatement cstm = null;
-			for (SqlNode sqlNode : node.sqlQueries()) {
-				try {
-					switch (sqlNode.getQueryType()) {
-					case STATEMENT:
-						log.info("Executing the SQL statement on \"" + sourceDecription + "\" data source:");
-						log.info(sqlNode.getQuery());
-						stm = cnn.createStatement();
-						stm.execute(sqlNode.getQuery());
-						break;
-					case QUERY:
-						log.info("Executing the SQL query on \"" + sourceDecription + "\" data source:");
-						log.info(sqlNode.getQuery());
-						stm = cnn.createStatement();
-						stm.executeQuery(sqlNode.getQuery());
-						break;
-					case CALL:
-						log.info("Executing the SQL callable statement on \"" + sourceDecription + "\" data source:");
-						log.info(sqlNode.getQuery());
-						cstm = cnn.prepareCall(sqlNode.getQuery());
-						cstm.execute();
-						break;
-					default:
-						throw new DataSourceInitException("Unknown query type.");
+			if (node.sqlQueries() != null) {
+				for (SqlNode sqlNode : node.sqlQueries()) {
+					try {
+						switch (sqlNode.getQueryType()) {
+						case STATEMENT:
+							log.info("Executing the SQL statement on \"" + sourceDecription + "\" data source:");
+							log.info(sqlNode.getQuery());
+							stm = cnn.createStatement();
+							stm.execute(sqlNode.getQuery());
+							break;
+						case QUERY:
+							log.info("Executing the SQL query on \"" + sourceDecription + "\" data source:");
+							log.info(sqlNode.getQuery());
+							stm = cnn.createStatement();
+							stm.executeQuery(sqlNode.getQuery());
+							break;
+						case CALL:
+							log.info("Executing the SQL callable statement on \"" + sourceDecription + "\" data source:");
+							log.info(sqlNode.getQuery());
+							cstm = cnn.prepareCall(sqlNode.getQuery());
+							cstm.execute();
+							break;
+						default:
+							throw new DataSourceInitException("Unknown query type.");
+						}
+					} catch (SQLException e) {
+						switch (sqlNode.getExceptions()) {
+						case IGNORE:
+							break;
+						case DUMP:
+							log.error("Exception while executing query", e);
+							break;
+						case FAIL:
+							throw e;
+						}
+					} finally {
+						if (stm != null)
+							stm.close();
+						if (cstm != null)
+							cstm.close();
 					}
-				} catch (SQLException e) {
-					switch (sqlNode.getExceptions()) {
-					case IGNORE:
-						break;
-					case DUMP:
-						log.error("Exception while executing query", e);
-						break;
-					case FAIL:
-						throw e;
-					}
-				} finally {
-					if (stm != null)
-						stm.close();
-					if (cstm != null)
-						cstm.close();
 				}
 			}
 		} catch (Exception e) {

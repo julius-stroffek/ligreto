@@ -130,7 +130,7 @@ public class Ligreto {
 		try {
 			LigretoNode ligretoNode = new LigretoNode();
 
-			// Get the system proeprties and store them as parameters
+			// Get the system properties and store them as parameters
 			for (Object property : System.getProperties().keySet()) {
 				String name = property.toString();
 				String value = System.getProperty(name);
@@ -140,7 +140,7 @@ public class Ligreto {
 			// Parse the command line arguments as parameters
 			if (params != null) {
 				for (int j=0; j < params.length; j++) {
-					if (params[j].indexOf('=') >=0) {
+					if (params[j].indexOf('=') >= 0) {
 						String paramName = params[j].substring(0, params[j].indexOf('='));
 						String paramValue = params[j].substring(params[j].indexOf('=') + 1);
 						ligretoNode.addLockedParam(paramName, paramValue);

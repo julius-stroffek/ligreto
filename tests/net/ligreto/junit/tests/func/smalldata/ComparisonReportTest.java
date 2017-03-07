@@ -5,14 +5,20 @@ package net.ligreto.junit.tests.func.smalldata;
 
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import net.ligreto.Database.ConnectionResolver;
 import net.ligreto.exceptions.CollationException;
+import net.ligreto.exceptions.DataSourceException;
+import net.ligreto.exceptions.DataSourceNotDefinedException;
 import net.ligreto.exceptions.DuplicateKeyValuesException;
 import net.ligreto.exceptions.LigretoException;
 import net.ligreto.executor.LigretoExecutor;
 import net.ligreto.junit.util.TestUtil;
 import net.ligreto.parser.Parser;
+import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.LigretoNode;
 
 import org.junit.Assert;
@@ -81,6 +87,36 @@ public class ComparisonReportTest {
 			}
 		}
 		Assert.assertTrue(exceptionThrown);
+	}
+	
+	@Test
+	public void testConnectionResolver() throws SAXException, IOException, ClassNotFoundException, SQLException, LigretoException {
+		String reportName = "joinreport";
+		LigretoNode ligreto = Parser.parse(reportName + ".xml");
+		LigretoExecutor executor = new LigretoExecutor(ligreto);
+		ligreto.setConnectionResolver(new ConnectionResolver() {
+
+			@Override
+			public Connection getConnection(String name) throws DataSourceException, ClassNotFoundException, SQLException {
+				if ("Source1".equals(name)) {
+					Connection cnn = DriverManager.getConnection("jdbc:derby:db1");
+					return cnn;
+				}
+				throw new DataSourceNotDefinedException();
+			}
+
+			@Override
+			public DataSourceNode getDataSourceNode(String name) throws DataSourceNotDefinedException {
+				if ("Source1".equals(name)) {
+					DataSourceNode node = new DataSourceNode(null, "Source1");
+					return node;
+				}
+				throw new DataSourceNotDefinedException();
+			}
+			
+		});
+		executor.execute();
+		TestUtil.compareReport(reportName, reportName);
 	}
 	
 	@Test

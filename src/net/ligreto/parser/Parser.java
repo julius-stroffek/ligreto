@@ -4,9 +4,11 @@
 package net.ligreto.parser;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import net.ligreto.parser.nodes.LigretoNode;
 
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -39,9 +41,29 @@ public class Parser {
 		parser.setFeature(XINCLUDE_FEATURE_ID, true);
 		parser.setContentHandler(handler);
 		parser.setErrorHandler(handler);
-		parser.setDTDHandler(handler);		
+		parser.setDTDHandler(handler);
 		parser.parse(systemId);
-		//parser.parse(new InputSource(systemId));
+		
+		return ligretoNode;
+	}
+	
+	/**
+	 * This function parses the specified file and uses the specified
+	 * <code>LigretoNode<code> object to holding the whole configuration.
+	 */
+	public static LigretoNode parse(InputStream inputStream, LigretoNode ligretoNode) throws SAXException, IOException {
+		SAXContentHandler handler = new SAXContentHandler(ligretoNode);
+		
+		XMLReader parser = XMLReaderFactory.createXMLReader(PARSER_NAME);
+		parser.setEntityResolver(new EntityResolverImpl());
+		parser.setFeature(NAMESPACES_FEATURE_ID, true);
+		parser.setFeature(NAMESPACE_PREFIXES_FEATURE_ID, true);
+		parser.setFeature(VALIDATION_FEATURE_ID, true);
+		parser.setFeature(XINCLUDE_FEATURE_ID, true);
+		parser.setContentHandler(handler);
+		parser.setErrorHandler(handler);
+		parser.setDTDHandler(handler);
+		parser.parse(new InputSource(inputStream));
 		
 		return ligretoNode;
 	}
@@ -54,5 +76,13 @@ public class Parser {
 		LigretoNode ligretoNode = new LigretoNode();
 		return parse(systemId, ligretoNode);
 	}
-	
+
+	/**
+	 * This function parses the specified file and creates the <code>LigretoNode</code>
+	 * object holding the whole configuration.
+	 */
+	public static LigretoNode parse(InputStream inputStream) throws SAXException, IOException {
+		LigretoNode ligretoNode = new LigretoNode();
+		return parse(inputStream, ligretoNode);
+	}
 }
