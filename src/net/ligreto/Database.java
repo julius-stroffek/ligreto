@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Hashtable;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -18,30 +19,57 @@ import net.ligreto.parser.nodes.DataSourceNode;
 import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.SqlNode;
 
+/**
+ * The class providing the interface to database connections. There is only one instance of every database available for
+ * the execution thread. There is a static map holding all the references
+ * 
+ * @author Julius Stroffek
+ *
+ */
 public class Database {
 	/** The logger instance for the class. */
 	private Log log = LogFactory.getLog(Database.class);
 
-	protected static Database instance;
+	
+	protected static Hashtable<Long, Database> instanceMap = new Hashtable<Long, Database>();
 	
 	public static Database getInstance() {
-		if (instance == null) {
-			instance = new Database();
+		synchronized (Database.class) {
+			Database instance = instanceMap.get(Thread.currentThread().getId());
+			if (instance == null) {
+				instance = new Database();
+				instanceMap.put(Thread.currentThread().getId(), instance);
+			}
+			
+			return instance;
 		}
-		return instance;
 	}
 
 	public static Database getInstance(LigretoNode aLigretoNode) {
-		if (instance == null) {
-			instance = new Database();
-		}
+		Database instance = getInstance();
 		instance.setLigretoNode(aLigretoNode);
 		return instance;
 	}
 
+	/**
+	 * Releases the current thread local instance.
+	 */
+	public static void dropInstance() {
+		synchronized (Database.class) {
+			instanceMap.remove(Thread.currentThread().getId());
+		}
+	}
+	
 	LigretoNode ligretoNode = null;
 	
 	public Database() {
+	}
+	
+	@Override
+	public void finalize() {
+		synchronized (Database.class) {
+			instanceMap.remove(Thread.currentThread().getId());
+		}
 	}
 
 	public void setLigretoNode(LigretoNode aLigretoNode) {

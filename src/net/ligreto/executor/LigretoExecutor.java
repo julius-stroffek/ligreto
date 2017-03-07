@@ -44,6 +44,7 @@ public class LigretoExecutor extends Executor {
 		result.merge(executePTPs());
 		result.merge(executeReports());
 		result.info(log, "LIGRETO");
+		Database.dropInstance();
 		return result;
 	}
 	

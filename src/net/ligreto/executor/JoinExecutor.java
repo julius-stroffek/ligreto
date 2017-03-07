@@ -194,10 +194,10 @@ public class JoinExecutor extends Executor implements JoinResultCallBack {
 				qry2.deleteCharAt(qry2.length() - 1);
 			}
 			int fetchSize = joinNode.getLigretoNode().getLigretoParameters().getFetchSize();
-			exec1 = SqlExecutionThread.getInstance(sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
+			exec1 = SqlExecutionThread.getInstance(joinNode.getLigretoNode(), sqlQueries.get(0).getDataSource(), qry1.toString(), sqlQueries.get(0).getQueryType());
 			exec1.setFetchSize(fetchSize);
 			exec1.start();
-			exec2 = SqlExecutionThread.getInstance(sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
+			exec2 = SqlExecutionThread.getInstance(joinNode.getLigretoNode(), sqlQueries.get(1).getDataSource(), qry2.toString(), sqlQueries.get(1).getQueryType());
 			exec2.setFetchSize(fetchSize);
 			exec2.start();
 			

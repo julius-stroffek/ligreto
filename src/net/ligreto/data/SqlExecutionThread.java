@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 
 import net.ligreto.Database;
 import net.ligreto.exceptions.LigretoException;
+import net.ligreto.parser.nodes.LigretoNode;
 import net.ligreto.parser.nodes.SqlNode;
 
 /**
@@ -65,13 +66,17 @@ public class SqlExecutionThread extends Thread {
 	/** The result set to be returned after execution. */
 	protected ResultSet resultSet = null;
 	
+	/** The reference to the ligreto node. */
+	protected LigretoNode ligretoNode = null;
+			
 	/**
 	 * Creates the instance.
 	 * 
 	 * Instances should be created only using static method {@link #executeQuery}.
 	 */
-	protected SqlExecutionThread() {
+	protected SqlExecutionThread(LigretoNode ligretoNode) {
 		super();
+		this.ligretoNode = ligretoNode;
 	}
 	
 	/**
@@ -82,8 +87,8 @@ public class SqlExecutionThread extends Thread {
 	 * @param queryType the type of the query
 	 * @return the created SqlExecutionThread object
 	 */
-	public static SqlExecutionThread getInstance(String dataSource, String query, SqlNode.QueryType queryType) {
-		SqlExecutionThread instance = new SqlExecutionThread();
+	public static SqlExecutionThread getInstance(LigretoNode ligretoNode, String dataSource, String query, SqlNode.QueryType queryType) {
+		SqlExecutionThread instance = new SqlExecutionThread(ligretoNode);
 		instance.dataSource = dataSource;
 		instance.query = query;
 		instance.queryType = queryType;
@@ -96,7 +101,7 @@ public class SqlExecutionThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			cnn = Database.getInstance().getConnection(dataSource);
+			cnn = Database.getInstance(ligretoNode).getConnection(dataSource);
 			switch (queryType) {
 			case QUERY:
 			case STATEMENT:

@@ -1,4 +1,4 @@
-<project default="dist" basedir=".">
+<project default="test" basedir=".">
 	<!-- Load the build properties. -->
         <property file="${user.home}/Ligreto.properties" />
 
