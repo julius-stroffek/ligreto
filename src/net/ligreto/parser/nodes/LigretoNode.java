@@ -68,6 +68,8 @@ public class LigretoNode extends Node {
 		if (!lockedParams.containsKey(name)) {
 			if (name.startsWith("ligreto.")) {
 				log.info("Setting up ligreto parameter: \"" + name + "\"");
+				// Do substitutions of already existing values
+				value = Parameters.substituteParams(paramMap, value);
 				log.debug("Parameter value: \"" + value + "\"");
 				ligretoParameters.setParameter(name, value);
 				paramMap.put(name, value);
