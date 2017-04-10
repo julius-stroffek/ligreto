@@ -73,7 +73,7 @@ public class HtmlReportBuilder extends ReportBuilder {
 		PrintWriter pw = new PrintWriter(fos);
 		pw.print("<html>");
 		pw.print("<style>");
-		InputStream styleStream = ClassLoader.getSystemResourceAsStream("resources/htmlreport.css");
+		InputStream styleStream = getClass().getClassLoader().getResourceAsStream("resources/htmlreport.css");
 		InputStreamReader styleReader = new InputStreamReader(styleStream);
 		CharBuffer buffer = CharBuffer.allocate(1024);
 		while (true) {

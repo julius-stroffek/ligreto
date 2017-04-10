@@ -14,7 +14,7 @@ public class EntityResolverImpl implements EntityResolver {
 			throws SAXException, IOException {
 		if ("ligreto.dtd".equals(publicId)) {
 			EntityResolverImpl.class.getClassLoader();
-			InputStream stream = ClassLoader.getSystemResourceAsStream("resources/ligreto.dtd");
+			InputStream stream = getClass().getClassLoader().getResourceAsStream("resources/ligreto.dtd");
 			InputSource result = new InputSource(stream);
 			return result;
 		}
